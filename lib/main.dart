@@ -42,73 +42,82 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Align(
-            alignment: Alignment.topCenter,
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 40.0),
-              child: SvgPicture.asset(
-                'assets/svg/UCA.svg',
-                color: Theme.of(context).colorScheme.primary,
+        body: SingleChildScrollView(
+          child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Align(
+              alignment: Alignment.topCenter,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 40.0),
+                child: SvgPicture.asset(
+                  'assets/svg/UCA.svg',
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  width: double.infinity,
-                  child: Text(
-                    widget.title,
-                    style: Theme.of(context).textTheme.headlineMedium,
-                    textAlign: TextAlign.left,
-                  ),
-                ),
-                SizedBox(
-                  width: double.infinity,
-                  child: Text(
-                    'Твій календар:',
-                    style: Theme.of(context).textTheme.headlineSmall,
-                    textAlign: TextAlign.left,
-                  ),
-                ),
-                Padding(padding: const EdgeInsets.only(top: 10.0),
-                  child: Container(
-                    height: 200.0,
-                    padding: const EdgeInsets.all(40.0),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary,
-                      borderRadius: BorderRadius.circular(10.0),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    child: Text(
+                      widget.title,
+                      style: Theme.of(context).textTheme.headlineMedium,
+                      textAlign: TextAlign.left,
                     ),
                   ),
-                ),
-                const SizedBox(height: 20.0, width: double.infinity),
-                SizedBox(
-                  width: double.infinity,
-                  child: Text(
-                    'Останні новини:',
-                    style: Theme.of(context).textTheme.headlineSmall,
-                    textAlign: TextAlign.left,
-                  ),
-                ),
-                Padding(padding: const EdgeInsets.only(top: 10.0),
-                  child: Container(
-                    height: 100.0,
-                    padding: const EdgeInsets.all(40.0),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary,
-                      borderRadius: BorderRadius.circular(10.0),
+                  SizedBox(
+                    width: double.infinity,
+                    child: Text(
+                      'Твій календар:',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                      textAlign: TextAlign.left,
                     ),
                   ),
-                ),
-              ],
+                  Padding(padding: const EdgeInsets.only(top: 10.0),
+                    child: Container(
+                      height: 200.0,
+                      padding: const EdgeInsets.all(40.0),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surfaceBright,
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20.0, width: double.infinity),
+                  SizedBox(
+                    width: double.infinity,
+                    child: Text(
+                      'Останні новини:',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                      textAlign: TextAlign.left,
+                    ),
+                  ),
+                  Padding(padding: const EdgeInsets.only(top: 10.0),
+                      child: Column(
+                      children: List.generate(10, (index) {
+                        return Padding(
+                        padding: const EdgeInsets.only(bottom: 10.0),
+                        child: Container(
+                          height: 100.0,
+                          padding: const EdgeInsets.all(40.0),
+                          decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surfaceBright,
+                          borderRadius: BorderRadius.circular(10.0),
+                          ),
+                        ),
+                        );
+                      }),
+                      ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ), 
       ),
     );
   }
