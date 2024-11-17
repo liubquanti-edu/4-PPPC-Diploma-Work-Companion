@@ -1,3 +1,4 @@
 {
-    "cmake.sourceDirectory": "D:/Work folder/pppc_companion/windows/runner"
+    "cmake.sourceDirectory": "D:/Work folder/pppc_companion/windows/runner",
+    "java.compile.nullAnalysis.mode": "automatic"
 }

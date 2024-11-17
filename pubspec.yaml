@@ -5,11 +5,13 @@ version: 1.0.0+1
 
 environment:
   sdk: ^3.5.4
+  
 
 dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
+  flutter_svg: ^2.0.14
 
 dev_dependencies:
   flutter_test:
@@ -17,6 +19,8 @@ dev_dependencies:
   flutter_lints: ^4.0.0
 
 flutter:
+  assets:
+    - assets/svg/UCA.svg
   uses-material-design: true
   fonts:
     - family: Comfortaa
