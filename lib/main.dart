@@ -51,8 +51,8 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 40.0),
                 child: SvgPicture.asset(
-                  'assets/svg/UCA.svg',
-                  color: Theme.of(context).colorScheme.primary,
+                  'assets/svg/ППФК.svg',
+                  colorFilter: ColorFilter.mode(Theme.of(context).colorScheme.primary, BlendMode.srcIn),
                 ),
               ),
             ),
@@ -90,80 +90,108 @@ class _MyHomePageState extends State<MyHomePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
                                     children: [
-                                      Text('Архітект.комп.', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 20.0)),
-                                      Row(
+                                      SizedBox(height: 70, width: 5, child: DecoratedBox(decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, borderRadius: BorderRadius.circular(5)))),
+                                      const SizedBox(width: 10.0),
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Icon(Icons.info_outline, size: 16.0, color: Theme.of(context).colorScheme.primary),
-                                          const SizedBox(width: 5.0),
-                                          Text('Ігор Дегтяр 304 ауд.', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Icon(Icons.access_time_outlined, size: 16.0, color: Theme.of(context).colorScheme.primary),
-                                          const SizedBox(width: 5.0),
-                                          Text('09:00 - 10:00', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),                                          const SizedBox(width: 5.0),
+                                          Text('Архітект.комп.', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 20.0)),
+                                          Row(
+                                            children: [
+                                              Icon(Icons.info_outline, size: 16.0, color: Theme.of(context).colorScheme.primary),
+                                              const SizedBox(width: 5.0),
+                                              Text('Ігор Дегтяр 304 ауд.', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),
+                                            ],
+                                          ),
+                                          Row(
+                                            children: [
+                                              Icon(Icons.access_time_outlined, size: 16.0, color: Theme.of(context).colorScheme.primary),
+                                              const SizedBox(width: 5.0),
+                                              Text('09:00 - 10:00', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),
+                                              const SizedBox(width: 5.0),
+                                            ],
+                                          ),
                                         ],
                                       ),
                                     ],
                                   ),
-                                ),
-                                const SizedBox(height: 10.0, width: double.infinity),
-                                Container(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                ],
+                              ),
+                              const SizedBox(height: 10.0, width: double.infinity),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
                                     children: [
-                                      Text('Проєктування АІС', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16.0)),
-                                      Row(
+                                      SizedBox(height: 60, width: 5, child: DecoratedBox(decoration: BoxDecoration(color: Theme.of(context).colorScheme.secondary, borderRadius: BorderRadius.circular(5)))),
+                                      const SizedBox(width: 10.0),
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Icon(Icons.info_outline, size: 16.0, color: Theme.of(context).colorScheme.primary),
-                                          const SizedBox(width: 5.0),
-                                          Text('Світлана Гриценко 317 ауд.', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Icon(Icons.access_time_outlined, size: 16.0, color: Theme.of(context).colorScheme.primary),
-                                          const SizedBox(width: 5.0),
-                                          Text('10:10 - 11:10', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),                                         const SizedBox(width: 5.0),
+                                          Text('Проєктування АІС', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16.0)),
+                                          Row(
+                                            children: [
+                                              Icon(Icons.info_outline, size: 16.0, color: Theme.of(context).colorScheme.secondary),
+                                              const SizedBox(width: 5.0),
+                                              Text('Світлана Гриценко 317 ауд.', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),
+                                            ],
+                                          ),
+                                          Row(
+                                            children: [
+                                              Icon(Icons.access_time_outlined, size: 16.0, color: Theme.of(context).colorScheme.secondary),
+                                              const SizedBox(width: 5.0),
+                                              Text('10:10 - 11:10', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),
+                                              const SizedBox(width: 5.0),
+                                            ],
+                                          ),
                                         ],
                                       ),
                                     ],
                                   ),
-                                ),
-                                const SizedBox(height: 10.0, width: double.infinity),
-                                Container(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                ],
+                              ),
+                              const SizedBox(height: 10.0, width: double.infinity),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
                                     children: [
-                                      Text('Осн.патентознав.', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16.0)),
-                                      Row(
+                                      SizedBox(height: 60, width: 5, child: DecoratedBox(decoration: BoxDecoration(color: Theme.of(context).colorScheme.secondary, borderRadius: BorderRadius.circular(5)))),
+                                      const SizedBox(width: 10.0),
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Icon(Icons.info_outline, size: 16.0, color: Theme.of(context).colorScheme.primary),
-                                          const SizedBox(width: 5.0),
-                                          Text('Марина Яненко 313 ауд.', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Icon(Icons.access_time_outlined, size: 16.0, color: Theme.of(context).colorScheme.primary),
-                                          const SizedBox(width: 5.0),
-                                          Text('11:50 - 12:50', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),                                        const SizedBox(width: 5.0),
+                                          Text('Осн.патентознав.', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16.0)),
+                                          Row(
+                                            children: [
+                                              Icon(Icons.info_outline, size: 16.0, color: Theme.of(context).colorScheme.secondary),
+                                              const SizedBox(width: 5.0),
+                                              Text('Марина Яненко 313 ауд.', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),
+                                            ],
+                                          ),
+                                          Row(
+                                            children: [
+                                              Icon(Icons.access_time_outlined, size: 16.0, color: Theme.of(context).colorScheme.secondary),
+                                              const SizedBox(width: 5.0),
+                                              Text('11:50 - 12:50', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),
+                                              const SizedBox(width: 5.0),
+                                            ],
+                                          ),
                                         ],
                                       ),
                                     ],
                                   ),
-                                ),
-                              ],
-                            ),
+                                ],
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -184,12 +212,47 @@ class _MyHomePageState extends State<MyHomePage> {
                         return Padding(
                         padding: const EdgeInsets.only(bottom: 10.0),
                         child: Container(
-                          height: 100.0,
-                          padding: const EdgeInsets.all(40.0),
+                          padding: const EdgeInsets.all(10.0),
                           decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.surfaceBright,
                           borderRadius: BorderRadius.circular(10.0),
                           border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
+                          ),
+                          child: Row (
+                            children: [
+                                Container(
+                                width: 80,
+                                height: 80,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(5 ),
+                                  image: const DecorationImage(
+                                  image: AssetImage('assets/img/news.jpg'),
+                                  fit: BoxFit.cover,
+                                  ),
+                                ),
+                                ),
+                              const SizedBox(width: 10.0),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                    Text(
+                                    'Утвердження української',
+                                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 14.0),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                    ),
+                                  SizedBox(
+                                    width: MediaQuery.of(context).size.width * 0.6,
+                                    child: Text(
+                                      'З метою утвердження державного статусу української мови, піднесення її престижу серед студентської молоді',
+                                      style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 10.0),
+                                      softWrap: true,
+                                      overflow: TextOverflow.visible,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
                         );

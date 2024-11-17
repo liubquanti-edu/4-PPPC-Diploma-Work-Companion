@@ -20,7 +20,8 @@ dev_dependencies:
 
 flutter:
   assets:
-    - assets/svg/UCA.svg
+    - assets/svg/ППФК.svg
+    - assets/img/news.jpg
   uses-material-design: true
   fonts:
     - family: Comfortaa
