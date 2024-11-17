@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
   
     String getGreeting() {
       String _name = "Олег";
-        return 'Привіт, $_name!';
+        return 'Привіт, $_name 👋';
     }
   }
 
@@ -65,25 +65,107 @@ class _MyHomePageState extends State<MyHomePage> {
                     width: double.infinity,
                     child: Text(
                       widget.title,
-                      style: Theme.of(context).textTheme.headlineMedium,
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontSize: 24.0),
                       textAlign: TextAlign.left,
                     ),
                   ),
+                  const SizedBox(height: 10.0, width: double.infinity),
                   SizedBox(
                     width: double.infinity,
                     child: Text(
-                      'Твій календар:',
-                      style: Theme.of(context).textTheme.headlineSmall,
+                      'Твій календар 📆',
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 20.0),
                       textAlign: TextAlign.left,
                     ),
                   ),
                   Padding(padding: const EdgeInsets.only(top: 10.0),
                     child: Container(
-                      height: 200.0,
-                      padding: const EdgeInsets.all(40.0),
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12.0),
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.surfaceBright,
                         borderRadius: BorderRadius.circular(10.0),
+                        border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text('Архітект.комп.', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 20.0)),
+                                      Row(
+                                        children: [
+                                          Icon(Icons.info_outline, size: 16.0, color: Theme.of(context).colorScheme.primary),
+                                          const SizedBox(width: 5.0),
+                                          Text('Ігор Дегтяр 304 ауд.', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          Icon(Icons.access_time_outlined, size: 16.0, color: Theme.of(context).colorScheme.primary),
+                                          const SizedBox(width: 5.0),
+                                          Text('09:00 - 10:00', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),                                          const SizedBox(width: 5.0),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 10.0, width: double.infinity),
+                                Container(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text('Проєктування АІС', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16.0)),
+                                      Row(
+                                        children: [
+                                          Icon(Icons.info_outline, size: 16.0, color: Theme.of(context).colorScheme.primary),
+                                          const SizedBox(width: 5.0),
+                                          Text('Світлана Гриценко 317 ауд.', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          Icon(Icons.access_time_outlined, size: 16.0, color: Theme.of(context).colorScheme.primary),
+                                          const SizedBox(width: 5.0),
+                                          Text('10:10 - 11:10', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),                                         const SizedBox(width: 5.0),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 10.0, width: double.infinity),
+                                Container(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text('Осн.патентознав.', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16.0)),
+                                      Row(
+                                        children: [
+                                          Icon(Icons.info_outline, size: 16.0, color: Theme.of(context).colorScheme.primary),
+                                          const SizedBox(width: 5.0),
+                                          Text('Марина Яненко 313 ауд.', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          Icon(Icons.access_time_outlined, size: 16.0, color: Theme.of(context).colorScheme.primary),
+                                          const SizedBox(width: 5.0),
+                                          Text('11:50 - 12:50', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),                                        const SizedBox(width: 5.0),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -91,13 +173,13 @@ class _MyHomePageState extends State<MyHomePage> {
                   SizedBox(
                     width: double.infinity,
                     child: Text(
-                      'Останні новини:',
-                      style: Theme.of(context).textTheme.headlineSmall,
+                      'Останні новини 📰',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 20.0), 
                       textAlign: TextAlign.left,
                     ),
                   ),
                   Padding(padding: const EdgeInsets.only(top: 10.0),
-                      child: Column(
+                    child: Column(
                       children: List.generate(10, (index) {
                         return Padding(
                         padding: const EdgeInsets.only(bottom: 10.0),
@@ -107,12 +189,14 @@ class _MyHomePageState extends State<MyHomePage> {
                           decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.surfaceBright,
                           borderRadius: BorderRadius.circular(10.0),
+                          border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
                           ),
                         ),
                         );
                       }),
-                      ),
+                    ),
                   ),
+                  const SizedBox(height: 10.0, width: double.infinity),
                 ],
               ),
             ),
