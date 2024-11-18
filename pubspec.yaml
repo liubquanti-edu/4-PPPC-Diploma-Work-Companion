@@ -15,6 +15,7 @@ dependencies:
   http: ^0.13.3
   xml: ^5.3.1
   url_launcher: ^6.2.5
+  card_loading: ^0.3.0
 
 dev_dependencies:
   flutter_test:

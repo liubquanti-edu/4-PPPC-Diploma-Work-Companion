@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart' as xml;
 import 'package:url_launcher/url_launcher.dart';
+import 'package:card_loading/card_loading.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -15,11 +16,16 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   List<Map<String, String>> _news = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _fetchNews();
+    _fetchNews().then((_) {
+      setState(() {
+        _isLoading = false;
+      });
+    });
   }
 
   Future<void> _fetchNews() async {
@@ -230,63 +236,77 @@ class _MyHomePageState extends State<MyHomePage> {
                   Padding(
                     padding: const EdgeInsets.only(top: 10.0),
                     child: Column(
-                      children: List.generate(_news.length, (index) {
-                        final newsItem = _news[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 10.0),
-                          child: InkWell(
-                            onTap: () => _launchUrl(newsItem['link'] ?? ''),
-                            child: Container(
-                              padding: const EdgeInsets.all(10.0),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.surfaceBright,
-                                borderRadius: BorderRadius.circular(10.0),
-                                border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
+                      children: _isLoading 
+                        ? List.generate(3, (index) => Padding(
+                            padding: const EdgeInsets.only(bottom: 10.0),
+                            child: CardLoading(
+                              height: 100,
+                              borderRadius: BorderRadius.circular(10),
+                              margin: const EdgeInsets.all(0),
+                              animationDuration: const Duration(milliseconds: 1000),
+                              cardLoadingTheme: CardLoadingTheme(
+                                colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                               ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 80,
-                                    height: 80,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(5),
-                                      image: const DecorationImage(
-                                        image: AssetImage('assets/img/news.jpg'),
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
+                            ),
+                          ))
+                        : List.generate(_news.length, (index) {
+                            final newsItem = _news[index];
+                            return InkWell(
+                              onTap: () => _launchUrl(newsItem['link'] ?? ''),
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 10.0),
+                                child: Container(
+                                  padding: const EdgeInsets.all(10.0),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.surfaceBright,
+                                    borderRadius: BorderRadius.circular(10.0),
+                                    border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
                                   ),
-                                  const SizedBox(width: 10.0),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                  child: Row(
                                     children: [
-                                      SizedBox(
-                                        width: MediaQuery.of(context).size.width * 0.6,
-                                        child: Text(
-                                          newsItem['title'] ?? '',
-                                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 14.0),
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 1,
+                                      Container(
+                                        width: 80,
+                                        height: 80,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(5),
+                                          image: const DecorationImage(
+                                            image: AssetImage('assets/img/news.jpg'),
+                                            fit: BoxFit.cover,
+                                          ),
                                         ),
                                       ),
-                                      SizedBox(
-                                        width: MediaQuery.of(context).size.width * 0.6,
-                                        child: Text(
-                                          newsItem['description'] ?? '',
-                                          style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 10.0),
-                                          softWrap: true,
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 4,
-                                        ),
+                                      const SizedBox(width: 10.0),
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          SizedBox(
+                                            width: MediaQuery.of(context).size.width * 0.6,
+                                            child: Text(
+                                              newsItem['title'] ?? '',
+                                              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 14.0),
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            width: MediaQuery.of(context).size.width * 0.6,
+                                            child: Text(
+                                              newsItem['description'] ?? '',
+                                              style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 10.0),
+                                              softWrap: true,
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 4,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
-                                ],
+                                ),
                               ),
-                            ),
-                          ),
-                        );
-                      }),
+                            );
+                          }),
                     ),
                   ),
                   const SizedBox(height: 10.0, width: double.infinity),
