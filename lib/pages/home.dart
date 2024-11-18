@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart' as xml;
+import 'package:url_launcher/url_launcher.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -30,11 +31,27 @@ class _MyHomePageState extends State<MyHomePage> {
         _news = items.map((item) {
           final title = item.findElements('title').single.text;
           final description = _parseHtmlString(item.findElements('description').single.text);
-          return {'title': title, 'description': description};
+          final link = item.findElements('link').single.text; // Додано отримання URL
+          return {
+            'title': title,
+            'description': description,
+            'link': link
+          };
         }).toList();
       });
     } else {
       throw Exception('Failed to load news');
+    }
+  }
+
+  Future<void> _launchUrl(String url) async {
+    try {
+      final uri = Uri.parse(url);
+      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+        throw Exception('Could not launch $url');
+      }
+    } catch (e) {
+      debugPrint('Error launching URL: $e');
     }
   }
 
@@ -217,52 +234,55 @@ class _MyHomePageState extends State<MyHomePage> {
                         final newsItem = _news[index];
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 10.0),
-                          child: Container(
-                            padding: const EdgeInsets.all(10.0),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surfaceBright,
-                              borderRadius: BorderRadius.circular(10.0),
-                              border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 80,
-                                  height: 80,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(5),
-                                    image: const DecorationImage(
-                                      image: AssetImage('assets/img/news.jpg'),
-                                      fit: BoxFit.cover,
+                          child: InkWell(
+                            onTap: () => _launchUrl(newsItem['link'] ?? ''),
+                            child: Container(
+                              padding: const EdgeInsets.all(10.0),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.surfaceBright,
+                                borderRadius: BorderRadius.circular(10.0),
+                                border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 80,
+                                    height: 80,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(5),
+                                      image: const DecorationImage(
+                                        image: AssetImage('assets/img/news.jpg'),
+                                        fit: BoxFit.cover,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                const SizedBox(width: 10.0),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    SizedBox(
-                                      width: MediaQuery.of(context).size.width * 0.6,
-                                      child: Text(
-                                        newsItem['title'] ?? '',
-                                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 14.0),
-                                        overflow: TextOverflow.ellipsis,
-                                        maxLines: 1,
+                                  const SizedBox(width: 10.0),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      SizedBox(
+                                        width: MediaQuery.of(context).size.width * 0.6,
+                                        child: Text(
+                                          newsItem['title'] ?? '',
+                                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 14.0),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                        ),
                                       ),
-                                    ),
-                                    SizedBox(
-                                      width: MediaQuery.of(context).size.width * 0.6,
-                                      child: Text(
-                                        newsItem['description'] ?? '',
-                                        style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 10.0),
-                                        softWrap: true,
-                                        overflow: TextOverflow.ellipsis,
-                                        maxLines: 4,
+                                      SizedBox(
+                                        width: MediaQuery.of(context).size.width * 0.6,
+                                        child: Text(
+                                          newsItem['description'] ?? '',
+                                          style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 10.0),
+                                          softWrap: true,
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 4,
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         );
