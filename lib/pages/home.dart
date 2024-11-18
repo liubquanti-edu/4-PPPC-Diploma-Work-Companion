@@ -80,6 +80,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 padding: const EdgeInsets.only(bottom: 40.0),
                 child: SvgPicture.asset(
                   'assets/svg/ППФК.svg',
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ),
             ),
@@ -244,6 +245,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               borderRadius: BorderRadius.circular(10),
                               margin: const EdgeInsets.all(0),
                               animationDuration: const Duration(milliseconds: 1000),
+                              animationDurationTwo: const Duration(milliseconds: 700),
                               cardLoadingTheme: CardLoadingTheme(
                                 colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                                 colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
