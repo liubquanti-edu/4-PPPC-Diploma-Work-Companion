@@ -37,11 +37,15 @@ class _MyHomePageState extends State<MyHomePage> {
         _news = items.map((item) {
           final title = item.findElements('title').single.text;
           final description = _parseHtmlString(item.findElements('description').single.text);
-          final link = item.findElements('link').single.text; // Додано отримання URL
+          final link = item.findElements('link').single.text;
+          final thumbnail = item.findElements('media:thumbnail').isEmpty 
+              ? 'assets/img/news.jpg' // Fallback image
+              : item.findElements('media:thumbnail').single.getAttribute('url') ?? 'assets/img/news.jpg';
           return {
             'title': title,
             'description': description,
-            'link': link
+            'link': link,
+            'thumbnail': thumbnail
           };
         }).toList();
       });
@@ -272,8 +276,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                         height: 80,
                                         decoration: BoxDecoration(
                                           borderRadius: BorderRadius.circular(5),
-                                          image: const DecorationImage(
-                                            image: AssetImage('assets/img/news.jpg'),
+                                          image: DecorationImage(
+                                            image: newsItem['thumbnail']?.startsWith('http') ?? false
+                                                ? NetworkImage(newsItem['thumbnail']!)
+                                                : const AssetImage('assets/img/news.jpg') as ImageProvider,
                                             fit: BoxFit.cover,
                                           ),
                                         ),
