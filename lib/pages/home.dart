@@ -244,8 +244,14 @@ class _MyHomePageState extends State<MyHomePage> {
                       children: _isLoading 
                         ? List.generate(3, (index) => Padding(
                             padding: const EdgeInsets.only(bottom: 10.0),
-                            child: CardLoading(
-                              height: 100,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.surfaceBright,
+                                borderRadius: BorderRadius.circular(10.0),
+                                border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
+                              ),
+                              child: CardLoading(
+                              height: 104,
                               borderRadius: BorderRadius.circular(10),
                               margin: const EdgeInsets.all(0),
                               animationDuration: const Duration(milliseconds: 1000),
@@ -254,6 +260,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                                 colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                               ),
+                            ),
                             ),
                           ))
                         : List.generate(_news.length, (index) {
@@ -314,8 +321,16 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ),
                               ),
                             );
-                          }),
+                          }
+                      ),
                     ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => _launchUrl('https://polytechnic-news.blogspot.com'),
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(50),
+                    ),
+                    child: const Text('Більше новин'),
                   ),
                   const SizedBox(height: 10.0, width: double.infinity),
                 ],
