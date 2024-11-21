@@ -28,6 +28,15 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  @override
+  void setState(VoidCallback fn) {
+    if (!mounted) {
+      return;
+    }
+
+    super.setState(fn);
+  }
+
   Future<void> _fetchNews() async {
     final response = await http.get(Uri.parse('https://polytechnic-news.blogspot.com/rss.xml'));
     if (response.statusCode == 200) {
