@@ -265,10 +265,10 @@ class _MyHomePageState extends State<MyHomePage> {
                           ))
                         : List.generate(_news.length, (index) {
                             final newsItem = _news[index];
-                            return InkWell(
-                              onTap: () => _launchUrl(newsItem['link'] ?? ''),
-                              child: Padding(
-                                padding: const EdgeInsets.only(bottom: 10.0),
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 10.0),
+                              child: InkWell(
+                                onTap: () => _launchUrl(newsItem['link'] ?? ''),
                                 child: Container(
                                   padding: const EdgeInsets.all(10.0),
                                   decoration: BoxDecoration(

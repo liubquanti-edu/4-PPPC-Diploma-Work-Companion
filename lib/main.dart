@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:pppc_companion/pages/contact.dart';
+import 'package:pppc_companion/pages/profile.dart';
 import 'pages/home.dart';
 import 'pages/education.dart';
 
@@ -38,6 +40,8 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _pages = [
     MyHomePage(title: 'Привіт, Олег 👋'),
     const EducationPage(),
+    const ContactPage(),
+    const ProfilePage(),
   ];
 
   void _onItemTapped(int index) {
@@ -63,6 +67,16 @@ class _MainScreenState extends State<MainScreen> {
             icon: Icon(Icons.school_outlined),
             selectedIcon: Icon(Icons.school_rounded),
             label: 'Освіта',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.message_outlined),
+            selectedIcon: Icon(Icons.message_rounded),
+            label: 'Зв\'язок',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outlined),
+            selectedIcon: Icon(Icons.person_rounded),
+            label: 'Профіль',
           ),
         ],
       ),
