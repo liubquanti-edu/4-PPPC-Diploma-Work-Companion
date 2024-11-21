@@ -132,7 +132,6 @@ class _EducationPageState extends State<EducationPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 5.0, width: double.infinity),
               Padding(
                 padding: const EdgeInsets.only(bottom: 10.0),
                 child: Container(
@@ -185,7 +184,6 @@ class _EducationPageState extends State<EducationPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 5.0, width: double.infinity),
               Padding(
                 padding: const EdgeInsets.only(bottom: 10.0),
                 child: Container(
