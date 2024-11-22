@@ -17,6 +17,23 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
+IconData _getWeatherIcon(String? weatherMain) {
+  switch (weatherMain?.toLowerCase()) {
+    case 'clear':
+      return Icons.wb_sunny;
+    case 'clouds':
+      return Icons.cloud;
+    case 'rain':
+      return Icons.grain;
+    case 'snow':
+      return Icons.ac_unit;
+    case 'thunderstorm':
+      return Icons.flash_on;
+    default:
+      return Icons.help_outline;
+  }
+}
+
 class _MyHomePageState extends State<MyHomePage> {
   List<Map<String, String>> _news = [];
   bool _isLoading = true;
@@ -343,6 +360,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                   children: [
                                     Row(
                                       children: [
+                                        Icon(_getWeatherIcon(_weather!.weatherMain), color: Theme.of(context).colorScheme.primary),
+                                        const SizedBox(width: 10),
                                         Text(
                                           '${_weather!.temperature?.celsius?.round()}°C • ',
                                           style: Theme.of(context).textTheme.titleLarge,
@@ -365,7 +384,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                                 Icon(Icons.arrow_upward_rounded, color: Theme.of(context).colorScheme.secondary),
                                                 const SizedBox(width: 5),
                                                 Text(
-                                                  '${_weather!.tempMax?.celsius?.round()}°C',
+                                                    '${_weather!.tempMax?.celsius?.round()}°C',
                                                   style: Theme.of(context).textTheme.bodyMedium,
                                                 ),
                                               ],
