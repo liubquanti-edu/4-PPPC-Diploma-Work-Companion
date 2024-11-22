@@ -309,10 +309,33 @@ class _MyHomePageState extends State<MyHomePage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               if (_isWeatherLoading)
-                                const CardLoading(
-                                  height: 80,
-                                  width: 300,
-                                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                                Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                    CardLoading(
+                                      height: 25,
+                                      width: 250,
+                                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                                      animationDuration: const Duration(milliseconds: 1000),
+                                      animationDurationTwo: const Duration(milliseconds: 700),
+                                      cardLoadingTheme: CardLoadingTheme(
+                                        colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                        colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10.0),
+                                    CardLoading(
+                                      height: 20,
+                                      width: 300,
+                                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                                      animationDuration: const Duration(milliseconds: 1000),
+                                      animationDurationTwo: const Duration(milliseconds: 700),
+                                      cardLoadingTheme: CardLoadingTheme(
+                                        colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                        colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                      ),
+                                    ),
+                                  ],
                                 )
                               else if (_weather != null) ...[
                                 Column(
