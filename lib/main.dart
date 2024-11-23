@@ -36,7 +36,6 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
-  // Список сторінок
   final List<Widget> _pages = [
     MyHomePage(title: 'Привіт, Олег 👋'),
     const EducationPage(),
