@@ -17,23 +17,6 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-IconData _getWeatherIcon(String? weatherMain) {
-  switch (weatherMain?.toLowerCase()) {
-    case 'clear':
-      return Icons.wb_sunny;
-    case 'clouds':
-      return Icons.cloud;
-    case 'rain':
-      return Icons.grain;
-    case 'snow':
-      return Icons.ac_unit;
-    case 'thunderstorm':
-      return Icons.flash_on;
-    default:
-      return Icons.help_outline;
-  }
-}
-
 class _MyHomePageState extends State<MyHomePage> {
   List<Map<String, String>> _news = [];
   bool _isLoading = true;
@@ -303,26 +286,19 @@ class _MyHomePageState extends State<MyHomePage> {
                   const SizedBox(height: 10.0, width: double.infinity),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 10.0),
-                    child: Container(
-                      padding: const EdgeInsets.all(10.0),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surfaceBright,
-                        borderRadius: BorderRadius.circular(10.0),
-                        border: Border.all(
-                            color: Theme.of(context).colorScheme.primary, width: 2.0),
-                      ),
-                      child: Stack(
-                        children: [
-                          if (_weather?.weatherMain?.toLowerCase() == 'rain')
-                            Positioned.fill(
-                              child: ParallaxRain(
-                                dropColors: [Theme.of(context).colorScheme.primary],
-                                trail: true,
-                                dropFallSpeed: 2,
-                                numberOfDrops: 10,
-                              ),
+                    child: Stack(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10.0),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surfaceBright,
+                            borderRadius: BorderRadius.circular(10.0),
+                            border: Border.all(
+                              color: Theme.of(context).colorScheme.primary,
+                              width: 2.0
                             ),
-                          Row(
+                          ),
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               if (_isWeatherLoading)
@@ -360,8 +336,6 @@ class _MyHomePageState extends State<MyHomePage> {
                                   children: [
                                     Row(
                                       children: [
-                                        Icon(_getWeatherIcon(_weather!.weatherMain), color: Theme.of(context).colorScheme.primary),
-                                        const SizedBox(width: 10),
                                         Text(
                                           '${_weather!.temperature?.celsius?.round()}°C • ',
                                           style: Theme.of(context).textTheme.titleLarge,
@@ -435,8 +409,34 @@ class _MyHomePageState extends State<MyHomePage> {
                                 const Text('Не вдалося завантажити погоду'),
                             ],
                           ),
-                        ],
-                      ),
+                        ),
+                        if (_weather?.weatherMain?.toLowerCase() == 'rain')
+                          Positioned.fill(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(10.0),
+                              child: ParallaxRain(
+                                dropColors: [Theme.of(context).colorScheme.primary],
+                                trail: true,
+                                dropFallSpeed: 2,
+                                numberOfDrops: 10,
+                                dropHeight: 15,
+                              ),
+                            ),
+                          )
+                        else if (_weather?.weatherMain?.toLowerCase() == 'snow')
+                          Positioned.fill(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(10.0),
+                              child: ParallaxRain(
+                                dropColors: [Theme.of(context).colorScheme.primary],
+                                trail: true,
+                                dropFallSpeed: 0.5,
+                                numberOfDrops: 10,
+                                dropHeight: 2,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 10.0, width: double.infinity),
