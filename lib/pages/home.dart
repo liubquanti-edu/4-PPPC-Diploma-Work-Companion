@@ -296,148 +296,149 @@ class _MyHomePageState extends State<MyHomePage> {
                     onTap: () => _launchUrl('https://openweathermap.org/city/696643'),
                     child: Padding(
                     padding: const EdgeInsets.all(10.0),
-                    child: Column(
-                      children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              if (_isWeatherLoading)
-                                Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                    CardLoading(
-                                      height: 25,
-                                      width: 250,
-                                      borderRadius: BorderRadius.all(Radius.circular(10)),
-                                      animationDuration: const Duration(milliseconds: 1000),
-                                      animationDurationTwo: const Duration(milliseconds: 700),
-                                      cardLoadingTheme: CardLoadingTheme(
-                                        colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                                        colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10.0),
-                                    CardLoading(
-                                      height: 20,
-                                      width: 300,
-                                      borderRadius: BorderRadius.all(Radius.circular(10)),
-                                      animationDuration: const Duration(milliseconds: 1000),
-                                      animationDurationTwo: const Duration(milliseconds: 700),
-                                      cardLoadingTheme: CardLoadingTheme(
-                                        colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                                        colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                                      ),
-                                    ),
-                                  ],
-                                )
-                              else if (_weather != null) ...[
-                                Column(
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: Stack(
+                        children: [
+                        Column(
+                          children: [
+                            if (_isWeatherLoading)
+                              Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Row(
-                                      children: [
-                                        Text(
-                                          '${_weather!.temperature?.celsius?.round()}°C • ',
-                                          style: Theme.of(context).textTheme.titleLarge,
-                                        ),
-                                        Text(
-                                          _weather!.weatherDescription?.replaceFirst(
-                                            _weather!.weatherDescription![0],
-                                            _weather!.weatherDescription![0].toUpperCase()) ?? '',
-                                          style: Theme.of(context).textTheme.titleLarge,
-                                        ),
-                                      ],
+                                  CardLoading(
+                                    height: 25,
+                                    width: 250,
+                                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                                    animationDuration: const Duration(milliseconds: 1000),
+                                    animationDurationTwo: const Duration(milliseconds: 700),
+                                    cardLoadingTheme: CardLoadingTheme(
+                                      colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                      colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                                     ),
-                                    Row(
-                                      children: [
-                                        Row(
-                                          crossAxisAlignment: CrossAxisAlignment.end,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Icon(Icons.thermostat_rounded, color: Theme.of(context).colorScheme.secondary),
-                                                const SizedBox(width: 2),
-                                                Text(
-                                                    '${_weather!.tempFeelsLike?.celsius?.round()}°C',
-                                                  style: Theme.of(context).textTheme.bodyMedium,
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(width: 10.0),
-                                            Row(
-                                              children: [
-                                                Icon(Icons.water_drop_rounded, color: Theme.of(context).colorScheme.secondary),
-                                                const SizedBox(width: 2),
-                                                Text(
-                                                  '${_weather!.humidity ?? 0}%',
-                                                  style: Theme.of(context).textTheme.bodyMedium,
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(width: 10.0),
-                                            Row(
-                                              children: [
-                                                Transform.rotate(
-                                                  angle: (_weather!.windDegree ?? 0) * (3.1415927 / 360),
-                                                  child: Icon(Icons.navigation_rounded, color: Theme.of(context).colorScheme.secondary),
-                                                ),
-                                                const SizedBox(width: 2),
-                                                Text(
-                                                  '${_weather!.windSpeed?.round() ?? 0} м/с',
-                                                  style: Theme.of(context).textTheme.bodyMedium,
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(width: 10.0),
-                                            Row(
-                                              children: [
-                                                Icon(Icons.arrow_downward_rounded, color: Theme.of(context).colorScheme.secondary),
-                                                const SizedBox(width: 2),
-                                                Text(
-                                                    '${_weather!.pressure?.round() ?? 0} Pa',
-                                                  style: Theme.of(context).textTheme.bodyMedium,
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ],
+                                  ),
+                                  const SizedBox(height: 10.0),
+                                  CardLoading(
+                                    height: 20,
+                                    width: 300,
+                                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                                    animationDuration: const Duration(milliseconds: 1000),
+                                    animationDurationTwo: const Duration(milliseconds: 700),
+                                    cardLoadingTheme: CardLoadingTheme(
+                                      colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                      colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                                     ),
-                                  ],
-                                ),
-                              ] else
-                                const Text('Не вдалося завантажити погоду'),
-                            ],
-                        ),
-                        if (_weather?.weatherMain?.toLowerCase() == 'rain')
-                          Positioned.fill(
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(10.0),
-                              child: ParallaxRain(
-                                dropColors: [Theme.of(context).colorScheme.primary],
-                                trail: true,
-                                dropFallSpeed: 2,
-                                numberOfDrops: 10,
-                                dropHeight: 15,
+                                  ),
+                                ],
+                              )
+                            else if (_weather != null) ...[
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        '${_weather!.temperature?.celsius?.round()}°C • ',
+                                        style: Theme.of(context).textTheme.titleLarge,
+                                      ),
+                                      Text(
+                                        _weather!.weatherDescription?.replaceFirst(
+                                          _weather!.weatherDescription![0],
+                                          _weather!.weatherDescription![0].toUpperCase()) ?? '',
+                                        style: Theme.of(context).textTheme.titleLarge,
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      Row(
+                                        crossAxisAlignment: CrossAxisAlignment.end,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Icon(Icons.thermostat_rounded, color: Theme.of(context).colorScheme.secondary),
+                                              const SizedBox(width: 2),
+                                              Text(
+                                                  '${_weather!.tempFeelsLike?.celsius?.round()}°C',
+                                                style: Theme.of(context).textTheme.bodyMedium,
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(width: 10.0),
+                                          Row(
+                                            children: [
+                                              Icon(Icons.water_drop_rounded, color: Theme.of(context).colorScheme.secondary),
+                                              const SizedBox(width: 2),
+                                              Text(
+                                                '${_weather!.humidity ?? 0}%',
+                                                style: Theme.of(context).textTheme.bodyMedium,
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(width: 10.0),
+                                          Row(
+                                            children: [
+                                              Transform.rotate(
+                                                angle: (_weather!.windDegree ?? 0) * (3.1415927 / 360),
+                                                child: Icon(Icons.navigation_rounded, color: Theme.of(context).colorScheme.secondary),
+                                              ),
+                                              const SizedBox(width: 2),
+                                              Text(
+                                                '${_weather!.windSpeed?.round() ?? 0} м/с',
+                                                style: Theme.of(context).textTheme.bodyMedium,
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(width: 10.0),
+                                          Row(
+                                            children: [
+                                              Icon(Icons.arrow_downward_rounded, color: Theme.of(context).colorScheme.secondary),
+                                              const SizedBox(width: 2),
+                                              Text(
+                                                  '${_weather!.pressure?.round() ?? 0} Pa',
+                                                style: Theme.of(context).textTheme.bodyMedium,
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
-                            ),
-                          )
-                        else if (_weather?.weatherMain?.toLowerCase() == 'snow')
-                          Positioned.fill(
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(10.0),
-                              child: ParallaxRain(
-                                dropColors: [Theme.of(context).colorScheme.primary],
-                                trail: true,
-                                dropFallSpeed: 0.5,
-                                numberOfDrops: 10,
-                                dropHeight: 2,
-                              ),
+                            ] else
+                              const Text('Не вдалося завантажити погоду'),
+                          ],
+                      ),
+                      if (_weather?.weatherMain?.toLowerCase() == 'rain')
+                        Positioned.fill(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10.0),
+                            child: ParallaxRain(
+                              dropColors: [Theme.of(context).colorScheme.primary],
+                              trail: true,
+                              dropFallSpeed: 2,
+                              numberOfDrops: 10,
+                              dropHeight: 15,
                             ),
                           ),
+                        )
+                      else if (_weather?.weatherMain?.toLowerCase() == 'snow')
+                        Positioned.fill(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10.0),
+                            child: ParallaxRain(
+                              dropColors: [Theme.of(context).colorScheme.primary],
+                              trail: true,
+                              dropFallSpeed: 0.5,
+                              numberOfDrops: 10,
+                              dropHeight: 2,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
-                  ),),),),
+                  ),),),),),
                   const SizedBox(height: 20.0, width: double.infinity),
                   SizedBox(
                     width: double.infinity,
