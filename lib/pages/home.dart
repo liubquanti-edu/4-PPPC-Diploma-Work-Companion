@@ -355,21 +355,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                           children: [
                                             Row(
                                               children: [
-                                                Icon(Icons.arrow_upward_rounded, color: Theme.of(context).colorScheme.secondary),
-                                                const SizedBox(width: 5),
+                                                Icon(Icons.thermostat_rounded, color: Theme.of(context).colorScheme.secondary),
+                                                const SizedBox(width: 2),
                                                 Text(
-                                                    '${_weather!.tempMax?.celsius?.round()}°C',
-                                                  style: Theme.of(context).textTheme.bodyMedium,
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(width: 10.0),
-                                            Row(
-                                              children: [
-                                                Icon(Icons.arrow_downward_rounded, color: Theme.of(context).colorScheme.secondary),
-                                                const SizedBox(width: 5),
-                                                Text(
-                                                  '${_weather!.tempMin?.celsius?.round()}°C',
+                                                    '${_weather!.tempFeelsLike?.celsius?.round()}°C',
                                                   style: Theme.of(context).textTheme.bodyMedium,
                                                 ),
                                               ],
@@ -378,7 +367,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                             Row(
                                               children: [
                                                 Icon(Icons.water_drop_rounded, color: Theme.of(context).colorScheme.secondary),
-                                                const SizedBox(width: 5),
+                                                const SizedBox(width: 2),
                                                 Text(
                                                   '${_weather!.humidity ?? 0}%',
                                                   style: Theme.of(context).textTheme.bodyMedium,
@@ -392,9 +381,20 @@ class _MyHomePageState extends State<MyHomePage> {
                                                   angle: (_weather!.windDegree ?? 0) * (3.1415927 / 360),
                                                   child: Icon(Icons.navigation_rounded, color: Theme.of(context).colorScheme.secondary),
                                                 ),
-                                                const SizedBox(width: 5),
+                                                const SizedBox(width: 2),
                                                 Text(
                                                   '${_weather!.windSpeed?.round() ?? 0} м/с',
+                                                  style: Theme.of(context).textTheme.bodyMedium,
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(width: 10.0),
+                                            Row(
+                                              children: [
+                                                Icon(Icons.arrow_downward_rounded, color: Theme.of(context).colorScheme.secondary),
+                                                const SizedBox(width: 2),
+                                                Text(
+                                                    '${_weather!.pressure?.round() ?? 0} Pa',
                                                   style: Theme.of(context).textTheme.bodyMedium,
                                                 ),
                                               ],
