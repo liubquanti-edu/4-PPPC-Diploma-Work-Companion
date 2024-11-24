@@ -284,7 +284,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   ),
                   const SizedBox(height: 10.0, width: double.infinity),
-                  Padding(
+                    GestureDetector(
+                    onTap: () => _launchUrl('https://openweathermap.org/city/696643'),
+                    child: Padding(
                     padding: const EdgeInsets.only(bottom: 10.0),
                     child: Stack(
                       children: [
@@ -389,7 +391,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                             Row(
                                               children: [
                                                 Transform.rotate(
-                                                  angle: (_weather!.windDegree ?? 0) * (3.1415927 / 180),
+                                                  angle: (_weather!.windDegree ?? 0) * (3.1415927 / 360),
                                                   child: Icon(Icons.navigation_rounded, color: Theme.of(context).colorScheme.secondary),
                                                 ),
                                                 const SizedBox(width: 5),
@@ -438,7 +440,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                       ],
                     ),
-                  ),
+                  ),),
                   const SizedBox(height: 10.0, width: double.infinity),
                   SizedBox(
                     width: double.infinity,
@@ -478,8 +480,11 @@ class _MyHomePageState extends State<MyHomePage> {
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 10.0),
                               child: InkWell(
+                                customBorder: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
                                 onTap: () => _launchUrl(newsItem['link'] ?? ''),
-                                child: Container(
+                                child: Ink(
                                   padding: const EdgeInsets.all(10.0),
                                   decoration: BoxDecoration(
                                     color: Theme.of(context).colorScheme.surfaceBright,
