@@ -285,22 +285,20 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   const SizedBox(height: 10.0, width: double.infinity),
                     GestureDetector(
+                    child: Ink(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surfaceBright,
+                        borderRadius: BorderRadius.circular(10.0),
+                        border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
+                      ),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(10.0),
                     onTap: () => _launchUrl('https://openweathermap.org/city/696643'),
                     child: Padding(
-                    padding: const EdgeInsets.only(bottom: 10.0),
-                    child: Stack(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Column(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(10.0),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surfaceBright,
-                            borderRadius: BorderRadius.circular(10.0),
-                            border: Border.all(
-                              color: Theme.of(context).colorScheme.primary,
-                              width: 2.0
-                            ),
-                          ),
-                          child: Row(
+                          Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               if (_isWeatherLoading)
@@ -410,7 +408,6 @@ class _MyHomePageState extends State<MyHomePage> {
                               ] else
                                 const Text('Не вдалося завантажити погоду'),
                             ],
-                          ),
                         ),
                         if (_weather?.weatherMain?.toLowerCase() == 'rain')
                           Positioned.fill(
@@ -440,7 +437,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                       ],
                     ),
-                  ),),
+                  ),),),),
                   const SizedBox(height: 10.0, width: double.infinity),
                   SizedBox(
                     width: double.infinity,
