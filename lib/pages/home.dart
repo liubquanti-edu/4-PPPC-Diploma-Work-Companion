@@ -453,26 +453,61 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: Column(
                       children: _isLoading 
                         ? List.generate(3, (index) => Padding(
-                            padding: const EdgeInsets.only(bottom: 10.0),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.surfaceBright,
-                                borderRadius: BorderRadius.circular(10.0),
-                                border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
-                              ),
-                              child: CardLoading(
-                              height: 104,
-                              borderRadius: BorderRadius.circular(10),
-                              margin: const EdgeInsets.all(0),
-                              animationDuration: const Duration(milliseconds: 1000),
-                              animationDurationTwo: const Duration(milliseconds: 700),
-                              cardLoadingTheme: CardLoadingTheme(
-                                colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                                colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                          padding: const EdgeInsets.only(bottom: 10.0),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.surfaceBright,
+                              borderRadius: BorderRadius.circular(10.0),
+                              border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: Row(
+                                children: [
+                                  CardLoading(
+                                    height: 80,
+                                    width: 80,
+                                    borderRadius: BorderRadius.circular(5),
+                                    margin: const EdgeInsets.all(0),
+                                    animationDuration: const Duration(milliseconds: 1000),
+                                    cardLoadingTheme: CardLoadingTheme(
+                                      colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                      colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        CardLoading(
+                                          height: 20,
+                                          borderRadius: BorderRadius.circular(5),
+                                          margin: const EdgeInsets.only(bottom: 10),
+                                          animationDuration: const Duration(milliseconds: 1000),
+                                          cardLoadingTheme: CardLoadingTheme(
+                                            colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                            colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                          ),
+                                        ),
+                                        CardLoading(
+                                          height: 40,
+                                          borderRadius: BorderRadius.circular(5),
+                                          margin: const EdgeInsets.all(0),
+                                          animationDuration: const Duration(milliseconds: 1000),
+                                          cardLoadingTheme: CardLoadingTheme(
+                                            colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                            colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            ),
-                          ))
+                          ),
+                        ))
                         : List.generate(_news.length, (index) {
                             final newsItem = _news[index];
                             return Padding(
