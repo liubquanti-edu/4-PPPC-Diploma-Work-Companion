@@ -22,10 +22,18 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _isLoading = true;
   Weather? _weather;
   bool _isWeatherLoading = true;
+  late ScrollController _scrollController;
+  bool _showAppBarLogo = false;
 
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController();
+    _scrollController.addListener(() {
+      setState(() {
+        _showAppBarLogo = _scrollController.offset > 100;
+      });
+    });
     _fetchNews().then((_) {
       setState(() {
         _isLoading = false;
@@ -41,6 +49,12 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     super.setState(fn);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchNews() async {
@@ -118,9 +132,22 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
-        body: SingleChildScrollView(
-          child: Column(
+      appBar: AppBar(
+        title: AnimatedOpacity(
+          opacity: _showAppBarLogo ? 1.0 : 0.0,
+          duration: const Duration(milliseconds: 100),
+          child: Center(
+            child: SvgPicture.asset(
+            'assets/svg/ППФК.svg',
+            color: Theme.of(context).colorScheme.primary,
+            height: 30,
+            ),
+          ),
+        ),
+      ),
+      body: SingleChildScrollView(
+        controller: _scrollController,
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Align(
