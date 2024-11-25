@@ -370,7 +370,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                               Icon(Icons.water_drop_rounded, color: Theme.of(context).colorScheme.secondary),
                                               const SizedBox(width: 2),
                                               Text(
-                                                '${_weather!.humidity ?? 0}%',
+                                                '${_weather!.humidity?.round() ?? 0}%',
                                                 style: Theme.of(context).textTheme.bodyMedium,
                                               ),
                                             ],
