@@ -310,7 +310,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   CardLoading(
                                     height: 25,
                                     width: 250,
-                                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                                    borderRadius: const BorderRadius.all(Radius.circular(10)),
                                     animationDuration: const Duration(milliseconds: 1000),
                                     animationDurationTwo: const Duration(milliseconds: 700),
                                     cardLoadingTheme: CardLoadingTheme(
@@ -322,7 +322,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   CardLoading(
                                     height: 20,
                                     width: 300,
-                                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                                    borderRadius: const BorderRadius.all(Radius.circular(10)),
                                     animationDuration: const Duration(milliseconds: 1000),
                                     animationDurationTwo: const Duration(milliseconds: 700),
                                     cardLoadingTheme: CardLoadingTheme(
@@ -466,8 +466,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               child: Row(
                                 children: [
                                   CardLoading(
-                                    height: 80,
-                                    width: 80,
+                                    height: 85,
+                                    width: 85,
                                     borderRadius: BorderRadius.circular(5),
                                     margin: const EdgeInsets.all(0),
                                     animationDuration: const Duration(milliseconds: 1000),
@@ -528,8 +528,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                   child: Row(
                                     children: [
                                       Container(
-                                        width: 80,
-                                        height: 80,
+                                        width: 85,
+                                        height: 85,
                                         decoration: BoxDecoration(
                                           borderRadius: BorderRadius.circular(5),
                                           image: DecorationImage(
