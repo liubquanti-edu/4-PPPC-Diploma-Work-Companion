@@ -286,6 +286,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   const SizedBox(height: 10.0, width: double.infinity),
                     GestureDetector(
                     child: Ink(
+                      height: 80,
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.surfaceBright,
                         borderRadius: BorderRadius.circular(10.0),
