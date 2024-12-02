@@ -18,6 +18,10 @@ dependencies:
   card_loading: ^0.3.0
   weather: ^3.0.0
   parallax_rain: ^1.1.0
+  firebase_core: ^3.8.0
+  cloud_firestore: ^5.5.0
+  firebase_auth: ^5.3.3
+  firebase_database: ^11.1.6
 
 dev_dependencies:
   flutter_test:
