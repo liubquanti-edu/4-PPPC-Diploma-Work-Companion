@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "119034913400",
+    "project_id": "pppc-companion",
+    "storage_bucket": "pppc-companion.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:119034913400:android:047c1944753443cca8c38d",
+        "android_client_info": {
+          "package_name": "com.pppc.companion"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8wtIL5kfRwoeGduv7fozxA101rnxjjVs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
