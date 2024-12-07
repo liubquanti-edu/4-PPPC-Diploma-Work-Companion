@@ -344,52 +344,58 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
               ),
-              Padding(
+                Padding(
                 padding: const EdgeInsets.only(bottom: 10.0),
-                child: Container(
+                child: GestureDetector(
+                  onTap: () {
+                  // Add logout logic here
+                  Navigator.of(context).pushReplacementNamed('/login');
+                  },
+                  child: Container(
                   padding: const EdgeInsets.all(10.0),
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.surfaceBright,
                     borderRadius: BorderRadius.circular(10.0),
                     border: Border.all(
-                        color: Theme.of(context).colorScheme.primary, width: 2.0),
+                      color: Theme.of(context).colorScheme.primary, width: 2.0),
                   ),
                   child: Row(
                     children: [
-                      SizedBox(
-                        height: 50,
-                        width: 50,
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surfaceContainerHigh,
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          child: Icon(
-                            Icons.exit_to_app_rounded,
-                            size: 30.0,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                        ),
+                    SizedBox(
+                      height: 50,
+                      width: 50,
+                      child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                        borderRadius: BorderRadius.circular(5),
                       ),
-                      const SizedBox(width: 10.0),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Вийти', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16.0)),
-                          Text('Вихід з облікового запису', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),
-                        ],
+                      child: Icon(
+                        Icons.exit_to_app_rounded,
+                        size: 30.0,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
-                      const SizedBox(width: 10.0),
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: Icon(Icons.arrow_forward, size: 30.0, color: Theme.of(context).colorScheme.primary),
-                        ),
                       ),
+                    ),
+                    const SizedBox(width: 10.0),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                      Text('Вийти', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16.0)),
+                      Text('Вихід з облікового запису', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),
+                      ],
+                    ),
+                    const SizedBox(width: 10.0),
+                    Expanded(
+                      child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Icon(Icons.arrow_forward, size: 30.0, color: Theme.of(context).colorScheme.primary),
+                      ),
+                    ),
                     ],
                   ),
+                  ),
                 ),
-              ),
+                ),
             ],
           ),
         ),

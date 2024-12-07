@@ -1,10 +1,17 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:pppc_companion/firebase_options.dart';
 import 'package:pppc_companion/pages/contact.dart';
 import 'package:pppc_companion/pages/profile.dart';
 import 'pages/home.dart';
 import 'pages/education.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   runApp(const MyApp());
 }
 
