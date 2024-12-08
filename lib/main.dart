@@ -119,7 +119,7 @@ class _MainScreenState extends State<MainScreen> {
             selectedIndex: _selectedIndex,
             onDestinationSelected: _onItemTapped,
             labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-            height: 80, // збільшуємо висоту для кращого вигляду
+            height: 80,
             destinations: const [
               NavigationDestination(
                 icon: Icon(Icons.home_outlined),

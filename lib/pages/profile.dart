@@ -371,7 +371,6 @@ class _ProfilePageState extends State<ProfilePage> {
                         try {
                           await _auth.signOut();
                           if (mounted) {
-                            // Navigate to EmailScreen using Navigator replacement
                             Navigator.of(context).pushAndRemoveUntil(
                               MaterialPageRoute(builder: (context) => const EmailScreen()),
                               (route) => false,

@@ -68,7 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
           final description = _parseHtmlString(item.findElements('description').single.text);
           final link = item.findElements('link').single.text;
           final thumbnail = item.findElements('media:thumbnail').isEmpty 
-              ? 'assets/img/news.jpg' // Fallback image
+              ? 'assets/img/news.jpg'
               : item.findElements('media:thumbnail').single.getAttribute('url') ?? 'assets/img/news.jpg';
           return {
             'title': title,

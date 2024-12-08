@@ -1,4 +1,3 @@
-// lib/pages/auth/password_screen.dart
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import '/main.dart';
@@ -28,7 +27,6 @@ class _PasswordScreenState extends State<PasswordScreen> {
         widget.email,
         _passwordController.text
       );
-      // Update navigation to use MainScreen
       if (mounted) {
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const MainScreen()),

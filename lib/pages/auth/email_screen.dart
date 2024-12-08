@@ -1,4 +1,3 @@
-// lib/pages/auth/email_screen.dart
 import 'package:flutter/material.dart';
 import 'password_screen.dart';
 
