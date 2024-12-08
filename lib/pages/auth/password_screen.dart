@@ -64,10 +64,17 @@ class _PasswordScreenState extends State<PasswordScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'Введіть пароль',
-                style: Theme.of(context).textTheme.headlineSmall,
+                '👀',
+                style: Theme.of(context).textTheme.headlineLarge,
+                textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20),
+              Text(
+                'Чудово, тепер введи свій суперсекретний пароль, аби ми зрозуміли, що це дійсно ти.',
+                style: Theme.of(context).textTheme.labelLarge,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 30),
               TextFormField(
                 controller: _passwordController,
                 obscureText: _obscureText,

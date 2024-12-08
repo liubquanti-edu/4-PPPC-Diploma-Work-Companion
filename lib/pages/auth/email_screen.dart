@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'password_screen.dart';
+import 'register_screen.dart';
+import '/services/auth_service.dart';
 
 class EmailScreen extends StatefulWidget {
   const EmailScreen({Key? key}) : super(key: key);
@@ -11,6 +13,63 @@ class EmailScreen extends StatefulWidget {
 class _EmailScreenState extends State<EmailScreen> {
   final _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  final _authService = AuthService();
+
+  Future<void> _handleEmailSubmit() async {
+  if (_formKey.currentState!.validate()) {
+    try {
+      final email = _emailController.text;
+      
+      // Check if student exists
+      final student = await _authService.findStudentByEmail(email);
+      
+      if (student != null) {
+        // Student exists - go to password screen
+        if (mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PasswordScreen(email: email),
+            ),
+          );
+        }
+        return;
+      }
+
+      // Not registered - check if eligible for registration
+      final person = await _authService.findPersonByEmail(email);
+      
+      if (person == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Користувача з такою поштою не знайдено. Перевір, чи саме цю пошту ти надав коледжу при вступі.')),
+          );
+        }
+        return;
+      }
+
+      // Person found - go to registration
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => RegisterScreen(
+              email: email,
+              personData: person.data() as Map<String, dynamic>,
+            ),
+          ),
+        );
+      }
+
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Помилка: ${e.toString()}')),
+        );
+      }
+    }
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -22,15 +81,22 @@ class _EmailScreenState extends State<EmailScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                'Введіть електронну пошту',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 20),
+                Text(
+                '👋 Привіт!',
+                style: Theme.of(context).textTheme.headlineLarge,
+                textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                Text(
+                'Пройди авторизацію, аби почати використовувати компаньйон.',
+                style: Theme.of(context).textTheme.labelLarge,
+                textAlign: TextAlign.center,
+                ),
+              const SizedBox(height: 30),
               TextFormField(
                 controller: _emailController,
                 decoration: const InputDecoration(
-                  labelText: 'Email',
+                  labelText: 'Електронна пошта',
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.emailAddress,
@@ -46,16 +112,7 @@ class _EmailScreenState extends State<EmailScreen> {
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PasswordScreen(email: _emailController.text),
-                      ),
-                    );
-                  }
-                },
+                onPressed: _handleEmailSubmit,
                 child: const Text('Далі'),
               ),
             ],
