@@ -5,8 +5,10 @@ import 'package:pppc_companion/pages/contact.dart';
 import 'package:pppc_companion/pages/profile.dart';
 import 'pages/home.dart';
 import 'pages/education.dart';
+import 'pages/auth/email_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -28,7 +30,15 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         fontFamily: 'Comfortaa',
       ),
-      home: const MainScreen(),
+      home: StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return const MainScreen();
+          }
+          return const EmailScreen();
+        },
+      ),
     );
   }
 }

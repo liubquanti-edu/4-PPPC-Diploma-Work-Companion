@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -8,6 +9,7 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -347,9 +349,23 @@ class _ProfilePageState extends State<ProfilePage> {
                 Padding(
                 padding: const EdgeInsets.only(bottom: 10.0),
                 child: GestureDetector(
-                  onTap: () {
-                  // Add logout logic here
-                  Navigator.of(context).pushReplacementNamed('/login');
+                  onTap: () async {
+                    try {
+                      await _auth.signOut();
+                      if (mounted) {
+                        // Firebase will automatically redirect to login via stream
+                        // No need for manual navigation
+                      }
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Помилка виходу: ${e.toString()}'),
+                            backgroundColor: Theme.of(context).colorScheme.error,
+                          ),
+                        );
+                      }
+                    }
                   },
                   child: Container(
                   padding: const EdgeInsets.all(10.0),
