@@ -368,6 +368,33 @@ class _ProfilePageState extends State<ProfilePage> {
                     padding: const EdgeInsets.only(bottom: 10.0),
                     child: GestureDetector(
                       onTap: () async {
+                        bool confirmSignOut = await showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text('Підтвердження виходу'),
+                            content: const Text('Ви впевнені, що хочете вийти?'),
+                            actions: <Widget>[
+                            TextButton(
+                              child: const Text('Скасувати'),
+                              onPressed: () {
+                              Navigator.of(context).pop(false);
+                              },
+                            ),
+                            TextButton(
+                              child: const Text('Вийти'),
+                              onPressed: () {
+                              Navigator.of(context).pop(true);
+                              },
+                            ),
+                            ],
+                          );
+                          },
+                        ) ?? false;
+
+                        if (!confirmSignOut) {
+                          return;
+                        }
                         try {
                           await _auth.signOut();
                           if (mounted) {
