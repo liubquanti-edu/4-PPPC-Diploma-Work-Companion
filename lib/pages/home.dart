@@ -532,6 +532,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   GestureDetector(
                     child: Ink(
                       height: 80,
+                      width: double.infinity,
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.surfaceBright,
                         borderRadius: BorderRadius.circular(10.0),
@@ -543,7 +544,34 @@ class _MyHomePageState extends State<MyHomePage> {
                         child: Padding(
                           padding: const EdgeInsets.all(10.0),
                           child: _isAlertLoading
-                            ? const Center(child: CircularProgressIndicator())
+                            ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                CardLoading(
+                                height: 25,
+                                width: 250,
+                                borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                animationDuration: const Duration(milliseconds: 1000),
+                                animationDurationTwo: const Duration(milliseconds: 700),
+                                cardLoadingTheme: CardLoadingTheme(
+                                  colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                  colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                ),
+                                ),
+                                const SizedBox(height: 10.0),
+                                CardLoading(
+                                height: 20,
+                                width: 300,
+                                borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                animationDuration: const Duration(milliseconds: 1000),
+                                animationDurationTwo: const Duration(milliseconds: 700),
+                                cardLoadingTheme: CardLoadingTheme(
+                                  colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                  colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                ),
+                                ),
+                              ],
+                              )
                             : Row(
                                 children: [
                                   SizedBox(
