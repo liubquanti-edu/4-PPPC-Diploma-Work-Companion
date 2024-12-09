@@ -7,7 +7,9 @@ import 'package:card_loading/card_loading.dart';
 import 'package:weather/weather.dart';
 import 'package:parallax_rain/parallax_rain.dart';
 import 'dart:async';
+import 'dart:convert';
 import 'config/api.dart';
+import 'package:intl/intl.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -26,7 +28,7 @@ class _MyHomePageState extends State<MyHomePage> {
   late ScrollController _scrollController;
   bool _showAppBarLogo = false;
   bool _isAlertLoading = true;
-  String _alertStatus = 'N';
+  AlertInfo _alertInfo = AlertInfo(status: 'N');
   Timer? _alertTimer;
 
   @override
@@ -45,7 +47,6 @@ class _MyHomePageState extends State<MyHomePage> {
     });
     _fetchWeather();
     _fetchAlertStatus();
-    // Set up periodic updates every 30 seconds
     _alertTimer = Timer.periodic(const Duration(seconds: 30), (_) => _fetchAlertStatus());
   }
 
@@ -128,13 +129,28 @@ class _MyHomePageState extends State<MyHomePage> {
       });
       
       final response = await http.get(
-        Uri.parse('https://api.alerts.in.ua/v1/iot/active_air_raid_alerts/19.json'),
+        Uri.parse('https://api.alerts.in.ua/v1/alerts/active.json'),
         headers: {'Authorization': 'Bearer ${ApiConfig.alertsApiKey}'}
       );
 
       if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final alerts = data['alerts'] as List;
+        
+        final poltavaAlert = alerts.firstWhere(
+          (alert) => alert['location_uid'] == '19' && alert['alert_type'] == 'air_raid',
+          orElse: () => null
+        );
+
         setState(() {
-          _alertStatus = response.body.replaceAll('"', '');
+          if (poltavaAlert != null) {
+            _alertInfo = AlertInfo(
+              status: 'A',
+              startTime: DateTime.parse(poltavaAlert['started_at'])
+            );
+          } else {
+            _alertInfo = AlertInfo(status: 'N');
+          }
           _isAlertLoading = false;
         });
       } else {
@@ -144,7 +160,7 @@ class _MyHomePageState extends State<MyHomePage> {
       debugPrint('Error fetching alert status: $e');
       setState(() {
         _isAlertLoading = false;
-        _alertStatus = 'N';
+        _alertInfo = AlertInfo(status: 'N');
       });
     }
   }
@@ -539,29 +555,34 @@ class _MyHomePageState extends State<MyHomePage> {
                                         borderRadius: BorderRadius.circular(5),
                                       ),
                                       child: Icon(
-                                        _alertStatus == 'A' 
-                                        ? Icons.report_rounded
-                                        : _alertStatus == 'P' 
-                                          ? Icons.report_rounded
-                                          : Icons.report_off_rounded,
+                                        _alertInfo.status == 'A' 
+                                          ? Icons.warning_rounded
+                                          : Icons.check_box_rounded,
                                         size: 30.0,
-                                        color: _alertStatus == 'A' 
-                                        ? Colors.red.shade400
-                                        : _alertStatus == 'P' 
-                                          ? Colors.orange.shade400
-                                          : Theme.of(context).colorScheme.primary,
+                                        color: _alertInfo.status == 'A' 
+                                          ? Colors.red.shade400
+                                          : Colors.green.shade400,
                                       ),
                                     ),
                                   ),
                                   const SizedBox(width: 10.0),
                                   Expanded(
-                                    child: Text(
-                                      _alertStatus == 'A'
-                                        ? 'Повітряна тривога!'
-                                        : _alertStatus == 'P'
-                                          ? 'Часткова тривога'
-                                          : 'Тривоги немає',
-                                      style: Theme.of(context).textTheme.titleLarge,
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          _alertInfo.status == 'A'
+                                            ? 'Повітряна тривога!'
+                                            : 'Тривоги немає',
+                                          style: Theme.of(context).textTheme.titleLarge,
+                                        ),
+                                        if (_alertInfo.startTime != null)
+                                          Text(
+                                            'Початок: ${DateFormat('HH:mm').format(_alertInfo.startTime!.toLocal())}',
+                                            style: Theme.of(context).textTheme.bodyMedium,
+                                          ),
+                                      ],
                                     ),
                                   ),
                                 ],
@@ -720,4 +741,11 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
   }
+}
+
+class AlertInfo {
+  final String status;
+  final DateTime? startTime;
+
+  AlertInfo({required this.status, this.startTime});
 }
