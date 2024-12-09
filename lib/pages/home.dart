@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:card_loading/card_loading.dart';
 import 'package:weather/weather.dart';
 import 'package:parallax_rain/parallax_rain.dart';
+import 'dart:async';
 import 'config/api.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -24,6 +25,9 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _isWeatherLoading = true;
   late ScrollController _scrollController;
   bool _showAppBarLogo = false;
+  bool _isAlertLoading = true;
+  String _alertStatus = 'N';
+  Timer? _alertTimer;
 
   @override
   void initState() {
@@ -40,6 +44,9 @@ class _MyHomePageState extends State<MyHomePage> {
       });
     });
     _fetchWeather();
+    _fetchAlertStatus();
+    // Set up periodic updates every 30 seconds
+    _alertTimer = Timer.periodic(const Duration(seconds: 30), (_) => _fetchAlertStatus());
   }
 
   @override
@@ -54,6 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _alertTimer?.cancel();
     super.dispose();
   }
 
@@ -110,6 +118,34 @@ class _MyHomePageState extends State<MyHomePage> {
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
+    }
+  }
+
+  Future<void> _fetchAlertStatus() async {
+    try {
+      setState(() {
+        _isAlertLoading = true;
+      });
+      
+      final response = await http.get(
+        Uri.parse('https://api.alerts.in.ua/v1/iot/active_air_raid_alerts/19.json'),
+        headers: {'Authorization': 'Bearer ${ApiConfig.alertsApiKey}'}
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _alertStatus = response.body.replaceAll('"', '');
+          _isAlertLoading = false;
+        });
+      } else {
+        throw Exception('Failed to load alert status');
+      }
+    } catch (e) {
+      debugPrint('Error fetching alert status: $e');
+      setState(() {
+        _isAlertLoading = false;
+        _alertStatus = 'N';
+      });
     }
   }
 
@@ -467,6 +503,73 @@ class _MyHomePageState extends State<MyHomePage> {
                       ],
                     ),
                   ),),),),),
+                  const SizedBox(height: 20.0, width: double.infinity),
+                  SizedBox(
+                    width: double.infinity,
+                    child: Text(
+                      'Статус тривоги 🚨',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 20.0), 
+                      textAlign: TextAlign.left,
+                    ),
+                  ),
+                  const SizedBox(height: 10.0, width: double.infinity),
+                  GestureDetector(
+                    child: Ink(
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surfaceBright,
+                        borderRadius: BorderRadius.circular(10.0),
+                        border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
+                      ),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(10.0),
+                        onTap: () => _launchUrl('https://alerts.in.ua'),
+                        child: Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: _isAlertLoading
+                            ? const Center(child: CircularProgressIndicator())
+                            : Row(
+                                children: [
+                                  SizedBox(
+                                    height: 50,
+                                    width: 50,
+                                    child: DecoratedBox(
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                                        borderRadius: BorderRadius.circular(5),
+                                      ),
+                                      child: Icon(
+                                        _alertStatus == 'A' 
+                                        ? Icons.report_rounded
+                                        : _alertStatus == 'P' 
+                                          ? Icons.report_rounded
+                                          : Icons.report_off_rounded,
+                                        size: 30.0,
+                                        color: _alertStatus == 'A' 
+                                        ? Colors.red.shade400
+                                        : _alertStatus == 'P' 
+                                          ? Colors.orange.shade400
+                                          : Theme.of(context).colorScheme.primary,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10.0),
+                                  Expanded(
+                                    child: Text(
+                                      _alertStatus == 'A'
+                                        ? 'Повітряна тривога!'
+                                        : _alertStatus == 'P'
+                                          ? 'Часткова тривога'
+                                          : 'Тривоги немає',
+                                      style: Theme.of(context).textTheme.titleLarge,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                        ),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 20.0, width: double.infinity),
                   SizedBox(
                     width: double.infinity,
