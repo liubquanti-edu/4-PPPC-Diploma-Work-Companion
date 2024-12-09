@@ -561,7 +561,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                         size: 30.0,
                                         color: _alertInfo.status == 'A' 
                                           ? Colors.red.shade400
-                                          : Colors.green.shade400,
+                                          : Theme.of(context).colorScheme.primary,
                                       ),
                                     ),
                                   ),
@@ -577,11 +577,22 @@ class _MyHomePageState extends State<MyHomePage> {
                                             : 'Тривоги немає',
                                           style: Theme.of(context).textTheme.titleLarge,
                                         ),
-                                        if (_alertInfo.startTime != null)
-                                          Text(
-                                            'Початок: ${DateFormat('HH:mm').format(_alertInfo.startTime!.toLocal())}',
-                                            style: Theme.of(context).textTheme.bodyMedium,
-                                          ),
+                                        Text(
+                                          _alertInfo.status == 'A'
+                                          ? 'Початок: ${DateFormat('HH:mm').format(_alertInfo.startTime!.toLocal())}'
+                                          ' • ${(() {
+                                            final diff = DateTime.now().difference(_alertInfo.startTime!);
+                                            if (diff.inDays > 0) {
+                                              return '${diff.inDays}:${diff.inHours.remainder(24).toString().padLeft(2, '0')}:${diff.inMinutes.remainder(60).toString().padLeft(2, '0')}';
+                                            } else if (diff.inHours > 0) {
+                                              return '${diff.inHours}:${diff.inMinutes.remainder(60).toString().padLeft(2, '0')}';
+                                            } else {
+                                              return '0:${diff.inMinutes.toString().padLeft(2, '0')}';
+                                            }
+                                          })()}'
+                                          : 'Оповіщень не надходило.',
+                                          style: Theme.of(context).textTheme.bodyMedium,
+                                        ),
                                       ],
                                     ),
                                   ),
