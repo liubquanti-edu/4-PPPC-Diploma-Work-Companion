@@ -25,9 +25,27 @@ class UserService {
     });
   }
 
+  Future<bool> isNicknameAvailable(String nickname) async {
+    final snapshot = await _firestore
+        .collection('students')
+        .where('nickname', isEqualTo: nickname)
+        .get();
+    
+    if (snapshot.docs.length == 1) {
+      return snapshot.docs.first.id == _auth.currentUser?.uid;
+    }
+    
+    return snapshot.docs.isEmpty;
+  }
+
   Future<void> updateUserNickname(String newNickname) async {
     final user = _auth.currentUser;
     if (user != null) {
+      // Check if nickname is available
+      if (!await isNicknameAvailable(newNickname)) {
+        throw Exception('Цей нікнейм вже зайнятий');
+      }
+
       await _firestore
           .collection('students')
           .doc(user.uid)
