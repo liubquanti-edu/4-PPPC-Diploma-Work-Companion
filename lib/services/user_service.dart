@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:http/http.dart' as http;
 
 class UserService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -50,6 +51,27 @@ class UserService {
           .collection('students')
           .doc(user.uid)
           .update({'nickname': newNickname});
+    }
+  }
+
+  Future<void> updateUserAvatar(String avatarUrl) async {
+    final user = _auth.currentUser;
+    if (user != null) {
+      // Verify URL is valid image
+      try {
+        final response = await http.head(Uri.parse(avatarUrl));
+        final contentType = response.headers['content-type'];
+        if (contentType == null || !contentType.startsWith('image/')) {
+          throw Exception('URL має вести на зображення');
+        }
+
+        await _firestore
+            .collection('students')
+            .doc(user.uid)
+            .update({'avatar': avatarUrl});
+      } catch (e) {
+        throw Exception('Невірне посилання на зображення');
+      }
     }
   }
 }

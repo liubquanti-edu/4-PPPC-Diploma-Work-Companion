@@ -35,6 +35,7 @@ flutter:
     - assets/svg/ППФК.svg
     - assets/img/news.jpg
     - assets/img/oleh.png
+    - assets/img/noavatar.png
   uses-material-design: true
   fonts:
     - family: Comfortaa

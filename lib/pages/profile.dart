@@ -42,7 +42,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: [
                   CircleAvatar(
                     radius: 80,
-                    backgroundImage: AssetImage('assets/img/oleh.png'),
+                    backgroundImage: userData?['avatar'] != null 
+                      ? NetworkImage(userData!['avatar'])
+                      : const AssetImage('assets/img/noavatar.png') as ImageProvider,
                     child: Container(
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
@@ -102,6 +104,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           MaterialPageRoute(
                             builder: (context) => EditProfilePage(
                               currentNickname: userData?['nickname'] ?? '',
+                              currentAvatar: userData?['avatar'] ?? '',
                             ),
                           ),
                         );
