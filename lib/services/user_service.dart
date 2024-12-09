@@ -42,7 +42,6 @@ class UserService {
   Future<void> updateUserNickname(String newNickname) async {
     final user = _auth.currentUser;
     if (user != null) {
-      // Check if nickname is available
       if (!await isNicknameAvailable(newNickname)) {
         throw Exception('Цей нікнейм вже зайнятий');
       }
@@ -57,7 +56,6 @@ class UserService {
   Future<void> updateUserAvatar(String avatarUrl) async {
     final user = _auth.currentUser;
     if (user != null) {
-      // Verify URL is valid image
       try {
         final response = await http.head(Uri.parse(avatarUrl));
         final contentType = response.headers['content-type'];
