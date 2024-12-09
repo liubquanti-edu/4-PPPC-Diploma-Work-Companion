@@ -70,6 +70,19 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   if (value == null || value.isEmpty) {
                     return 'Будь ласка, введіть нікнейм';
                   }
+                  
+                  if (value.length < 3) {
+                    return 'Нікнейм має бути не менше 3 символів';
+                  }
+
+                  if (value.length > 20) {
+                    return 'Нікнейм має бути не більше 20 символів';
+                  }
+
+                  if (!RegExp(r'^[a-zA-Z0-9._]+$').hasMatch(value)) {
+                    return 'Нікнейм має недоапустимі символи';
+                  }
+
                   return null;
                 },
               ),
