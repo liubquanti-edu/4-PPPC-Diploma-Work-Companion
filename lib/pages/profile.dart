@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:pppc_companion/services/user_service.dart';
 import 'package:pppc_companion/pages/auth/email_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'setings/edit_profile.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -96,7 +97,14 @@ class _ProfilePageState extends State<ProfilePage> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       onTap: () {
-                        // Existing onTap logic or navigation
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditProfilePage(
+                              currentNickname: userData?['nickname'] ?? '',
+                            ),
+                          ),
+                        );
                       },
                       child: Ink(
                         padding: const EdgeInsets.all(10.0),
