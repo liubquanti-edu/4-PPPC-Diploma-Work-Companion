@@ -1,21 +1,31 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:pppc_companion/firebase_options.dart';
+import 'package:dynamic_color/dynamic_color.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'firebase_options.dart';
 import 'package:pppc_companion/pages/contact.dart';
 import 'package:pppc_companion/pages/profile.dart';
 import 'pages/home.dart';
 import 'pages/education.dart';
 import 'pages/auth/email_screen.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'services/user_service.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'providers/theme_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(prefs),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -23,23 +33,64 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange, brightness: Brightness.dark),
-        useMaterial3: true,
-        fontFamily: 'Comfortaa',
-      ),
-      home: StreamBuilder<User?>(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            return const MainScreen();
-          }
-          return const EmailScreen();
-        },
-      ),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        if (!themeProvider.isInitialized) {
+          return MaterialApp(
+            home: Container(
+              color: Colors.white, // або інший колір фону
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
+          );
+        }
+
+        return DynamicColorBuilder(
+          builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
+            ColorScheme lightColorScheme;
+            ColorScheme darkColorScheme;
+
+            if (themeProvider.useDynamicColors && lightDynamic != null && darkDynamic != null) {
+              lightColorScheme = lightDynamic.harmonized();
+              darkColorScheme = darkDynamic.harmonized();
+            } else {
+              lightColorScheme = ColorScheme.fromSeed(
+                seedColor: Colors.deepOrange,
+                brightness: Brightness.light,
+              );
+              darkColorScheme = ColorScheme.fromSeed(
+                seedColor: Colors.deepOrange,
+                brightness: Brightness.dark,
+              );
+            }
+
+            return MaterialApp(
+              title: 'Flutter Demo',
+              theme: ThemeData(
+                colorScheme: lightColorScheme,
+                useMaterial3: true,
+                fontFamily: 'Comfortaa',
+              ),
+              darkTheme: ThemeData(
+                colorScheme: darkColorScheme,
+                useMaterial3: true,
+                fontFamily: 'Comfortaa',
+              ),
+              themeMode: themeProvider.themeMode,
+              home: StreamBuilder<User?>(
+                stream: FirebaseAuth.instance.authStateChanges(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return const MainScreen();
+                  }
+                  return const EmailScreen();
+                },
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
