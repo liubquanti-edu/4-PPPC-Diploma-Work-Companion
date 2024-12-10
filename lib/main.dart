@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
         if (!themeProvider.isInitialized) {
           return MaterialApp(
             home: Container(
-              color: Colors.white, // або інший колір фону
+              color: Colors.white,
               child: const Center(
                 child: CircularProgressIndicator(),
               ),

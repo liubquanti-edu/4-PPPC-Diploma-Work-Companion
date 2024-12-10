@@ -99,8 +99,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       customBorder: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      onTap: () {
-                        Navigator.push(
+                      onTap: () async {
+                        await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => EditProfilePage(
@@ -109,6 +109,9 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                           ),
                         );
+                        if (mounted) {
+                          setState(() {});
+                        }
                       },
                       child: Ink(
                         padding: const EdgeInsets.all(10.0),

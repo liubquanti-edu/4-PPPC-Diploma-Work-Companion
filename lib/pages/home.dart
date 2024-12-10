@@ -189,20 +189,16 @@ class _MyHomePageState extends State<MyHomePage> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return [];
 
-    // Get user's group
     final userDoc = await FirebaseFirestore.instance
         .collection('students')
         .doc(user.uid)
         .get();
     final group = userDoc.data()?['group'];
 
-    // Get current weekday name
     final weekday = DateFormat('EEEE').format(DateTime.now()).toLowerCase();
     
-    // Get week type
     final weekType = WeekType.getCurrentType();
 
-    // Fetch timetable
     final snapshot = await FirebaseFirestore.instance
         .collection('timetable')
         .doc(group.toString())
@@ -212,7 +208,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return snapshot.docs.map((doc) {
       final lesson = Lesson.fromJson(doc.data());
-      // Only include lessons that match week type or have no week specified
       if (lesson.week == null || lesson.week == weekType) {
         return lesson;
       }
@@ -220,7 +215,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }).whereType<Lesson>().toList();
   }
 
-  // Fetch bell schedule
+
   Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
     final doc = await FirebaseFirestore.instance
         .collection('bell')

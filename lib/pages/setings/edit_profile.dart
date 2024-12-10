@@ -57,7 +57,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Профіль успішно оновлено')),
         );
-        Navigator.pop(context);
+        Navigator.pop(context, true);
       }
     } catch (e) {
       if (mounted) {
@@ -72,7 +72,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
     }
   }
 
-  // Add method to handle avatar deletion
   Future<void> _removeAvatar() async {
     setState(() => _isLoading = true);
     try {
