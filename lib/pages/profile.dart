@@ -163,7 +163,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       onTap: () {
-                        // Existing onTap logic or navigation
+                      
                       },
                       child: Ink(
                         padding: const EdgeInsets.all(10.0),
@@ -219,7 +219,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       onTap: () {
-                        // Existing onTap logic or navigation
+                      
                       },
                       child: Ink(
                         padding: const EdgeInsets.all(10.0),
@@ -275,7 +275,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       onTap: () {
-                        // Existing onTap logic or navigation
+                      
                       },
                       child: Ink(
                         padding: const EdgeInsets.all(10.0),
@@ -397,7 +397,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       onTap: () {
-                        // Existing onTap logic or navigation
+                      
                       },
                       child: Ink(
                         padding: const EdgeInsets.all(10.0),

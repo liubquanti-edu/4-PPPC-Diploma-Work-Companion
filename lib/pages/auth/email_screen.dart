@@ -20,11 +20,9 @@ class _EmailScreenState extends State<EmailScreen> {
     try {
       final email = _emailController.text;
       
-      // Check if student exists
       final student = await _authService.findStudentByEmail(email);
       
       if (student != null) {
-        // Student exists - go to password screen
         if (mounted) {
           Navigator.push(
             context,
@@ -36,7 +34,6 @@ class _EmailScreenState extends State<EmailScreen> {
         return;
       }
 
-      // Not registered - check if eligible for registration
       final person = await _authService.findPersonByEmail(email);
       
       if (person == null) {
@@ -48,7 +45,6 @@ class _EmailScreenState extends State<EmailScreen> {
         return;
       }
 
-      // Person found - go to registration
       if (mounted) {
         Navigator.push(
           context,

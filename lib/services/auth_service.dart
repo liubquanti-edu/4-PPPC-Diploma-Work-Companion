@@ -1,10 +1,5 @@
-// lib/services/auth_service.dart
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
-// lib/services/auth_service.dart
-
-// lib/services/auth_service.dart
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -54,13 +49,11 @@ class AuthService {
   Future<UserCredential> registerWithEmailAndPassword(String email, String password, Map<String, dynamic> personData) async {
     UserCredential? credential;
     try {
-      // Create auth user first
       credential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password
       );
 
-      // Then create student document with auth user's UID
       await _firestore.collection('students').doc(credential.user!.uid).set({
         ...personData,
         'email': email,
@@ -70,7 +63,6 @@ class AuthService {
 
       return credential;
     } catch (e) {
-      // If student doc creation fails, delete the auth user
       try {
         await credential?.user?.delete();
       } catch (_) {}
