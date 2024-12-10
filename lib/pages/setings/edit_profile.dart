@@ -47,7 +47,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     try {
       if (_imageFile != null) {
         final imageUrl = await ImgbbService.uploadImage(_imageFile!);
-        await _userService.updateUserAvatar(imageUrl);
+        await _userService.updateUserAvatar(imageUrl); 
       }
       if (_nicknameController.text != widget.currentNickname) {
         await _userService.updateUserNickname(_nicknameController.text);
@@ -65,10 +65,34 @@ class _EditProfilePageState extends State<EditProfilePage> {
           SnackBar(content: Text(e.toString())),
         );
       }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
+  }
 
-    if (mounted) {
-      setState(() => _isLoading = false);
+  // Add method to handle avatar deletion
+  Future<void> _removeAvatar() async {
+    setState(() => _isLoading = true);
+    try {
+      await _userService.removeUserAvatar();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Аватар видалено')),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -84,11 +108,45 @@ class _EditProfilePageState extends State<EditProfilePage> {
           key: _formKey,
           child: Column(
             children: [
-              if (_imageFile != null)
-                Image.file(_imageFile!, height: 100, width: 100),
-              ElevatedButton(
-                onPressed: _pickImage,
-                child: const Text('Обрати фото'),
+              Center(
+                child: CircleAvatar(
+                  radius: 80,
+                  backgroundImage: _imageFile != null 
+                    ? FileImage(_imageFile!) as ImageProvider
+                    : (widget.currentAvatar.isNotEmpty 
+                        ? NetworkImage(widget.currentAvatar) 
+                        : const AssetImage('assets/img/noavatar.png')) as ImageProvider,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.primary,
+                        width: 2.0,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: _pickImage,
+                    child: const Text('Змінити фото'),
+                  ),
+                  if (widget.currentAvatar.isNotEmpty && _imageFile == null) ...[
+                    const SizedBox(width: 10),
+                    ElevatedButton(
+                      onPressed: _isLoading ? null : _removeAvatar,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.error,
+                        foregroundColor: Theme.of(context).colorScheme.onError,
+                      ),
+                      child: const Text('Видалити фото'),
+                    ),
+                  ],
+                ],
               ),
               const SizedBox(height: 20),
               TextFormField(

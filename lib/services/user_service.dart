@@ -53,9 +53,17 @@ class UserService {
     }
   }
 
-  Future<void> updateUserAvatar(String avatarUrl) async {
+  Future<void> updateUserAvatar(String? avatarUrl) async {
     final user = _auth.currentUser;
     if (user != null) {
+      if (avatarUrl == null) {
+        await _firestore
+            .collection('students')
+            .doc(user.uid)
+            .update({'avatar': FieldValue.delete()});
+        return;
+      }
+
       try {
         final response = await http.head(Uri.parse(avatarUrl));
         final contentType = response.headers['content-type'];
@@ -71,5 +79,9 @@ class UserService {
         throw Exception('Невірне посилання на зображення');
       }
     }
+  }
+
+  Future<void> removeUserAvatar() async {
+    await updateUserAvatar(null);
   }
 }
