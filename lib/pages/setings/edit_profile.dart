@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:pppc_companion/services/user_service.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import '/services/imgbb_service.dart';
 
 class EditProfilePage extends StatefulWidget {
   final String currentNickname;
@@ -17,6 +20,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final _avatarController = TextEditingController();
   final _userService = UserService();
   bool _isLoading = false;
+  File? _imageFile;
+  final _picker = ImagePicker();
 
   @override
   void initState() {
@@ -25,16 +30,28 @@ class _EditProfilePageState extends State<EditProfilePage> {
     _avatarController.text = widget.currentAvatar;
   }
 
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = File(pickedFile.path);
+      });
+    }
+  }
+
   Future<void> _saveChanges() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
 
     try {
-      if (_avatarController.text.isNotEmpty) {
-        await _userService.updateUserAvatar(_avatarController.text);
+      if (_imageFile != null) {
+        final imageUrl = await ImgbbService.uploadImage(_imageFile!);
+        await _userService.updateUserAvatar(imageUrl);
       }
-      await _userService.updateUserNickname(_nicknameController.text);
+      if (_nicknameController.text != widget.currentNickname) {
+        await _userService.updateUserNickname(_nicknameController.text);
+      }
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -67,6 +84,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
           key: _formKey,
           child: Column(
             children: [
+              if (_imageFile != null)
+                Image.file(_imageFile!, height: 100, width: 100),
+              ElevatedButton(
+                onPressed: _pickImage,
+                child: const Text('Обрати фото'),
+              ),
+              const SizedBox(height: 20),
               TextFormField(
                 controller: _nicknameController,
                 decoration: const InputDecoration(
@@ -86,28 +110,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   }
                   if (!RegExp(r'^[a-zA-Z0-9._]+$').hasMatch(value)) {
                     return 'Дозволені лише англійські букви, цифри, крапка та нижнє підкреслення';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 20),
-              TextFormField(
-                controller: _avatarController,
-                decoration: const InputDecoration(
-                  labelText: 'URL аватара',
-                  border: OutlineInputBorder(),
-                  helperText: 'Введіть посилання на зображення в інтернеті',
-                ),
-                validator: (value) {
-                  if (value != null && value.isNotEmpty) {
-                    try {
-                      final uri = Uri.parse(value);
-                      if (!uri.isAbsolute) {
-                        return 'Введіть коректне URL посилання';
-                      }
-                    } catch (e) {
-                      return 'Введіть коректне URL посилання';
-                    }
                   }
                   return null;
                 },
