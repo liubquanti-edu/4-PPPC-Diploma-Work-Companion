@@ -10,6 +10,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'config/api.dart';
 import 'package:intl/intl.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '/models/schedule.dart';
+import '/models/week_type.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -181,6 +185,54 @@ class _MyHomePageState extends State<MyHomePage> {
     return document.rootElement.text;
   }
 
+  Future<List<Lesson>> _fetchTimetable() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return [];
+
+    // Get user's group
+    final userDoc = await FirebaseFirestore.instance
+        .collection('students')
+        .doc(user.uid)
+        .get();
+    final group = userDoc.data()?['group'];
+
+    // Get current weekday name
+    final weekday = DateFormat('EEEE').format(DateTime.now()).toLowerCase();
+    
+    // Get week type
+    final weekType = WeekType.getCurrentType();
+
+    // Fetch timetable
+    final snapshot = await FirebaseFirestore.instance
+        .collection('timetable')
+        .doc(group.toString())
+        .collection(weekday)
+        .orderBy(FieldPath.documentId)
+        .get();
+
+    return snapshot.docs.map((doc) {
+      final lesson = Lesson.fromJson(doc.data());
+      // Only include lessons that match week type or have no week specified
+      if (lesson.week == null || lesson.week == weekType) {
+        return lesson;
+      }
+      return null;
+    }).whereType<Lesson>().toList();
+  }
+
+  // Fetch bell schedule
+  Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
+    final doc = await FirebaseFirestore.instance
+        .collection('bell')
+        .doc(lessonNumber.toString())
+        .get();
+        
+    return {
+      'start': doc.data()?['start'],
+      'end': doc.data()?['end'],
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -234,124 +286,231 @@ class _MyHomePageState extends State<MyHomePage> {
                       textAlign: TextAlign.left,
                     ),
                   ),
-                  Padding(padding: const EdgeInsets.only(top: 10.0),
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(12.0),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surfaceBright,
-                        borderRadius: BorderRadius.circular(10.0),
-                        border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      SizedBox(height: 70, width: 5, child: DecoratedBox(decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, borderRadius: BorderRadius.circular(5)))),
-                                      const SizedBox(width: 10.0),
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text('Архітект.комп.', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 20.0)),
-                                          Row(
-                                            children: [
-                                              Icon(Icons.info_outline, size: 16.0, color: Theme.of(context).colorScheme.primary),
-                                              const SizedBox(width: 5.0),
-                                              Text('Ігор Дегтяр 304 ауд.', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),
-                                            ],
-                                          ),
-                                          Row(
-                                            children: [
-                                              Icon(Icons.access_time_outlined, size: 16.0, color: Theme.of(context).colorScheme.primary),
-                                              const SizedBox(width: 5.0),
-                                              Text('09:00 - 10:00', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),
-                                              const SizedBox(width: 5.0),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 10.0, width: double.infinity),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      SizedBox(height: 60, width: 5, child: DecoratedBox(decoration: BoxDecoration(color: Theme.of(context).colorScheme.secondary, borderRadius: BorderRadius.circular(5)))),
-                                      const SizedBox(width: 10.0),
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text('Проєктування АІС', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16.0)),
-                                          Row(
-                                            children: [
-                                              Icon(Icons.info_outline, size: 16.0, color: Theme.of(context).colorScheme.secondary),
-                                              const SizedBox(width: 5.0),
-                                              Text('Світлана Гриценко 317 ауд.', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),
-                                            ],
-                                          ),
-                                          Row(
-                                            children: [
-                                              Icon(Icons.access_time_outlined, size: 16.0, color: Theme.of(context).colorScheme.secondary),
-                                              const SizedBox(width: 5.0),
-                                              Text('10:10 - 11:10', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),
-                                              const SizedBox(width: 5.0),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 10.0, width: double.infinity),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      SizedBox(height: 60, width: 5, child: DecoratedBox(decoration: BoxDecoration(color: Theme.of(context).colorScheme.secondary, borderRadius: BorderRadius.circular(5)))),
-                                      const SizedBox(width: 10.0),
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text('Осн.патентознав.', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16.0)),
-                                          Row(
-                                            children: [
-                                              Icon(Icons.info_outline, size: 16.0, color: Theme.of(context).colorScheme.secondary),
-                                              const SizedBox(width: 5.0),
-                                              Text('Марина Яненко 313 ауд.', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),
-                                            ],
-                                          ),
-                                          Row(
-                                            children: [
-                                              Icon(Icons.access_time_outlined, size: 16.0, color: Theme.of(context).colorScheme.secondary),
-                                              const SizedBox(width: 5.0),
-                                              Text('11:50 - 12:50', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),
-                                              const SizedBox(width: 5.0),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ],
+                  const SizedBox(height: 10.0, width: double.infinity),
+                  FutureBuilder<List<Lesson>>(
+                    future: _fetchTimetable(),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        return Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(12.0),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surfaceBright,
+                            borderRadius: BorderRadius.circular(10.0),
+                            border: Border.all(
+                              color: Theme.of(context).colorScheme.primary,
+                              width: 2.0,
+                            ),
                           ),
-                        ],
-                      ),
-                    ),
+                          child: Column(
+                            children: snapshot.data!.asMap().entries.map((entry) {
+                              final index = entry.key;
+                              final lesson = entry.value;
+                              
+                              return FutureBuilder<Map<String, String>>(
+                                future: _fetchBellSchedule(index + 1),
+                                builder: (context, bellSnapshot) {
+                                  if (bellSnapshot.hasData) {
+                                    return Column(
+                                      children: [
+                                        if (index > 0) const SizedBox(height: 10.0),
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                SizedBox(
+                                                  height: 60, 
+                                                  width: 5,
+                                                  child: DecoratedBox(
+                                                    decoration: BoxDecoration(
+                                                      color: Theme.of(context).colorScheme.secondary,
+                                                      borderRadius: BorderRadius.circular(5),
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 10.0),
+                                                Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      lesson.name,
+                                                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16.0),
+                                                    ),
+                                                    Row(
+                                                      children: [
+                                                        Icon(
+                                                          Icons.info_outline,
+                                                          size: 16.0,
+                                                          color: Theme.of(context).colorScheme.secondary,
+                                                        ),
+                                                        const SizedBox(width: 5.0),
+                                                        Text(
+                                                          '${lesson.prof} ${lesson.place}',
+                                                          style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    Row(
+                                                      children: [
+                                                        Icon(
+                                                          Icons.access_time_outlined,
+                                                          size: 16.0,
+                                                          color: Theme.of(context).colorScheme.secondary,
+                                                        ),
+                                                        const SizedBox(width: 5.0),
+                                                        Text(
+                                                          '${bellSnapshot.data!['start']} - ${bellSnapshot.data!['end']}',
+                                                          style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    );
+                                  }
+                                  return Padding(
+                                    padding: index < 2 ? const EdgeInsets.only(bottom: 10.0) : EdgeInsets.zero,
+                                    child: Row(
+                                      children: [
+                                        CardLoading(
+                                          height: 60,
+                                          width: 5,
+                                          borderRadius: BorderRadius.circular(5),
+                                          margin: const EdgeInsets.all(0),
+                                          animationDuration: const Duration(milliseconds: 1000),
+                                          cardLoadingTheme: CardLoadingTheme(
+                                            colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                            colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10.0),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              CardLoading(
+                                                height: 20,
+                                                borderRadius: BorderRadius.circular(5),
+                                                margin: const EdgeInsets.only(bottom: 5),
+                                                animationDuration: const Duration(milliseconds: 1000),
+                                                cardLoadingTheme: CardLoadingTheme(
+                                                  colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                                  colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                                ),
+                                              ),
+                                              CardLoading(
+                                                height: 15,
+                                                width: 200,
+                                                borderRadius: BorderRadius.circular(5),
+                                                margin: const EdgeInsets.only(bottom: 5),
+                                                animationDuration: const Duration(milliseconds: 1000),
+                                                cardLoadingTheme: CardLoadingTheme(
+                                                  colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                                  colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                                ),
+                                              ),
+                                              CardLoading(
+                                                height: 15,
+                                                width: 150,
+                                                borderRadius: BorderRadius.circular(5),
+                                                margin: const EdgeInsets.all(0),
+                                                animationDuration: const Duration(milliseconds: 1000),
+                                                cardLoadingTheme: CardLoadingTheme(
+                                                  colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                                  colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              );
+                            }).toList(),
+                          ),
+                        );
+                      }
+                      return Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12.0),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surfaceBright,
+                          borderRadius: BorderRadius.circular(10.0),
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.primary,
+                            width: 2.0,
+                          ),
+                        ),
+                        child: Column(
+                          children: List.generate(3, (index) => Padding(
+                            padding: index < 2 ? const EdgeInsets.only(bottom: 10.0) : EdgeInsets.zero,
+                            child: Row(
+                              children: [
+                                CardLoading(
+                                  height: 60,
+                                  width: 5,
+                                  borderRadius: BorderRadius.circular(5),
+                                  margin: const EdgeInsets.all(0),
+                                  animationDuration: const Duration(milliseconds: 1000),
+                                  cardLoadingTheme: CardLoadingTheme(
+                                    colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                    colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                  ),
+                                ),
+                                const SizedBox(width: 10.0),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      CardLoading(
+                                        height: 20,
+                                        borderRadius: BorderRadius.circular(5),
+                                        margin: const EdgeInsets.only(bottom: 5),
+                                        animationDuration: const Duration(milliseconds: 1000),
+                                        cardLoadingTheme: CardLoadingTheme(
+                                          colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                          colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                        ),
+                                      ),
+                                      CardLoading(
+                                        height: 15,
+                                        width: 200,
+                                        borderRadius: BorderRadius.circular(5),
+                                        margin: const EdgeInsets.only(bottom: 5),
+                                        animationDuration: const Duration(milliseconds: 1000),
+                                        cardLoadingTheme: CardLoadingTheme(
+                                          colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                          colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                        ),
+                                      ),
+                                      CardLoading(
+                                        height: 15,
+                                        width: 150,
+                                        borderRadius: BorderRadius.circular(5),
+                                        margin: const EdgeInsets.all(0),
+                                        animationDuration: const Duration(milliseconds: 1000),
+                                        cardLoadingTheme: CardLoadingTheme(
+                                          colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                          colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )),
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 20.0, width: double.infinity),
                   SizedBox(
