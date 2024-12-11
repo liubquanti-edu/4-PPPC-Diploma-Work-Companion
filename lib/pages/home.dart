@@ -370,7 +370,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     );
                                   }
                                   return Padding(
-                                    padding: index < 2 ? const EdgeInsets.only(bottom: 10.0) : EdgeInsets.zero,
+                                    padding: index < snapshot.data!.length - 1 ? const EdgeInsets.only(bottom: 10.0) : EdgeInsets.zero,
                                     child: Row(
                                       children: [
                                         CardLoading(
