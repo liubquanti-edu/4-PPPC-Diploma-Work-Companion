@@ -6,6 +6,7 @@ import 'package:pppc_companion/pages/auth/email_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'setings/edit_profile.dart';
 import 'setings/appearance.dart';
+import 'setings/about_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -406,7 +407,10 @@ class _ProfilePageState extends State<ProfilePage> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       onTap: () {
-                      
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const AboutPage()),
+                        );
                       },
                       child: Ink(
                         padding: const EdgeInsets.all(10.0),
