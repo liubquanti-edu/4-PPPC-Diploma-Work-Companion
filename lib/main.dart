@@ -132,7 +132,7 @@ class _MainScreenState extends State<MainScreen> {
                   labelType: NavigationRailLabelType.all,
                   useIndicator: true,
                   groupAlignment: 0,
-                  backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+                  backgroundColor: Theme.of(context).colorScheme.onSecondary,
                   destinations: const [
                     NavigationRailDestination(
                       icon: Icon(Icons.home_outlined),
@@ -166,7 +166,8 @@ class _MainScreenState extends State<MainScreen> {
         
         return Scaffold(
           body: _pages[_selectedIndex],
-          bottomNavigationBar: NavigationBar(
+            bottomNavigationBar: NavigationBar(
+            backgroundColor: Theme.of(context).colorScheme.onSecondary,
             selectedIndex: _selectedIndex,
             onDestinationSelected: _onItemTapped,
             labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,

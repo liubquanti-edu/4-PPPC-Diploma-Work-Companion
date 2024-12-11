@@ -31,7 +31,7 @@ class _EducationPageState extends State<EducationPage> {
                 child: Container(
                   padding: const EdgeInsets.all(10.0),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceBright,
+                    color: Theme.of(context).colorScheme.onSecondary,
                     borderRadius: BorderRadius.circular(10.0),
                     border: Border.all(
                       color: Theme.of(context).colorScheme.primary, width: 2.0), 
@@ -85,7 +85,7 @@ class _EducationPageState extends State<EducationPage> {
                 child: Container(
                   padding: const EdgeInsets.all(10.0),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceBright,
+                    color: Theme.of(context).colorScheme.onSecondary,
                     borderRadius: BorderRadius.circular(10.0),
                     border: Border.all(
                         color: Theme.of(context).colorScheme.primary, width: 2.0),
@@ -97,7 +97,7 @@ class _EducationPageState extends State<EducationPage> {
                         width: 50,
                         child: DecoratedBox(
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                            color: Theme.of(context).colorScheme.surfaceContainer,
                             borderRadius: BorderRadius.circular(5),
                           ),
                           child: Icon(
@@ -137,7 +137,7 @@ class _EducationPageState extends State<EducationPage> {
                 child: Container(
                   padding: const EdgeInsets.all(10.0),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceBright,
+                    color: Theme.of(context).colorScheme.onSecondary,
                     borderRadius: BorderRadius.circular(10.0),
                     border: Border.all(
                         color: Theme.of(context).colorScheme.primary, width: 2.0),
@@ -149,7 +149,7 @@ class _EducationPageState extends State<EducationPage> {
                         width: 50,
                         child: DecoratedBox(
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                            color: Theme.of(context).colorScheme.surfaceContainer,
                             borderRadius: BorderRadius.circular(5),
                           ),
                           child: Icon(
@@ -189,7 +189,7 @@ class _EducationPageState extends State<EducationPage> {
                 child: Container(
                   padding: const EdgeInsets.all(10.0),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceBright,
+                    color: Theme.of(context).colorScheme.onSecondary,
                     borderRadius: BorderRadius.circular(10.0),
                     border: Border.all(
                         color: Theme.of(context).colorScheme.primary, width: 2.0),
@@ -201,7 +201,7 @@ class _EducationPageState extends State<EducationPage> {
                         width: 50,
                         child: DecoratedBox(
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                            color: Theme.of(context).colorScheme.surfaceContainer,
                             borderRadius: BorderRadius.circular(5),
                           ),
                           child: Icon(
@@ -241,7 +241,7 @@ class _EducationPageState extends State<EducationPage> {
                 child: Container(
                   padding: const EdgeInsets.all(10.0),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceBright,
+                    color: Theme.of(context).colorScheme.onSecondary,
                     borderRadius: BorderRadius.circular(10.0),
                     border: Border.all(
                         color: Theme.of(context).colorScheme.primary, width: 2.0),
@@ -253,7 +253,7 @@ class _EducationPageState extends State<EducationPage> {
                         width: 50,
                         child: DecoratedBox(
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                            color: Theme.of(context).colorScheme.surfaceContainer,
                             borderRadius: BorderRadius.circular(5),
                           ),
                           child: Icon(
@@ -303,7 +303,7 @@ class _EducationPageState extends State<EducationPage> {
                 child: Container(
                   padding: const EdgeInsets.all(10.0),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceBright,
+                    color: Theme.of(context).colorScheme.onSecondary,
                     borderRadius: BorderRadius.circular(10.0),
                     border: Border.all(
                         color: Theme.of(context).colorScheme.primary, width: 2.0),

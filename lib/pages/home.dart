@@ -290,7 +290,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           width: double.infinity,
                           padding: const EdgeInsets.all(12.0),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surfaceBright,
+                            color: Theme.of(context).colorScheme.onSecondary,
                             borderRadius: BorderRadius.circular(10.0),
                             border: Border.all(
                               color: Theme.of(context).colorScheme.primary,
@@ -437,7 +437,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         width: double.infinity,
                         padding: const EdgeInsets.all(12.0),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceBright,
+                          color: Theme.of(context).colorScheme.onSecondary,
                           borderRadius: BorderRadius.circular(10.0),
                           border: Border.all(
                             color: Theme.of(context).colorScheme.primary,
@@ -521,7 +521,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: Ink(
                       height: 80,
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surfaceBright,
+                        color: Theme.of(context).colorScheme.onSecondary,
                         borderRadius: BorderRadius.circular(10.0),
                         border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
                       ),
@@ -688,7 +688,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       height: 80,
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surfaceBright,
+                        color: Theme.of(context).colorScheme.onSecondary,
                         borderRadius: BorderRadius.circular(10.0),
                         border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
                       ),
@@ -733,7 +733,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     width: 50,
                                     child: DecoratedBox(
                                       decoration: BoxDecoration(
-                                        color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                                        color: Theme.of(context).colorScheme.surfaceContainer,
                                         borderRadius: BorderRadius.circular(5),
                                       ),
                                       child: Icon(
@@ -801,7 +801,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           padding: const EdgeInsets.only(bottom: 10.0),
                           child: Container(
                             decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surfaceBright,
+                              color: Theme.of(context).colorScheme.onSecondary,
                               borderRadius: BorderRadius.circular(10.0),
                               border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
                             ),
@@ -865,7 +865,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 child: Ink(
                                   padding: const EdgeInsets.all(10.0),
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.surfaceBright,
+                                    color: Theme.of(context).colorScheme.onSecondary,
                                     borderRadius: BorderRadius.circular(10.0),
                                     border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
                                   ),
@@ -922,6 +922,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     onPressed: () => _launchUrl('https://polytechnic-news.blogspot.com'),
                     style: ElevatedButton.styleFrom(
                       minimumSize: const Size.fromHeight(50),
+                      backgroundColor: Theme.of(context).colorScheme.onSecondary,
+                      foregroundColor: Theme.of(context).colorScheme.primary,
                     ),
                     child: const Text('Більше новин'),
                   ),

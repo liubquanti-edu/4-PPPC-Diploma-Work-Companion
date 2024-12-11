@@ -122,6 +122,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 : ElevatedButton(
                     onPressed: _register,
                     child: const Text('Зареєструватися'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.onSecondary,
+                      foregroundColor: Theme.of(context).colorScheme.primary,
+                    ),
                   ),
             ],
           ),

@@ -79,8 +79,12 @@ class _ProfilePageState extends State<ProfilePage> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(12.0),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceContainerLowest,
+                      color: Theme.of(context).colorScheme.onSecondary,
                       borderRadius: BorderRadius.circular(10.0),
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.primary,
+                        width: 2.0,
+                      ),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -117,7 +121,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Ink(
                         padding: const EdgeInsets.all(10.0),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceBright,
+                          color: Theme.of(context).colorScheme.onSecondary,
                           borderRadius: BorderRadius.circular(10.0),
                           border: Border.all(
                             color: Theme.of(context).colorScheme.primary,
@@ -131,7 +135,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               width: 50,
                               child: DecoratedBox(
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                                  color: Theme.of(context).colorScheme.surfaceContainer,
                                   borderRadius: BorderRadius.circular(5),
                                 ),
                                 child: Icon(
@@ -178,7 +182,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Ink(
                         padding: const EdgeInsets.all(10.0),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceBright,
+                          color: Theme.of(context).colorScheme.onSecondary,
                           borderRadius: BorderRadius.circular(10.0),
                           border: Border.all(
                             color: Theme.of(context).colorScheme.primary,
@@ -192,7 +196,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               width: 50,
                               child: DecoratedBox(
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                                  color: Theme.of(context).colorScheme.surfaceContainer,
                                   borderRadius: BorderRadius.circular(5),
                                 ),
                                 child: Icon(
@@ -234,7 +238,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Ink(
                         padding: const EdgeInsets.all(10.0),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceBright,
+                          color: Theme.of(context).colorScheme.onSecondary,
                           borderRadius: BorderRadius.circular(10.0),
                           border: Border.all(
                             color: Theme.of(context).colorScheme.primary,
@@ -248,7 +252,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               width: 50,
                               child: DecoratedBox(
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                                  color: Theme.of(context).colorScheme.surfaceContainer,
                                   borderRadius: BorderRadius.circular(5),
                                 ),
                                 child: Icon(
@@ -290,7 +294,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Ink(
                         padding: const EdgeInsets.all(10.0),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceBright,
+                          color: Theme.of(context).colorScheme.onSecondary,
                           borderRadius: BorderRadius.circular(10.0),
                           border: Border.all(
                             color: Theme.of(context).colorScheme.primary,
@@ -304,7 +308,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               width: 50,
                               child: DecoratedBox(
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                                  color: Theme.of(context).colorScheme.surfaceContainer,
                                   borderRadius: BorderRadius.circular(5),
                                 ),
                                 child: Icon(
@@ -356,7 +360,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Ink(
                       padding: const EdgeInsets.all(10.0),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surfaceBright,
+                        color: Theme.of(context).colorScheme.onSecondary,
                         borderRadius: BorderRadius.circular(10.0),
                         border: Border.all(
                         color: Theme.of(context).colorScheme.primary,
@@ -370,7 +374,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           width: 50,
                           child: DecoratedBox(
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                            color: Theme.of(context).colorScheme.surfaceContainer,
                             borderRadius: BorderRadius.circular(5),
                           ),
                           child: Icon(
@@ -415,7 +419,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Ink(
                         padding: const EdgeInsets.all(10.0),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceBright,
+                          color: Theme.of(context).colorScheme.onSecondary,
                           borderRadius: BorderRadius.circular(10.0),
                           border: Border.all(
                             color: Theme.of(context).colorScheme.primary,
@@ -429,7 +433,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               width: 50,
                               child: DecoratedBox(
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                                  color: Theme.of(context).colorScheme.surfaceContainer,
                                   borderRadius: BorderRadius.circular(5),
                                 ),
                                 child: Icon(
@@ -515,7 +519,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Ink(
                         padding: const EdgeInsets.all(10.0),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceBright,
+                          color: Theme.of(context).colorScheme.onSecondary,
                           borderRadius: BorderRadius.circular(10.0),
                           border: Border.all(
                             color: Theme.of(context).colorScheme.primary,
@@ -529,7 +533,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               width: 50,
                               child: DecoratedBox(
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                                  color: Theme.of(context).colorScheme.surfaceContainer,
                                   borderRadius: BorderRadius.circular(5),
                                 ),
                                 child: Icon(

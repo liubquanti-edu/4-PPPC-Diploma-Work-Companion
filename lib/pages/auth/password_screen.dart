@@ -99,6 +99,10 @@ class _PasswordScreenState extends State<PasswordScreen> {
                 : ElevatedButton(
                     onPressed: _signIn,
                     child: const Text('Увійти'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.onSecondary,
+                      foregroundColor: Theme.of(context).colorScheme.primary,
+                    ),
                   ),
             ],
           ),

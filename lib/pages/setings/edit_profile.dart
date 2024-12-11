@@ -131,17 +131,21 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.onSecondary,
+                      foregroundColor: Theme.of(context).colorScheme.primary,
+                    ),
                     onPressed: _pickImage,
                     child: const Text('Змінити фото'),
                   ),
                   if (widget.currentAvatar.isNotEmpty && _imageFile == null) ...[
                     const SizedBox(width: 10),
                     ElevatedButton(
-                      onPressed: _isLoading ? null : _removeAvatar,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.error,
-                        foregroundColor: Theme.of(context).colorScheme.onError,
+                        backgroundColor: Theme.of(context).colorScheme.onSecondary,
+                        foregroundColor: Theme.of(context).colorScheme.primary,
                       ),
+                      onPressed: _isLoading ? null : _removeAvatar,
                       child: const Text('Видалити фото'),
                     ),
                   ],
@@ -177,6 +181,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 : ElevatedButton(
                     onPressed: _saveChanges,
                     child: const Text('Зберегти'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.onSecondary,
+                      foregroundColor: Theme.of(context).colorScheme.primary,
+                    ),
                   ),
             ],
           ),

@@ -17,6 +17,14 @@ class AppearanceSettings extends StatelessWidget {
             padding: const EdgeInsets.all(16.0),
             children: [
               Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  side: BorderSide(
+                    color: Theme.of(context).colorScheme.primary,
+                    width: 2,
+                  ),
+                ),
+                color: Theme.of(context).colorScheme.onSecondary,
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -63,6 +71,14 @@ class AppearanceSettings extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  side: BorderSide(
+                    color: Theme.of(context).colorScheme.primary,
+                    width: 2,
+                  ),
+                ),
+                color: Theme.of(context).colorScheme.onSecondary,
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
