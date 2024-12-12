@@ -308,67 +308,79 @@ class _MyHomePageState extends State<MyHomePage> {
                                   if (bellSnapshot.hasData) {
                                     return Column(
                                       children: [
-                                        if (index > 0) const SizedBox(height: 10.0),
-                                        Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                      if (index > 0) const SizedBox(height: 10.0),
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                        Row(
                                           children: [
-                                            Row(
+                                          SizedBox(
+                                            height: 60, 
+                                            width: 5,
+                                            child: DecoratedBox(
+                                            decoration: BoxDecoration(
+                                              color: Theme.of(context).colorScheme.secondary,
+                                              borderRadius: BorderRadius.circular(5),
+                                            ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 10.0),
+                                          Expanded(
+                                            child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                              lesson.name,
+                                              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16.0),
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                              ),
+                                              Row(
                                               children: [
-                                                SizedBox(
-                                                  height: 60, 
-                                                  width: 5,
-                                                  child: DecoratedBox(
-                                                    decoration: BoxDecoration(
-                                                      color: Theme.of(context).colorScheme.secondary,
-                                                      borderRadius: BorderRadius.circular(5),
-                                                    ),
-                                                  ),
+                                                Icon(
+                                                Icons.info_outline,
+                                                size: 16.0,
+                                                color: Theme.of(context).colorScheme.secondary,
                                                 ),
-                                                const SizedBox(width: 10.0),
-                                                Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      lesson.name,
-                                                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16.0),
-                                                    ),
-                                                    Row(
-                                                      children: [
-                                                        Icon(
-                                                          Icons.info_outline,
-                                                          size: 16.0,
-                                                          color: Theme.of(context).colorScheme.secondary,
-                                                        ),
-                                                        const SizedBox(width: 5.0),
-                                                        Text(
-                                                          '${lesson.prof} ${lesson.place}',
-                                                          style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    Row(
-                                                      children: [
-                                                        Icon(
-                                                          Icons.access_time_outlined,
-                                                          size: 16.0,
-                                                          color: Theme.of(context).colorScheme.secondary,
-                                                        ),
-                                                        const SizedBox(width: 5.0),
-                                                        Text(
-                                                          '${bellSnapshot.data!['start']} - ${bellSnapshot.data!['end']}',
-                                                          style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ],
+                                                const SizedBox(width: 5.0),
+                                                Expanded(
+                                                child: Text(
+                                                  '${lesson.prof} ${lesson.place}',
+                                                  style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0),
+                                                  overflow: TextOverflow.ellipsis,
+                                                  maxLines: 1,
+                                                ),
                                                 ),
                                               ],
+                                              ),
+                                              Row(
+                                              children: [
+                                                Icon(
+                                                Icons.access_time_outlined,
+                                                size: 16.0,
+                                                color: Theme.of(context).colorScheme.secondary,
+                                                ),
+                                                const SizedBox(width: 5.0),
+                                                Expanded(
+                                                child: Text(
+                                                  '${bellSnapshot.data!['start']} - ${bellSnapshot.data!['end']}',
+                                                  style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0),
+                                                  overflow: TextOverflow.ellipsis,
+                                                  maxLines: 1,
+                                                ),
+                                                ),
+                                              ],
+                                              ),
+                                            ],
                                             ),
+                                          ),
                                           ],
                                         ),
+                                        ],
+                                      ),
                                       ],
                                     );
-                                  }
+                                    }
                                   return Padding(
                                     padding: index < snapshot.data!.length - 1 ? const EdgeInsets.only(bottom: 10.0) : EdgeInsets.zero,
                                     child: Row(
@@ -753,27 +765,37 @@ class _MyHomePageState extends State<MyHomePage> {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
-                                        Text(
+                                        SizedBox(
+                                          width: MediaQuery.of(context).size.width * 0.6,
+                                          child: Text(
                                           _alertInfo.status == 'A'
                                             ? 'Повітряна тривога!'
                                             : 'Тривоги немає',
                                           style: Theme.of(context).textTheme.titleLarge,
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                          ),
                                         ),
-                                        Text(
+                                        SizedBox(
+                                          width: MediaQuery.of(context).size.width * 0.6,
+                                          child: Text(
                                           _alertInfo.status == 'A'
                                           ? 'Початок: ${DateFormat('HH:mm').format(_alertInfo.startTime!.toLocal())}'
                                           ' • ${(() {
                                             final diff = DateTime.now().difference(_alertInfo.startTime!);
                                             if (diff.inDays > 0) {
-                                              return '${diff.inDays}:${diff.inHours.remainder(24).toString().padLeft(2, '0')}:${diff.inMinutes.remainder(60).toString().padLeft(2, '0')}';
+                                            return '${diff.inDays}:${diff.inHours.remainder(24).toString().padLeft(2, '0')}:${diff.inMinutes.remainder(60).toString().padLeft(2, '0')}';
                                             } else if (diff.inHours > 0) {
-                                              return '${diff.inHours}:${diff.inMinutes.remainder(60).toString().padLeft(2, '0')}';
+                                            return '${diff.inHours}:${diff.inMinutes.remainder(60).toString().padLeft(2, '0')}';
                                             } else {
-                                              return '0:${diff.inMinutes.toString().padLeft(2, '0')}';
+                                            return '0:${diff.inMinutes.toString().padLeft(2, '0')}';
                                             }
                                           })()}'
                                           : 'Оповіщень не надходило.',
                                           style: Theme.of(context).textTheme.bodyMedium,
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -869,48 +891,43 @@ class _MyHomePageState extends State<MyHomePage> {
                                     borderRadius: BorderRadius.circular(10.0),
                                     border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
                                   ),
-                                  child: Row(
+                                    child: Row(
                                     children: [
                                       Container(
-                                        width: 85,
-                                        height: 85,
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(5),
-                                          image: DecorationImage(
-                                            image: newsItem['thumbnail']?.startsWith('http') ?? false
-                                                ? NetworkImage(newsItem['thumbnail']!)
-                                                : const AssetImage('assets/img/news.jpg') as ImageProvider,
-                                            fit: BoxFit.cover,
-                                          ),
+                                      width: 85,
+                                      height: 85,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(5),
+                                        image: DecorationImage(
+                                        image: newsItem['thumbnail']?.startsWith('http') ?? false
+                                          ? NetworkImage(newsItem['thumbnail']!)
+                                          : const AssetImage('assets/img/news.jpg') as ImageProvider,
+                                        fit: BoxFit.cover,
                                         ),
                                       ),
+                                      ),
                                       const SizedBox(width: 10.0),
-                                      Column(
+                                      Expanded(
+                                      child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          SizedBox(
-                                            width: MediaQuery.of(context).size.width * 0.6,
-                                            child: Text(
-                                              newsItem['title'] ?? '',
-                                              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 14.0),
-                                              overflow: TextOverflow.ellipsis,
-                                              maxLines: 1,
-                                            ),
-                                          ),
-                                          SizedBox(
-                                            width: MediaQuery.of(context).size.width * 0.6,
-                                            child: Text(
-                                              newsItem['description'] ?? '',
-                                              style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 10.0),
-                                              softWrap: true,
-                                              overflow: TextOverflow.ellipsis,
-                                              maxLines: 4,
-                                            ),
-                                          ),
+                                        Text(
+                                          newsItem['title'] ?? '',
+                                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 14.0),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                        ),
+                                        Text(
+                                          newsItem['description'] ?? '',
+                                          style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 10.0),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 4,
+                                        ),
                                         ],
                                       ),
+                                      ),
                                     ],
-                                  ),
+                                    ),
                                 ),
                               ),
                             );
