@@ -475,7 +475,31 @@ class _ProfilePageState extends State<ProfilePage> {
                           builder: (BuildContext context) {
                             return AlertDialog(
                               title: const Text('Вихід'),
-                              content: const Text('Ви впевнені, що хочете вийти з облікового запису?'),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 10.0),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color: Theme.of(context).colorScheme.primary,
+                                            width: 2.0,
+                                          ),
+                                          borderRadius: BorderRadius.circular(10.0),
+                                        ),
+                                        child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(10.0),
+                                        child: Image.asset(
+                                          'assets/gif/spongebob-i-quit.gif',
+                                          width: 400,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const Text('Ви впевнені, що хочете вийти з облікового запису?'),
+                                ],
+                              ),
                               actions: <Widget>[
                                 TextButton(
                                   child: const Text('Скасувати'),
