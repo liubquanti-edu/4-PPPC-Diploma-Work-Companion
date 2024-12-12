@@ -766,11 +766,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
                                         SizedBox(
-                                          width: MediaQuery.of(context).size.width * 0.6,
+                                          width: double.infinity,
                                           child: Text(
                                           _alertInfo.status == 'A'
-                                            ? 'Повітряна тривога!'
-                                            : 'Тривоги немає',
+                                          ? 'Повітряна тривога!'
+                                          : 'Тривоги немає',
                                           style: Theme.of(context).textTheme.titleLarge,
                                           overflow: TextOverflow.ellipsis,
                                           maxLines: 1,
@@ -779,22 +779,22 @@ class _MyHomePageState extends State<MyHomePage> {
                                         SizedBox(
                                           width: MediaQuery.of(context).size.width * 0.6,
                                           child: Text(
-                                          _alertInfo.status == 'A'
-                                          ? 'Початок: ${DateFormat('HH:mm').format(_alertInfo.startTime!.toLocal())}'
-                                          ' • ${(() {
-                                            final diff = DateTime.now().difference(_alertInfo.startTime!);
-                                            if (diff.inDays > 0) {
-                                            return '${diff.inDays}:${diff.inHours.remainder(24).toString().padLeft(2, '0')}:${diff.inMinutes.remainder(60).toString().padLeft(2, '0')}';
-                                            } else if (diff.inHours > 0) {
-                                            return '${diff.inHours}:${diff.inMinutes.remainder(60).toString().padLeft(2, '0')}';
-                                            } else {
-                                            return '0:${diff.inMinutes.toString().padLeft(2, '0')}';
-                                            }
-                                          })()}'
-                                          : 'Оповіщень не надходило.',
-                                          style: Theme.of(context).textTheme.bodyMedium,
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 1,
+                                            _alertInfo.status == 'A'
+                                            ? 'Початок: ${DateFormat('HH:mm').format(_alertInfo.startTime!.toLocal())}'
+                                            ' • ${(() {
+                                              final diff = DateTime.now().difference(_alertInfo.startTime!);
+                                              if (diff.inDays > 0) {
+                                              return '${diff.inDays}:${diff.inHours.remainder(24).toString().padLeft(2, '0')}:${diff.inMinutes.remainder(60).toString().padLeft(2, '0')}';
+                                              } else if (diff.inHours > 0) {
+                                              return '${diff.inHours}:${diff.inMinutes.remainder(60).toString().padLeft(2, '0')}';
+                                              } else {
+                                              return '0:${diff.inMinutes.toString().padLeft(2, '0')}';
+                                              }
+                                            })()}'
+                                            : 'Оповіщень не надходило.',
+                                            style: Theme.of(context).textTheme.bodyMedium,
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
                                           ),
                                         ),
                                       ],
