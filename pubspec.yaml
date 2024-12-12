@@ -28,6 +28,7 @@ dependencies:
   dynamic_color: ^1.7.0
   provider: ^6.1.2
   shared_preferences: ^2.3.3
+  flutter_launcher_icons: ^0.11.0
 
 dev_dependencies:
   flutter_test:
@@ -49,3 +50,11 @@ flutter:
           weight: 700
         - asset: assets/fonts/Comfortaa-Light.ttf
           weight: 300
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/img/icon.png"
+  adaptive_icon_background: "assets/launcher_icon/ic_launcher_background.png"
+  adaptive_icon_foreground: "assets/launcher_icon/ic_launcher_foreground.png"
+  adaptive_icon_monochrome: "assets/launcher_icon/ic_launcher_monochrome.png"
