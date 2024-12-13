@@ -34,6 +34,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _isAlertLoading = true;
   AlertInfo _alertInfo = AlertInfo(status: 'N');
   Timer? _alertTimer;
+  List<Map<String, dynamic>> _emergencyMessages = [];
 
   @override
   void initState() {
@@ -51,6 +52,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
     _fetchWeather();
     _fetchAlertStatus();
+    _fetchEmergencyMessages();
     _alertTimer = Timer.periodic(const Duration(seconds: 30), (_) => _fetchAlertStatus());
   }
 
@@ -228,27 +230,111 @@ class _MyHomePageState extends State<MyHomePage> {
     };
   }
 
+  Future<void> _fetchEmergencyMessages() async {
+    try {
+      final now = Timestamp.now();
+      final snapshot = await FirebaseFirestore.instance
+          .collection('emergency')
+          .where('end', isGreaterThan: now)
+          .get();
+          
+      setState(() {
+        _emergencyMessages = snapshot.docs
+            .map((doc) => {
+              'name': doc.data()['name'] as String,
+              'description': doc.data()['description'] as String,
+              'end': doc.data()['end'] as Timestamp,
+            })
+            .toList();
+      });
+    } catch (e) {
+      debugPrint('Error fetching emergency messages: $e');
+    }
+  }
+
+  PreferredSizeWidget _buildNormalAppBar() {
+  return AppBar(
+    
+    title: AnimatedOpacity(
+      opacity: _showAppBarLogo ? 1.0 : 0.0,
+      duration: const Duration(milliseconds: 100),
+      child: Center(
+        child: SvgPicture.asset(
+          'assets/svg/ППФК.svg',
+          color: Theme.of(context).colorScheme.primary,
+          height: 30,
+        ),
+      ),
+    ),
+  );
+}
+
+  PreferredSizeWidget _buildEmergencyAppBar() {
+    return AppBar(
+      backgroundColor: Theme.of(context).colorScheme.onError,
+      title: Column(
+        children: [
+          Container(
+            height: 30,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: _emergencyMessages.length,
+              itemBuilder: (context, index) {
+                final message = _emergencyMessages[index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: GestureDetector(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: Text(message['name']),
+                          content: Text(message['description']),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                    child: Row(
+                      children: [
+                        Icon(Icons.warning_amber_rounded,
+                            color: Theme.of(context).colorScheme.error),
+                        const SizedBox(width: 8),
+                        Text(
+                          message['name'],
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: AnimatedOpacity(
-          opacity: _showAppBarLogo ? 1.0 : 0.0,
-          duration: const Duration(milliseconds: 100),
-          child: Center(
-            child: SvgPicture.asset(
-            'assets/svg/ППФК.svg',
-            color: Theme.of(context).colorScheme.primary,
-            height: 30,
-            ),
-          ),
-        ),
-      ),
+      appBar: _emergencyMessages.isNotEmpty 
+      ? _buildEmergencyAppBar()
+      : _buildNormalAppBar(),
       body: SingleChildScrollView(
         controller: _scrollController,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
+          children: [
+            const SizedBox(height: 20.0, width: double.infinity),
             Align(
               alignment: Alignment.topCenter,
               child: Padding(
