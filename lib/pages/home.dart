@@ -383,7 +383,48 @@ class _MyHomePageState extends State<MyHomePage> {
                               width: 2.0,
                             ),
                           ),
-                          child: Column(
+                          child: snapshot.data!.isEmpty 
+                            ? Row(
+                                children: [
+                                  SizedBox(
+                                    height: 60,
+                                    width: 5,
+                                    child: DecoratedBox(
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(context).colorScheme.secondary,
+                                        borderRadius: BorderRadius.circular(5),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10.0),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Сьогодні вихідний',
+                                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 20.0),
+                                        ),
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.weekend_outlined,
+                                              size: 16.0,
+                                              color: Theme.of(context).colorScheme.secondary,
+                                            ),
+                                            const SizedBox(width: 5.0),
+                                            Text(
+                                              'Відпочивай та набирайся сил!',
+                                              style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              )
+                          : Column(
                             children: snapshot.data!.asMap().entries.map((entry) {
                               final index = entry.key;
                               final lesson = entry.value;
