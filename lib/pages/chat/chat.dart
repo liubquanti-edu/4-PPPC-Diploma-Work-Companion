@@ -30,6 +30,7 @@ class _ChatScreenState extends State<ChatScreen> {
     databaseURL: 'https://pppc-companion-default-rtdb.europe-west1.firebasedatabase.app'
   ).ref();
   final _auth = FirebaseAuth.instance;
+  Map<String, dynamic>? _replyTo;
 
   String get chatRoomId {
     final List<String> ids = [_auth.currentUser!.uid, widget.recipientId];
@@ -51,11 +52,22 @@ class _ChatScreenState extends State<ChatScreen> {
     } else {
       // Send new message
       final messageRef = _database.child('chats/$chatRoomId/messages').push();
-      messageRef.set({
+      final message = {
         'senderId': _auth.currentUser!.uid,
         'text': _messageController.text.trim(),
         'timestamp': ServerValue.timestamp,
-      });
+      };
+      
+      if (_replyTo != null) {
+        message['replyTo'] = {
+          'messageId': _replyTo!['key'],
+          'text': _replyTo!['text'],
+          'senderId': _replyTo!['senderId'],
+        };
+      }
+      
+      await messageRef.set(message);
+      _cancelReply();
     }
 
     _messageController.clear();
@@ -144,6 +156,19 @@ class _ChatScreenState extends State<ChatScreen> {
     setState(() {
       _editingMessageKey = null;
       _messageController.clear();
+    });
+  }
+
+  void _startReply(Map<String, dynamic> message) {
+    setState(() {
+      _replyTo = message;
+    });
+    FocusScope.of(context).requestFocus();
+  }
+
+  void _cancelReply() {
+    setState(() {
+      _replyTo = null;
     });
   }
 
@@ -245,100 +270,174 @@ class _ChatScreenState extends State<ChatScreen> {
                             message['timestamp'] ?? 0
                           );
 
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: Align(
-                              alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-                              child: GestureDetector(
-                                onLongPress: isMe ? () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => SimpleDialog(
-                                      children: [
-                                        SimpleDialogOption(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                            _startEditMessage(message['key'], message['text']);
-                                          },
-                                          child: const Row(
-                                            children: [
-                                              Icon(Icons.edit),
-                                              SizedBox(width: 8),
-                                              Text('Редагувати'),
-                                            ],
-                                          ),
-                                        ),
-                                        SimpleDialogOption(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                            _deleteMessage(message['key']);
-                                          },
-                                          child: const Row(
-                                            children: [
-                                              Icon(Icons.delete),
-                                              SizedBox(width: 8),
-                                              Text('Видалити'),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                } : null,
-                                child: Container(
-                                  constraints: BoxConstraints(
-                                    maxWidth: MediaQuery.of(context).size.width * 0.75,
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 5,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: isMe 
-                                      ? Theme.of(context).colorScheme.onSecondary
-                                      : Theme.of(context).colorScheme.surfaceVariant,
-                                    borderRadius: isMe 
-                                      ? const BorderRadius.only(
-                                          topLeft: Radius.circular(15),
-                                          topRight: Radius.circular(15),
-                                          bottomRight: Radius.circular(5),
-                                          bottomLeft: Radius.circular(15),
-                                        )
-                                      : const BorderRadius.only(
-                                          topLeft: Radius.circular(15),
-                                          topRight: Radius.circular(15),
-                                          bottomRight: Radius.circular(15),
-                                          bottomLeft: Radius.circular(5),
-                                        )
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        message['text'] ?? '',
-                                        style: TextStyle(
-                                          color: Theme.of(context).colorScheme.onSurfaceVariant
-                                        ),
-                                      ),
-                                      Row(
-                                        mainAxisSize: MainAxisSize.min,
+                          return Dismissible(
+                            key: Key(message['key']),
+                            direction: DismissDirection.endToStart,
+                            onDismissed: null,
+                            confirmDismiss: (direction) async {
+                              _startReply(message);
+                              return false;
+                            },
+                            background: Container(
+                              padding: const EdgeInsets.only(right: 16),
+                              color: Theme.of(context).colorScheme.secondary.withOpacity(0.2),
+                              alignment: Alignment.centerRight,
+                              child: const Icon(Icons.reply),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Align(
+                                alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                                child: GestureDetector(
+                                  onLongPress: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => SimpleDialog(
                                         children: [
-                                          Text(
-                                            DateFormat('HH:mm').format(time),
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
+                                          SimpleDialogOption(
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                              _startReply(message);
+                                            },
+                                            child: const Row(
+                                              children: [
+                                                Icon(Icons.reply),
+                                                SizedBox(width: 8),
+                                                Text('Відповісти'),
+                                              ],
                                             ),
                                           ),
-                                          if (message['edited'] == true) ...[
-                                            const SizedBox(width: 4),
-                                            Icon(
-                                              Icons.edit,
-                                              size: 10,
-                                              color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
+                                          if (isMe) ...[
+                                            SimpleDialogOption(
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                                _startEditMessage(message['key'], message['text']);
+                                              },
+                                              child: const Row(
+                                                children: [
+                                                  Icon(Icons.edit),
+                                                  SizedBox(width: 8),
+                                                  Text('Редагувати'),
+                                                ],
+                                              ),
+                                            ),
+                                            SimpleDialogOption(
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                                _deleteMessage(message['key']);
+                                              },
+                                              child: const Row(
+                                                children: [
+                                                  Icon(Icons.delete),
+                                                  SizedBox(width: 8),
+                                                  Text('Видалити'),
+                                                ],
+                                              ),
                                             ),
                                           ],
                                         ],
+                                      ),
+                                    );
+                                  },
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        constraints: BoxConstraints(
+                                          maxWidth: MediaQuery.of(context).size.width * 0.75,
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 5,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: isMe 
+                                            ? Theme.of(context).colorScheme.onSecondary
+                                            : Theme.of(context).colorScheme.surfaceVariant,
+                                          borderRadius: isMe 
+                                            ? const BorderRadius.only(
+                                                topLeft: Radius.circular(15),
+                                                topRight: Radius.circular(15),
+                                                bottomRight: Radius.circular(5),
+                                                bottomLeft: Radius.circular(15),
+                                              )
+                                            : const BorderRadius.only(
+                                                topLeft: Radius.circular(15),
+                                                topRight: Radius.circular(15),
+                                                bottomRight: Radius.circular(15),
+                                                bottomLeft: Radius.circular(5),
+                                              )
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            if (message['replyTo'] != null) ...[
+                                                Container(
+                                                  margin: const EdgeInsets.only(top: 4),
+                                                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                                                decoration: BoxDecoration(
+                                                  borderRadius: BorderRadius.circular(10),
+                                                  color: Theme.of(context).colorScheme.surfaceVariant,
+                                                  border: Border(
+                                                    left: BorderSide(
+                                                      color: Theme.of(context).colorScheme.primary,
+                                                      width: 2,
+
+                                                    ),
+                                                  ),
+                                                ),
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      widget.recipientName,
+                                                      style: TextStyle(
+                                                        fontSize: 10,
+                                                        color: Theme.of(context).colorScheme.primary,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      message['replyTo']['text'],
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
+                                                      ),
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              message['text'] ?? '',
+                                              style: TextStyle(
+                                                color: Theme.of(context).colorScheme.onSurfaceVariant
+                                              ),
+                                            ),
+                                            Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text(
+                                                  DateFormat('HH:mm').format(time),
+                                                  style: TextStyle(
+                                                    fontSize: 10,
+                                                    color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
+                                                  ),
+                                                ),
+                                                if (message['edited'] == true) ...[
+                                                  const SizedBox(width: 4),
+                                                  Icon(
+                                                    Icons.edit,
+                                                    size: 10,
+                                                    color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -357,42 +456,83 @@ class _ChatScreenState extends State<ChatScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             color: Theme.of(context).colorScheme.surface,
-            child: SafeArea(
-              child: Row(
-                children: [
-                  if (_isEditing)
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: _cancelEdit,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (_replyTo != null)
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    margin: const EdgeInsets.only(bottom: 8),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceVariant,
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  Expanded(
-                    child: TextField(
-                      controller: _messageController,
-                      textCapitalization: TextCapitalization.sentences,
-                      decoration: InputDecoration(
-                        hintText: _isEditing 
-                          ? 'Редагування...' 
-                          : 'Написати...',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Відповідь на',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                              Text(
+                                _replyTo!['text'],
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
                         ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 10,
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: _cancelReply,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
                         ),
+                      ],
+                    ),
+                  ),
+                Row(
+                  children: [
+                    if (_isEditing)
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: _cancelEdit,
                       ),
-                      maxLines: null,
-                      textInputAction: TextInputAction.send,
-                      onSubmitted: (_) => _sendMessage(),
+                    Expanded(
+                      child: TextField(
+                        controller: _messageController,
+                        textCapitalization: TextCapitalization.sentences,
+                        decoration: InputDecoration(
+                          hintText: _isEditing 
+                            ? 'Редагування...' 
+                            : 'Написати...',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                        ),
+                        maxLines: null,
+                        textInputAction: TextInputAction.send,
+                        onSubmitted: (_) => _sendMessage(),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  FloatingActionButton(
-                    onPressed: _sendMessage,
-                    child: Icon(_isEditing ? Icons.check : Icons.send),
-                  ),
-                ],
-              ),
+                    const SizedBox(width: 8),
+                    FloatingActionButton(
+                      onPressed: _sendMessage,
+                      child: Icon(_isEditing ? Icons.check : Icons.send),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ],
