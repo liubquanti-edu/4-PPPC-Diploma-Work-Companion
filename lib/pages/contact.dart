@@ -6,6 +6,8 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:intl/intl.dart';
 import 'package:pppc_companion/pages/wall/post.dart';
+import 'package:pppc_companion/pages/wall/create_post.dart';
+
 
 class ContactPage extends StatefulWidget {
   const ContactPage({Key? key}) : super(key: key);
@@ -21,41 +23,75 @@ class _ContactPageState extends State<ContactPage> {
     app: Firebase.app(),
     databaseURL: 'https://pppc-companion-default-rtdb.europe-west1.firebasedatabase.app'
   ).ref();
-  
-  final _postController = TextEditingController();
-  bool _isPosting = false;
 
-  Future<void> _createPost() async {
-    if (_postController.text.trim().isEmpty) return;
+  @override 
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Стіна'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.chat),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ChatsPage()),
+              );
+            },
+          ),
+        ],
+      ),
+      // Add FAB
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const CreatePostScreen()),
+          );
+        },
+        child: const Icon(Icons.add),
+      ),
+      body: StreamBuilder(
+        stream: _database
+            .child('posts')
+            .orderByChild('timestamp')
+            .onValue,
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-    setState(() => _isPosting = true);
+          final posts = <Map<String, dynamic>>[];
+          if (snapshot.data?.snapshot.value != null) {
+            final postsData = Map<String, dynamic>.from(
+              snapshot.data!.snapshot.value as Map
+            );
+            
+            postsData.forEach((key, value) {
+              final post = Map<String, dynamic>.from(value);
+              post['id'] = key; // Store post ID
+              posts.add(post);
+            });
+            
+            posts.sort((a, b) => (b['timestamp'] as int).compareTo(a['timestamp'] as int));
+          }
 
-    try {
-      final userDoc = await _firestore
-          .collection('students')
-          .doc(_auth.currentUser!.uid)
-          .get();
-      
-      final userData = userDoc.data()!;
-      
-      final newPostRef = _database.child('posts').push();
-      await newPostRef.set({
-        'text': _postController.text.trim(),
-        'authorId': _auth.currentUser!.uid,
-        'authorName': '${userData['surname']} ${userData['name']}',
-        'authorAvatar': userData['avatar'] ?? '',
-        'timestamp': ServerValue.timestamp,
-        'rating': 0, // Initialize rating counter
-      });
+          if (posts.isEmpty) {
+            return const Center(child: Text('Поки немає дописів'));
+          }
 
-      _postController.clear();
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Помилка: $e'))
-      );
-    } finally {
-      setState(() => _isPosting = false);
-    }
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: posts.length,
+            itemBuilder: (context, index) {
+              final post = posts[index];
+              final time = DateTime.fromMillisecondsSinceEpoch(post['timestamp'] as int);
+              return _buildPost(post, post['id'], time);
+            },
+          );
+        },
+      ),
+    );
   }
 
   Future<void> _handleLike(String postId, bool currentLiked, bool currentDisliked) async {
@@ -214,7 +250,13 @@ class _ContactPageState extends State<ContactPage> {
                         children: [
                           const Icon(Icons.comment_outlined),
                           const SizedBox(width: 4),
-                          Text(commentCount.toString()),
+                            SizedBox(
+                            width: 30,
+                            child: Text(
+                              commentCount.toString(),
+                              textAlign: TextAlign.center,
+                            ),
+                            ),
                         ],
                       );
                     },
@@ -226,103 +268,5 @@ class _ContactPageState extends State<ContactPage> {
         ),
       ),
     );
-  }
-
-  @override 
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Стіна'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.chat),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const ChatsPage()),
-              );
-            },
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                Expanded(
-                    child: TextField(
-                    maxLength: 5000,
-                    controller: _postController,
-                    decoration: const InputDecoration(
-                      hintText: 'Написати допис...',
-                      border: OutlineInputBorder(),
-                    ),
-                    maxLines: 3,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                if (_isPosting)
-                  const CircularProgressIndicator()
-                else
-                  IconButton(
-                    icon: const Icon(Icons.send),
-                    onPressed: _createPost,
-                  ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: StreamBuilder(
-              stream: _database
-                  .child('posts')
-                  .orderByChild('timestamp')
-                  .onValue,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                final posts = <Map<String, dynamic>>[];
-                if (snapshot.data?.snapshot.value != null) {
-                  final postsData = Map<String, dynamic>.from(
-                    snapshot.data!.snapshot.value as Map
-                  );
-                  
-                  postsData.forEach((key, value) {
-                    final post = Map<String, dynamic>.from(value);
-                    post['id'] = key; // Store post ID
-                    posts.add(post);
-                  });
-                  
-                  posts.sort((a, b) => (b['timestamp'] as int).compareTo(a['timestamp'] as int));
-                }
-
-                if (posts.isEmpty) {
-                  return const Center(child: Text('Поки немає дописів'));
-                }
-
-                return ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: posts.length,
-                  itemBuilder: (context, index) {
-                    final post = posts[index];
-                    final time = DateTime.fromMillisecondsSinceEpoch(post['timestamp'] as int);
-                    return _buildPost(post, post['id'], time);
-                  },
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    _postController.dispose();
-    super.dispose();
   }
 }
