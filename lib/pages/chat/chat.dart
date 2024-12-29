@@ -280,7 +280,6 @@ class _ChatScreenState extends State<ChatScreen> {
                             },
                             background: Container(
                               padding: const EdgeInsets.only(right: 16),
-                              color: Theme.of(context).colorScheme.secondary.withOpacity(0.2),
                               alignment: Alignment.centerRight,
                               child: const Icon(Icons.reply),
                             ),
@@ -377,12 +376,23 @@ class _ChatScreenState extends State<ChatScreen> {
                                                 padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                                                 decoration: BoxDecoration(
                                                   borderRadius: BorderRadius.circular(10),
-                                                  color: Theme.of(context).colorScheme.surfaceVariant,
+                                                  color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.4),
                                                   border: Border(
                                                     left: BorderSide(
                                                       color: Theme.of(context).colorScheme.primary,
                                                       width: 2,
-
+                                                    ),
+                                                    top: BorderSide(
+                                                      color: Theme.of(context).colorScheme.primary,
+                                                      width: 2,
+                                                    ),
+                                                    bottom: BorderSide(
+                                                      color: Theme.of(context).colorScheme.primary,
+                                                      width: 2,
+                                                    ),
+                                                    right: BorderSide(
+                                                      color: Theme.of(context).colorScheme.primary,
+                                                      width: 2,
                                                     ),
                                                   ),
                                                 ),
