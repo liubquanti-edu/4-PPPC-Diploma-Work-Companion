@@ -14,6 +14,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '/models/schedule.dart';
 import '/models/week_type.dart';
+import '/pages/news/read.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -1010,7 +1011,12 @@ class _MyHomePageState extends State<MyHomePage> {
                                 customBorder: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                onTap: () => _launchUrl(newsItem['link'] ?? ''),
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => NewsDetailScreen(newsItem: newsItem),
+                                  ),
+                                ),
                                 child: Ink(
                                   padding: const EdgeInsets.all(10.0),
                                   decoration: BoxDecoration(
