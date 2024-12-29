@@ -387,7 +387,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             ? Row(
                                 children: [
                                   SizedBox(
-                                    height: 60,
+                                    height: 50,
                                     width: 5,
                                     child: DecoratedBox(
                                       decoration: BoxDecoration(
