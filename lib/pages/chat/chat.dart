@@ -184,7 +184,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   );
                   messagesData.forEach((key, value) {
                     final messageData = Map<String, dynamic>.from(value);
-                    messageData['key'] = key; // Store the message key
+                    messageData['key'] = key;
                     messages.add(messageData);
                   });
                 }
@@ -290,14 +290,26 @@ class _ChatScreenState extends State<ChatScreen> {
                                     maxWidth: MediaQuery.of(context).size.width * 0.75,
                                   ),
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 10,
+                                    horizontal: 10,
+                                    vertical: 5,
                                   ),
                                   decoration: BoxDecoration(
                                     color: isMe 
-                                      ? Theme.of(context).colorScheme.primary
+                                      ? Theme.of(context).colorScheme.onSecondary
                                       : Theme.of(context).colorScheme.surfaceVariant,
-                                    borderRadius: BorderRadius.circular(20),
+                                    borderRadius: isMe 
+                                      ? const BorderRadius.only(
+                                          topLeft: Radius.circular(15),
+                                          topRight: Radius.circular(15),
+                                          bottomRight: Radius.circular(5),
+                                          bottomLeft: Radius.circular(15),
+                                        )
+                                      : const BorderRadius.only(
+                                          topLeft: Radius.circular(15),
+                                          topRight: Radius.circular(15),
+                                          bottomRight: Radius.circular(15),
+                                          bottomLeft: Radius.circular(5),
+                                        )
                                   ),
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -305,32 +317,25 @@ class _ChatScreenState extends State<ChatScreen> {
                                       Text(
                                         message['text'] ?? '',
                                         style: TextStyle(
-                                          color: isMe 
-                                            ? Colors.white
-                                            : Theme.of(context).colorScheme.onSurfaceVariant,
+                                          color: Theme.of(context).colorScheme.onSurfaceVariant
                                         ),
                                       ),
-                                      const SizedBox(height: 4),
                                       Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
                                           Text(
                                             DateFormat('HH:mm').format(time),
                                             style: TextStyle(
-                                              fontSize: 12,
-                                              color: isMe 
-                                                ? Colors.white70
-                                                : Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
+                                              fontSize: 10,
+                                              color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
                                             ),
                                           ),
                                           if (message['edited'] == true) ...[
                                             const SizedBox(width: 4),
                                             Icon(
                                               Icons.edit,
-                                              size: 12,
-                                              color: isMe 
-                                                ? Colors.white70
-                                                : Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
+                                              size: 10,
+                                              color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
                                             ),
                                           ],
                                         ],
@@ -366,8 +371,8 @@ class _ChatScreenState extends State<ChatScreen> {
                       textCapitalization: TextCapitalization.sentences,
                       decoration: InputDecoration(
                         hintText: _isEditing 
-                          ? 'Редагування повідомлення...' 
-                          : 'Введіть повідомлення...',
+                          ? 'Редагування...' 
+                          : 'Написати...',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
