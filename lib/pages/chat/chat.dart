@@ -133,7 +133,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 }
                 
                 messages.sort((a, b) => 
-                  (b['timestamp'] ?? 0).compareTo(a['timestamp'] ?? 0));
+                  (a['timestamp'] ?? 0).compareTo(b['timestamp'] ?? 0));
 
                 final groupedMessages = _groupMessagesByDate(messages);
                 final dates = groupedMessages.keys.toList();
@@ -202,7 +202,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                 ),
                                 decoration: BoxDecoration(
                                   color: isMe 
-                                    ? Theme.of(context).colorScheme.primary
+                                    ? Theme.of(context).colorScheme.onSecondary
                                     : Theme.of(context).colorScheme.surfaceVariant,
                                   borderRadius: BorderRadius.circular(20),
                                 ),
