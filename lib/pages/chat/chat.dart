@@ -21,6 +21,8 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  String? _editingMessageKey;
+  bool get _isEditing => _editingMessageKey != null;
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
     final DatabaseReference _database = FirebaseDatabase.instanceFor(
@@ -35,15 +37,26 @@ class _ChatScreenState extends State<ChatScreen> {
     return ids.join('_');
   }
 
-  void _sendMessage() {
+  void _sendMessage() async {
     if (_messageController.text.trim().isEmpty) return;
 
-    final messageRef = _database.child('chats/$chatRoomId/messages').push();
-    messageRef.set({
-      'senderId': _auth.currentUser!.uid,
-      'text': _messageController.text.trim(),
-      'timestamp': ServerValue.timestamp,
-    });
+    if (_isEditing) {
+      // Update existing message
+      await _database.child('chats/$chatRoomId/messages/$_editingMessageKey').update({
+        'text': _messageController.text.trim(),
+        'edited': true,
+        'editedAt': ServerValue.timestamp,
+      });
+      _cancelEdit();
+    } else {
+      // Send new message
+      final messageRef = _database.child('chats/$chatRoomId/messages').push();
+      messageRef.set({
+        'senderId': _auth.currentUser!.uid,
+        'text': _messageController.text.trim(),
+        'timestamp': ServerValue.timestamp,
+      });
+    }
 
     _messageController.clear();
     _scrollToBottom();
@@ -92,6 +105,48 @@ class _ChatScreenState extends State<ChatScreen> {
     return grouped;
   }
 
+  void _startEditMessage(String messageKey, String currentText) {
+  setState(() {
+    _editingMessageKey = messageKey;
+    _messageController.text = currentText;
+  });
+  _messageController.selection = TextSelection.fromPosition(
+    TextPosition(offset: _messageController.text.length),
+  );
+  FocusScope.of(context).requestFocus();
+}
+
+  void _deleteMessage(String messageKey) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Видалити повідомлення'),
+        content: const Text('Ви впевнені, що хочете видалити це повідомлення?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Скасувати'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Видалити'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await _database.child('chats/$chatRoomId/messages/$messageKey').remove();
+    }
+  }
+
+  void _cancelEdit() {
+    setState(() {
+      _editingMessageKey = null;
+      _messageController.clear();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -128,7 +183,9 @@ class _ChatScreenState extends State<ChatScreen> {
                     snapshot.data!.snapshot.value as Map
                   );
                   messagesData.forEach((key, value) {
-                    messages.add(Map<String, dynamic>.from(value));
+                    final messageData = Map<String, dynamic>.from(value);
+                    messageData['key'] = key; // Store the message key
+                    messages.add(messageData);
                   });
                 }
                 
@@ -192,42 +249,94 @@ class _ChatScreenState extends State<ChatScreen> {
                             padding: const EdgeInsets.only(bottom: 8),
                             child: Align(
                               alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-                              child: Container(
-                                constraints: BoxConstraints(
-                                  maxWidth: MediaQuery.of(context).size.width * 0.75,
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 10,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: isMe 
-                                    ? Theme.of(context).colorScheme.onSecondary
-                                    : Theme.of(context).colorScheme.surfaceVariant,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      message['text'] ?? '',
-                                      style: TextStyle(
-                                        color: isMe 
-                                          ? Colors.white
-                                          : Theme.of(context).colorScheme.onSurfaceVariant,
-                                      ),
+                              child: GestureDetector(
+                                onLongPress: isMe ? () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => SimpleDialog(
+                                      children: [
+                                        SimpleDialogOption(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                            _startEditMessage(message['key'], message['text']);
+                                          },
+                                          child: const Row(
+                                            children: [
+                                              Icon(Icons.edit),
+                                              SizedBox(width: 8),
+                                              Text('Редагувати'),
+                                            ],
+                                          ),
+                                        ),
+                                        SimpleDialogOption(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                            _deleteMessage(message['key']);
+                                          },
+                                          child: const Row(
+                                            children: [
+                                              Icon(Icons.delete),
+                                              SizedBox(width: 8),
+                                              Text('Видалити'),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      DateFormat('HH:mm').format(time),
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: isMe 
-                                          ? Colors.white70
-                                          : Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
+                                  );
+                                } : null,
+                                child: Container(
+                                  constraints: BoxConstraints(
+                                    maxWidth: MediaQuery.of(context).size.width * 0.75,
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 10,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: isMe 
+                                      ? Theme.of(context).colorScheme.primary
+                                      : Theme.of(context).colorScheme.surfaceVariant,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        message['text'] ?? '',
+                                        style: TextStyle(
+                                          color: isMe 
+                                            ? Colors.white
+                                            : Theme.of(context).colorScheme.onSurfaceVariant,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            DateFormat('HH:mm').format(time),
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: isMe 
+                                                ? Colors.white70
+                                                : Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
+                                            ),
+                                          ),
+                                          if (message['edited'] == true) ...[
+                                            const SizedBox(width: 4),
+                                            Icon(
+                                              Icons.edit,
+                                              size: 12,
+                                              color: isMe 
+                                                ? Colors.white70
+                                                : Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
@@ -246,12 +355,19 @@ class _ChatScreenState extends State<ChatScreen> {
             child: SafeArea(
               child: Row(
                 children: [
+                  if (_isEditing)
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: _cancelEdit,
+                    ),
                   Expanded(
                     child: TextField(
                       controller: _messageController,
                       textCapitalization: TextCapitalization.sentences,
                       decoration: InputDecoration(
-                        hintText: 'Введіть повідомлення...',
+                        hintText: _isEditing 
+                          ? 'Редагування повідомлення...' 
+                          : 'Введіть повідомлення...',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
@@ -268,7 +384,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   const SizedBox(width: 8),
                   FloatingActionButton(
                     onPressed: _sendMessage,
-                    child: const Icon(Icons.send),
+                    child: Icon(_isEditing ? Icons.check : Icons.send),
                   ),
                 ],
               ),
