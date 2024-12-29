@@ -59,6 +59,39 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  // Helper method to format date
+  String _formatMessageDate(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final messageDate = DateTime(date.year, date.month, date.day);
+
+    if (messageDate == today) {
+      return 'Сьогодні';
+    } else if (messageDate == yesterday) {
+      return 'Вчора';
+    } else {
+      return DateFormat('d MMMM y', 'uk').format(date);
+    }
+  }
+
+  // Helper method to group messages by date
+  Map<String, List<Map<String, dynamic>>> _groupMessagesByDate(List<Map<String, dynamic>> messages) {
+    final grouped = <String, List<Map<String, dynamic>>>{};
+    
+    for (var message in messages) {
+      final date = DateTime.fromMillisecondsSinceEpoch(message['timestamp'] ?? 0);
+      final dateStr = _formatMessageDate(date);
+      
+      if (!grouped.containsKey(dateStr)) {
+        grouped[dateStr] = [];
+      }
+      grouped[dateStr]!.add(message);
+    }
+    
+    return grouped;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -102,63 +135,105 @@ class _ChatScreenState extends State<ChatScreen> {
                 messages.sort((a, b) => 
                   (b['timestamp'] ?? 0).compareTo(a['timestamp'] ?? 0));
 
+                final groupedMessages = _groupMessagesByDate(messages);
+                final dates = groupedMessages.keys.toList();
+
+                if (dates.isEmpty) {
+                  return const Center(
+                    child: Text('Немає повідомлень'),
+                  );
+                }
+
                 return ListView.builder(
                   reverse: true,
                   controller: _scrollController,
                   padding: const EdgeInsets.all(8),
-                  itemCount: messages.length,
+                  itemCount: dates.length * 2 - 1,
                   itemBuilder: (context, index) {
-                    final message = messages[index];
-                    final isMe = message['senderId'] == _auth.currentUser!.uid;
-                    final time = DateTime.fromMillisecondsSinceEpoch(
-                      message['timestamp'] ?? 0
-                    );
+                    if (index.isOdd) {
+                      return const SizedBox(height: 8);
+                    }
 
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Align(
-                        alignment: isMe 
-                          ? Alignment.centerRight 
-                          : Alignment.centerLeft,
-                        child: Container(
-                          constraints: BoxConstraints(
-                            maxWidth: MediaQuery.of(context).size.width * 0.75,
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isMe 
-                              ? Theme.of(context).colorScheme.primary
-                              : Theme.of(context).colorScheme.surfaceVariant,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                message['text'] ?? '',
-                                style: TextStyle(
-                                  color: isMe 
-                                    ? Colors.white
-                                    : Theme.of(context).colorScheme.onSurfaceVariant,
-                                ),
+                    final dateIndex = index ~/ 2;
+                    final date = dates[dateIndex];
+                    final messagesForDate = groupedMessages[date]!;
+
+                    return Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Center(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 4,
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                DateFormat('HH:mm').format(time),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.surfaceVariant,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                date,
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: isMe 
-                                    ? Colors.white70
-                                    : Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 ),
                               ),
-                            ],
+                            ),
                           ),
                         ),
-                      ),
+                        ...messagesForDate.map((message) {
+                          final isMe = message['senderId'] == _auth.currentUser!.uid;
+                          final time = DateTime.fromMillisecondsSinceEpoch(
+                            message['timestamp'] ?? 0
+                          );
+
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Align(
+                              alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                              child: Container(
+                                constraints: BoxConstraints(
+                                  maxWidth: MediaQuery.of(context).size.width * 0.75,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 10,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isMe 
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Theme.of(context).colorScheme.surfaceVariant,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      message['text'] ?? '',
+                                      style: TextStyle(
+                                        color: isMe 
+                                          ? Colors.white
+                                          : Theme.of(context).colorScheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      DateFormat('HH:mm').format(time),
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: isMe 
+                                          ? Colors.white70
+                                          : Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ],
                     );
                   },
                 );

@@ -12,13 +12,13 @@ import 'services/user_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'providers/theme_provider.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
 
   try {
-    // Initialize Firebase if not already initialized
     if (Firebase.apps.isEmpty) {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
@@ -26,9 +26,10 @@ void main() async {
     }
   } catch (e) {
     debugPrint('Firebase initialization error: $e');
-    // Get existing default app if already initialized
     Firebase.app();
   }
+
+  await initializeDateFormatting('uk');
 
   runApp(
     ChangeNotifierProvider(

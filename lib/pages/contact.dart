@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pppc_companion/pages/chat/chat.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 class ContactPage extends StatefulWidget {
   const ContactPage({Key? key}) : super(key: key);
@@ -13,6 +15,36 @@ class ContactPage extends StatefulWidget {
 class _ContactPageState extends State<ContactPage> {
   final _auth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
+  final _database = FirebaseDatabase.instanceFor(
+    app: Firebase.app(),
+    databaseURL: 'https://pppc-companion-default-rtdb.europe-west1.firebasedatabase.app'
+  ).ref();
+
+  String getChatRoomId(String userId1, String userId2) {
+    final List<String> ids = [userId1, userId2];
+    ids.sort();
+    return ids.join('_');
+  }
+
+  // Update return type to include sender info
+  Stream<Map<String, dynamic>?> getLastMessage(String recipientId) {
+    final chatRoomId = getChatRoomId(_auth.currentUser!.uid, recipientId);
+    return _database
+        .child('chats/$chatRoomId/messages')
+        .orderByChild('timestamp')
+        .limitToLast(1)
+        .onValue
+        .map((event) {
+      if (event.snapshot.value == null) return null;
+      
+      final messages = Map<String, dynamic>.from(event.snapshot.value as Map);
+      final lastMessage = messages.values.first;
+      return {
+        'text': lastMessage['text'] as String?,
+        'senderId': lastMessage['senderId'] as String?,
+      };
+    });
+  }
 
   Future<String> _getCurrentUserGroup() async {
     final userDoc = await _firestore
@@ -33,8 +65,6 @@ class _ContactPageState extends State<ContactPage> {
             return const Center(child: CircularProgressIndicator());
           }
 
-          debugPrint('Current user group: ${groupSnapshot.data}'); // Debug log
-
           return StreamBuilder<QuerySnapshot>(
             stream: _firestore
                 .collection('students')
@@ -42,7 +72,6 @@ class _ContactPageState extends State<ContactPage> {
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.hasError) {
-                debugPrint('Firestore error: ${snapshot.error}'); // Debug log
                 return Center(child: Text('Помилка: ${snapshot.error}'));
               }
 
@@ -53,8 +82,6 @@ class _ContactPageState extends State<ContactPage> {
               final users = snapshot.data!.docs
                   .where((doc) => doc.id != _auth.currentUser!.uid)
                   .toList();
-
-              debugPrint('Found ${users.length} users in group'); // Debug log
 
               if (users.isEmpty) {
                 return const Center(
@@ -67,7 +94,6 @@ class _ContactPageState extends State<ContactPage> {
                 itemCount: users.length,
                 itemBuilder: (context, index) {
                   final userData = users[index].data() as Map<String, dynamic>;
-                  debugPrint('User data: $userData'); // Debug log
                   
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 8),
@@ -87,7 +113,7 @@ class _ContactPageState extends State<ContactPage> {
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surface,
+                          color: Theme.of(context).colorScheme.onSecondary,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: Theme.of(context).colorScheme.primary,
@@ -112,9 +138,32 @@ class _ContactPageState extends State<ContactPage> {
                                     '${userData['surname']} ${userData['name']}',
                                     style: Theme.of(context).textTheme.titleMedium,
                                   ),
-                                  Text(
-                                    '@${userData['nickname']}',
-                                    style: Theme.of(context).textTheme.bodySmall,
+                                  // In ListView.builder, update StreamBuilder:
+                                  StreamBuilder<Map<String, dynamic>?>(
+                                    stream: getLastMessage(users[index].id),
+                                    builder: (context, snapshot) {
+                                      if (!snapshot.hasData) {
+                                        return Text(
+                                          'Немає повідомлень',
+                                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                            color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
+                                          ),
+                                        );
+                                      }
+
+                                      final message = snapshot.data!;
+                                      final isMe = message['senderId'] == _auth.currentUser!.uid;
+                                      final prefix = isMe ? 'Ти: ' : '${userData['name']}: ';
+
+                                      return Text(
+                                        '$prefix${message['text'] ?? ''}',
+                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                          color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      );
+                                    },
                                   ),
                                 ],
                               ),
