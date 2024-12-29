@@ -5,6 +5,7 @@ import 'package:pppc_companion/pages/chat/contacts.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:intl/intl.dart';
+import 'package:pppc_companion/pages/wall/post.dart';
 
 class ContactPage extends StatefulWidget {
   const ContactPage({Key? key}) : super(key: key);
@@ -104,65 +105,88 @@ class _ContactPageState extends State<ContactPage> {
     final rating = post['rating'] as int? ?? 0;
     final isLiked = (post['likes'] as Map?)?.containsKey(userId) ?? false;
     final isDisliked = (post['dislikes'] as Map?)?.containsKey(userId) ?? false;
+    final text = post['text'] as String;
+    final isLongText = text.length > 250;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.onSecondary,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: Theme.of(context).colorScheme.primary,
-            width: 2,
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 20,
-                  backgroundImage: post['authorAvatar'].isNotEmpty
-                      ? NetworkImage(post['authorAvatar'])
-                      : const AssetImage('assets/img/noavatar.png') 
-                          as ImageProvider,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        post['authorName'],
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      Text(
-                        DateFormat('dd.MM.yyyy HH:mm').format(time),
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PostDetailScreen(
+                post: post,
+                postId: postId,
+              ),
             ),
-            const SizedBox(height: 8),
-            Text(post['text']),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                IconButton(
-                  icon: Icon(
-                    isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
-                    color: isLiked ? Theme.of(context).colorScheme.primary : null,
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.onSecondary,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.primary,
+              width: 2,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundImage: post['authorAvatar'].isNotEmpty
+                        ? NetworkImage(post['authorAvatar'])
+                        : const AssetImage('assets/img/noavatar.png') 
+                            as ImageProvider,
                   ),
-                  onPressed: () => _handleLike(postId, isLiked, isDisliked),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          post['authorName'],
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        Text(
+                          DateFormat('dd.MM.yyyy HH:mm').format(time),
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                isLongText 
+                    ? '${text.substring(0, 250)}...'
+                    : text,
+              ),
+              if (isLongText)
+                const Text(
+                  'Натисніть, щоб прочитати більше',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                SizedBox(
-                  width: 20,
-                    child: Text(
-                    textAlign: TextAlign.center,
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
+                      color: isLiked ? Theme.of(context).colorScheme.primary : null,
+                    ),
+                    onPressed: () => _handleLike(postId, isLiked, isDisliked),
+                  ),
+                  Text(
                     rating.toString(),
                     style: TextStyle(
                       color: rating > 0 
@@ -172,17 +196,33 @@ class _ContactPageState extends State<ContactPage> {
                               : null,
                     ),
                   ),
-                ),
-                IconButton(
-                  icon: Icon(
-                    isDisliked ? Icons.thumb_down : Icons.thumb_down_outlined,
-                    color: isDisliked ? Theme.of(context).colorScheme.primary : null,
+                  IconButton(
+                    icon: Icon(
+                      isDisliked ? Icons.thumb_down : Icons.thumb_down_outlined,
+                      color: isDisliked ? Theme.of(context).colorScheme.primary : null,
+                    ),
+                    onPressed: () => _handleDislike(postId, isLiked, isDisliked),
                   ),
-                  onPressed: () => _handleDislike(postId, isLiked, isDisliked),
-                ),
-              ],
-            ),
-          ],
+                  const Spacer(),
+                  StreamBuilder(
+                    stream: _database
+                        .child('posts/$postId/comments')
+                        .onValue,
+                    builder: (context, snapshot) {
+                      final commentCount = snapshot.data?.snapshot.children.length ?? 0;
+                      return Row(
+                        children: [
+                          const Icon(Icons.comment_outlined),
+                          const SizedBox(width: 4),
+                          Text(commentCount.toString()),
+                        ],
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
