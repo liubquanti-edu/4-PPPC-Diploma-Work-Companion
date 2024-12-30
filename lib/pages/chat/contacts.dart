@@ -26,6 +26,25 @@ class _ChatsPageState extends State<ChatsPage> {
     return ids.join('_');
   }
 
+  Stream<List<String>> getAllChatRoomIds() {
+    return _database
+        .child('chats')
+        .onValue
+        .map((event) {
+      if (event.snapshot.value == null) return [];
+      
+      final chats = Map<String, dynamic>.from(event.snapshot.value as Map);
+      return chats.keys
+          .where((roomId) => roomId.split('_').contains(_auth.currentUser!.uid))
+          .toList();
+    });
+  }
+
+  String getOtherUserId(String chatRoomId) {
+    final users = chatRoomId.split('_');
+    return users[0] == _auth.currentUser!.uid ? users[1] : users[0];
+  }
+
   // Update return type to include sender info
   Stream<Map<String, dynamic>?> getLastMessage(String recipientId) {
     final chatRoomId = getChatRoomId(_auth.currentUser!.uid, recipientId);
@@ -42,6 +61,7 @@ class _ChatsPageState extends State<ChatsPage> {
       return {
         'text': lastMessage['text'] as String?,
         'senderId': lastMessage['senderId'] as String?,
+        'timestamp': lastMessage['timestamp'] as int?,
       };
     });
   }
@@ -54,124 +74,137 @@ class _ChatsPageState extends State<ChatsPage> {
     return userDoc.data()?['group']?.toString() ?? '';
   }
 
+  Future<bool> hasMessages(String recipientId) async {
+    final chatRoomId = getChatRoomId(_auth.currentUser!.uid, recipientId);
+    final snapshot = await _database
+        .child('chats/$chatRoomId/messages')
+        .get();
+    return snapshot.exists && snapshot.value != null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
-      body: FutureBuilder<String>(
-        future: _getCurrentUserGroup(),
-        builder: (context, groupSnapshot) {
-          if (!groupSnapshot.hasData) {
+      appBar: AppBar(
+        title: const Text('Чати'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+                showSearch(
+                context: context,
+                delegate: UserSearchDelegate(_firestore, context),
+              );
+            },
+          ),
+        ],
+      ),
+      body: StreamBuilder<List<String>>(
+        stream: getAllChatRoomIds(),
+        builder: (context, chatRoomsSnapshot) {
+          if (!chatRoomsSnapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          return StreamBuilder<QuerySnapshot>(
-            stream: _firestore
-                .collection('students')
-                .where('group', isEqualTo: int.tryParse(groupSnapshot.data ?? ''))
-                .snapshots(),
-            builder: (context, snapshot) {
-              if (snapshot.hasError) {
-                return Center(child: Text('Помилка: ${snapshot.error}'));
-              }
-
-              if (!snapshot.hasData) {
+          return FutureBuilder<String>(
+            future: _getCurrentUserGroup(),
+            builder: (context, groupSnapshot) {
+              if (!groupSnapshot.hasData) {
                 return const Center(child: CircularProgressIndicator());
               }
 
-              final users = snapshot.data!.docs
-                  .where((doc) => doc.id != _auth.currentUser!.uid)
-                  .toList();
+              return StreamBuilder<QuerySnapshot>(
+                stream: _firestore
+                    .collection('students')
+                    .where('group', isEqualTo: int.tryParse(groupSnapshot.data ?? ''))
+                    .snapshots(),
+                builder: (context, groupMembersSnapshot) {
+                  if (!groupMembersSnapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-              if (users.isEmpty) {
-                return const Center(
-                  child: Text('У вашій групі поки немає інших студентів')
-                );
-              }
+                  final chatRoomIds = chatRoomsSnapshot.data ?? [];
+                  final groupMembers = groupMembersSnapshot.data!.docs
+                      .where((doc) => doc.id != _auth.currentUser!.uid)
+                      .toList();
 
-              return ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: users.length,
-                itemBuilder: (context, index) {
-                  final userData = users[index].data() as Map<String, dynamic>;
-                  
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ChatScreen(
-                              recipientId: users[index].id,
-                              recipientName: '${userData['surname']} ${userData['name']}',
-                              recipientAvatar: userData['avatar'] ?? '',
-                            ),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.onSecondary,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Theme.of(context).colorScheme.primary,
-                            width: 2,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 25,
-                              backgroundImage: userData['avatar'] != null
-                                  ? NetworkImage(userData['avatar'])
-                                  : const AssetImage('assets/img/noavatar.png') 
-                                      as ImageProvider,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '${userData['surname']} ${userData['name']}',
-                                    style: Theme.of(context).textTheme.titleMedium,
-                                  ),
-                                  // In ListView.builder, update StreamBuilder:
-                                  StreamBuilder<Map<String, dynamic>?>(
-                                    stream: getLastMessage(users[index].id),
-                                    builder: (context, snapshot) {
-                                      if (!snapshot.hasData) {
-                                        return Text(
-                                          'Немає повідомлень',
-                                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                            color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
-                                          ),
-                                        );
-                                      }
+                  return FutureBuilder<List<Map<String, dynamic>>>(
+                    future: Future.wait([
+                      // Get active chat users
+                      ...chatRoomIds.map((roomId) async {
+                        final otherUserId = getOtherUserId(roomId);
+                        final userDoc = await _firestore.collection('students').doc(otherUserId).get();
+                        final lastMessage = await getLastMessage(otherUserId).first;
+                        
+                        return {
+                          'doc': userDoc,
+                          'hasChat': true,
+                          'lastMessageTime': lastMessage?['timestamp'] ?? 0,
+                        };
+                      }),
+                      // Get available group members without chats
+                      ...groupMembers
+                          .where((member) => !chatRoomIds.any((roomId) => 
+                              roomId.split('_').contains(member.id)))
+                          .map((member) async => {
+                            'doc': member,
+                            'hasChat': false,
+                            'lastMessageTime': 0,
+                          }),
+                    ]),
+                    builder: (context, usersSnapshot) {
+                      if (!usersSnapshot.hasData) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
 
-                                      final message = snapshot.data!;
-                                      final isMe = message['senderId'] == _auth.currentUser!.uid;
-                                      final prefix = isMe ? 'Ти: ' : '${userData['name']}: ';
+                      final allUsers = usersSnapshot.data!;
+                      
+                      final activeChats = allUsers
+                          .where((item) => item['hasChat'])
+                          .toList()
+                        ..sort((a, b) => (b['lastMessageTime'] as int)
+                            .compareTo(a['lastMessageTime'] as int));
 
-                                      return Text(
-                                        '$prefix${message['text'] ?? ''}',
-                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                          color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      );
-                                    },
-                                  ),
-                                ],
+                      final availableContacts = allUsers
+                          .where((item) => !item['hasChat'])
+                          .toList()
+                        ..sort((a, b) {
+                          final userDataA = (a['doc'] as DocumentSnapshot).data() as Map<String, dynamic>;
+                          final userDataB = (b['doc'] as DocumentSnapshot).data() as Map<String, dynamic>;
+                          return userDataA['surname'].toString()
+                              .compareTo(userDataB['surname'].toString());
+                        });
+
+                      // Rest of the ListView build remains the same
+                      return ListView(
+                        padding: const EdgeInsets.all(16),
+                        children: [
+                          if (activeChats.isNotEmpty) ...[
+                            Text(
+                              'Активні чати',
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
+                            const SizedBox(height: 8),
+                            ...activeChats.map((item) => _buildUserTile(item['doc'] as DocumentSnapshot)),
+                            if (availableContacts.isNotEmpty) ...[
+                              const SizedBox(height: 16),
+                              const Divider(thickness: 1),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Доступні контакти',
+                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                            ],
                           ],
-                        ),
-                      ),
-                    ),
+                          ...availableContacts.map((item) => _buildUserTile(item['doc'] as DocumentSnapshot)),
+                        ],
+                      );
+                    },
                   );
                 },
               );
@@ -179,6 +212,186 @@ class _ChatsPageState extends State<ChatsPage> {
           );
         },
       ),
+    );
+  }
+
+  Widget _buildUserTile(DocumentSnapshot user) {
+    final userData = user.data() as Map<String, dynamic>;
+    
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ChatScreen(
+                recipientId: user.id,
+                recipientName: '${userData['surname']} ${userData['name']}',
+                recipientAvatar: userData['avatar'] ?? '',
+              ),
+            ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.onSecondary,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.primary,
+              width: 2,
+            ),
+          ),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 25,
+                backgroundImage: userData['avatar'] != null
+                    ? NetworkImage(userData['avatar'])
+                    : const AssetImage('assets/img/noavatar.png') as ImageProvider,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${userData['surname']} ${userData['name']}',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    StreamBuilder<Map<String, dynamic>?>(
+                      stream: getLastMessage(user.id),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return Text(
+                            'Немає повідомлень',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
+                            ),
+                          );
+                        }
+
+                        final message = snapshot.data!;
+                        final isMe = message['senderId'] == _auth.currentUser!.uid;
+                        final prefix = isMe ? 'Ти: ' : '${userData['name']}: ';
+
+                        return Text(
+                          '$prefix${message['text'] ?? ''}',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class UserSearchDelegate extends SearchDelegate<String> {
+  final FirebaseFirestore _firestore;
+  final BuildContext context;
+
+  UserSearchDelegate(this._firestore, this.context);
+
+  @override
+  String get searchFieldLabel => 'Пошук...';
+
+  @override
+  List<Widget> buildActions(BuildContext context) {
+    return [
+      IconButton(
+        icon: const Icon(Icons.clear),
+        onPressed: () {
+          query = '';
+        },
+      ),
+    ];
+  }
+
+  @override
+  Widget buildLeading(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.arrow_back),
+      onPressed: () {
+        close(context, '');
+      },
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    return _buildSearchResults();
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    return _buildSearchResults();
+  }
+
+  Widget _buildSearchResults() {
+    if (query.isEmpty) {
+      return const Center(child: Text('Почніть вводити нікнейм користувача'));
+    }
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: _firestore
+          .collection('students')
+          .where('nickname', isGreaterThanOrEqualTo: query)
+          .where('nickname', isLessThanOrEqualTo: query + '\uf8ff')
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(child: Text('Помилка: ${snapshot.error}'));
+        }
+
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        final users = snapshot.data!.docs;
+
+        if (users.isEmpty) {
+          return const Center(child: Text('Користувачів не знайдено'));
+        }
+
+        return ListView.builder(
+          itemCount: users.length,
+          itemBuilder: (context, index) {
+            final userData = users[index].data() as Map<String, dynamic>;
+            return ListTile(
+              leading: CircleAvatar(
+                backgroundImage: userData['avatar'] != null
+                    ? NetworkImage(userData['avatar'])
+                    : const AssetImage('assets/img/noavatar.png') as ImageProvider,
+              ),
+              title: Text('${userData['surname']} ${userData['name']}'),
+              subtitle: Text('@${userData['nickname']}'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChatScreen(
+                      recipientId: users[index].id,
+                      recipientName: '${userData['surname']} ${userData['name']}',
+                      recipientAvatar: userData['avatar'] ?? '',
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
     );
   }
 }
