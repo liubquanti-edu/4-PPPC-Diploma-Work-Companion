@@ -218,11 +218,11 @@ class _ContactPageState extends State<ContactPage> {
                     : text,
               ),
               if (isLongText)
-                const Text(
-                  'Натисніть, щоб прочитати більше',
+                Text(
+                  'Читати далі...',
                   style: TextStyle(
-                    color: Colors.blue,
-                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
+                    fontSize: 12,
                   ),
                 ),
               const SizedBox(height: 8),

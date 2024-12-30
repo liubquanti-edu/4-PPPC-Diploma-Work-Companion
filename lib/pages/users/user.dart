@@ -255,6 +255,16 @@ class UserProfilePage extends StatelessWidget {
                                       maxLines: 3,
                                       overflow: TextOverflow.ellipsis,
                                     ),
+                                    if (post['text'].length > 250) ...[
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Читати далі...',
+                                        style: TextStyle(
+                                          color: Theme.of(context).colorScheme.primary,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
                                     const SizedBox(height: 8),
                                     Row(
                                       children: [
