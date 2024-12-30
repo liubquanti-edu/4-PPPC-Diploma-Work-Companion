@@ -192,68 +192,58 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  InkWell(
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => UserProfilePage(
-                          userId: comment['authorId'],
-                          userName: comment['authorName'],
-                          userAvatar: comment['authorAvatar'],
-                        ),
-                      ),
-                    ),
+                  Container(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         InkWell(
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                          builder: (context) => UserProfilePage(
-                            userId: comment['authorId'],
-                            userName: comment['authorName'],
-                            userAvatar: comment['authorAvatar'],
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                            builder: (context) => UserProfilePage(
+                              userId: comment['authorId'],
+                              userName: comment['authorName'],
+                              userAvatar: comment['authorAvatar'],
+                            ),
+                            ),
                           ),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                          CircleAvatar(
-                            radius: 16,
-                            backgroundImage: comment['authorAvatar'].isNotEmpty
-                            ? NetworkImage(comment['authorAvatar'])
-                            : const AssetImage('assets/img/noavatar.png') as ImageProvider,
-                          ),
-                          const SizedBox(width: 8),
-                            Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          child: Row(
                             children: [
-                              Text(
-                              comment['authorName'],
-                              style: const TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              Text(
-                              DateFormat('dd.MM.yyyy HH:mm').format(
-                                DateTime.fromMillisecondsSinceEpoch(
-                                comment['timestamp']
-                                )
-                              ),
-                              style: Theme.of(context).textTheme.bodySmall,
+                            CircleAvatar(
+                              radius: 16,
+                              backgroundImage: comment['authorAvatar'].isNotEmpty
+                              ? NetworkImage(comment['authorAvatar'])
+                              : const AssetImage('assets/img/noavatar.png') as ImageProvider,
+                            ),
+                            const SizedBox(width: 8),
+                              Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                comment['authorName'],
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                Text(
+                                DateFormat('dd.MM.yyyy HH:mm').format(
+                                  DateTime.fromMillisecondsSinceEpoch(
+                                  comment['timestamp']
+                                  )
+                                ),
+                                style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              ],
                               ),
                             ],
-                            ),
-                          ],
-                        ),
+                          ),
                         ),
                         const SizedBox(height: 8),
                         Padding(
                         padding: const EdgeInsets.only(left: 40),
                         child: Text(comment['text']),
                         ),
-                        ],
-                      ),
-                      ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             );

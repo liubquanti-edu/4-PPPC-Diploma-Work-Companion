@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pppc_companion/pages/chat/contacts.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -19,7 +18,6 @@ class ContactPage extends StatefulWidget {
 
 class _ContactPageState extends State<ContactPage> {
   final _auth = FirebaseAuth.instance;
-  final _firestore = FirebaseFirestore.instance;
   final _database = FirebaseDatabase.instanceFor(
     app: Firebase.app(),
     databaseURL: 'https://pppc-companion-default-rtdb.europe-west1.firebasedatabase.app'
