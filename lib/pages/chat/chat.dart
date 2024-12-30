@@ -231,7 +231,14 @@ class _ChatScreenState extends State<ChatScreen> {
                   (a['timestamp'] ?? 0).compareTo(b['timestamp'] ?? 0));
 
                 final groupedMessages = _groupMessagesByDate(messages);
-                final dates = groupedMessages.keys.toList();
+                final dates = groupedMessages.keys.toList()
+                ..sort((a, b) {
+                  final aDate = DateTime.fromMillisecondsSinceEpoch(
+                    groupedMessages[a]!.first['timestamp'] ?? 0);
+                  final bDate = DateTime.fromMillisecondsSinceEpoch(
+                    groupedMessages[b]!.first['timestamp'] ?? 0);
+                  return bDate.compareTo(aDate);
+                });
 
                 if (dates.isEmpty) {
                   return const Center(
