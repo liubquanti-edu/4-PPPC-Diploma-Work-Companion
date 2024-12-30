@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:pppc_companion/pages/users/user.dart';
 
 class PostDetailScreen extends StatefulWidget {
   final Map<String, dynamic> post;
@@ -99,27 +100,40 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       children: [
         Row(
           children: [
-            CircleAvatar(
-              backgroundImage: widget.post['authorAvatar'].isNotEmpty
-                  ? NetworkImage(widget.post['authorAvatar'])
-                  : const AssetImage('assets/img/noavatar.png') 
-                      as ImageProvider,
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.post['authorName'],
-                    style: Theme.of(context).textTheme.titleMedium,
+            InkWell(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => UserProfilePage(
+                    userId: widget.post['authorId'],
+                    userName: widget.post['authorName'],
+                    userAvatar: widget.post['authorAvatar'],
                   ),
-                  Text(
-                    DateFormat('dd.MM.yyyy HH:mm')
-                      .format(DateTime.fromMillisecondsSinceEpoch(
-                        widget.post['timestamp']
-                      )),
-                    style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    backgroundImage: widget.post['authorAvatar'].isNotEmpty
+                        ? NetworkImage(widget.post['authorAvatar'])
+                        : const AssetImage('assets/img/noavatar.png') as ImageProvider,
+                  ),
+                  const SizedBox(width: 8),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.post['authorName'],
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      Text(
+                        DateFormat('dd.MM.yyyy HH:mm')
+                          .format(DateTime.fromMillisecondsSinceEpoch(
+                            widget.post['timestamp']
+                          )),
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -178,42 +192,68 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CircleAvatar(
-                    radius: 16,
-                    backgroundImage: comment['authorAvatar'].isNotEmpty
-                        ? NetworkImage(comment['authorAvatar'])
-                        : const AssetImage('assets/img/noavatar.png') 
-                            as ImageProvider,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
+                  InkWell(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => UserProfilePage(
+                          userId: comment['authorId'],
+                          userName: comment['authorName'],
+                          userAvatar: comment['authorAvatar'],
+                        ),
+                      ),
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
+                        InkWell(
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                          builder: (context) => UserProfilePage(
+                            userId: comment['authorId'],
+                            userName: comment['authorName'],
+                            userAvatar: comment['authorAvatar'],
+                          ),
+                          ),
+                        ),
+                        child: Row(
                           children: [
-                            Text(
+                          CircleAvatar(
+                            radius: 16,
+                            backgroundImage: comment['authorAvatar'].isNotEmpty
+                            ? NetworkImage(comment['authorAvatar'])
+                            : const AssetImage('assets/img/noavatar.png') as ImageProvider,
+                          ),
+                          const SizedBox(width: 8),
+                            Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
                               comment['authorName'],
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold
+                              style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
+                              Text(
                               DateFormat('dd.MM.yyyy HH:mm').format(
                                 DateTime.fromMillisecondsSinceEpoch(
-                                  comment['timestamp']
+                                comment['timestamp']
                                 )
                               ),
                               style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ],
                             ),
                           ],
                         ),
-                        const SizedBox(height: 4),
-                        Text(comment['text']),
-                      ],
-                    ),
-                  ),
+                        ),
+                        const SizedBox(height: 8),
+                        Padding(
+                        padding: const EdgeInsets.only(left: 40),
+                        child: Text(comment['text']),
+                        ),
+                        ],
+                      ),
+                      ),
                 ],
               ),
             );

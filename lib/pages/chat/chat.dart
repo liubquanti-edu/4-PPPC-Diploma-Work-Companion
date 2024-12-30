@@ -3,6 +3,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:pppc_companion/pages/users/user.dart';
 
 class ChatScreen extends StatefulWidget {
   final String recipientId;
@@ -177,16 +178,28 @@ class _ChatScreenState extends State<ChatScreen> {
     return Scaffold(
       appBar: AppBar(
         titleSpacing: 0,
-        title: Row(
-          children: [
-            CircleAvatar(
-              backgroundImage: widget.recipientAvatar.isNotEmpty 
-                ? NetworkImage(widget.recipientAvatar)
-                : const AssetImage('assets/img/noavatar.png') as ImageProvider,
+        title: GestureDetector(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => UserProfilePage(
+                userId: widget.recipientId,
+                userName: widget.recipientName,
+                userAvatar: widget.recipientAvatar,
+              ),
             ),
-            const SizedBox(width: 8),
-            Text(widget.recipientName),
-          ],
+          ),
+          child: Row(
+            children: [
+              CircleAvatar(
+                backgroundImage: widget.recipientAvatar.isNotEmpty 
+                  ? NetworkImage(widget.recipientAvatar)
+                  : const AssetImage('assets/img/noavatar.png') as ImageProvider,
+              ),
+              const SizedBox(width: 8),
+              Text(widget.recipientName),
+            ],
+          ),
         ),
       ),
       body: Column(

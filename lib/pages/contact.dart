@@ -7,6 +7,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:intl/intl.dart';
 import 'package:pppc_companion/pages/wall/post.dart';
 import 'package:pppc_companion/pages/wall/create_post.dart';
+import 'package:pppc_companion/pages/users/user.dart';
 
 
 class ContactPage extends StatefulWidget {
@@ -173,29 +174,43 @@ class _ContactPageState extends State<ContactPage> {
             children: [
               Row(
                 children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundImage: post['authorAvatar'].isNotEmpty
-                        ? NetworkImage(post['authorAvatar'])
-                        : const AssetImage('assets/img/noavatar.png') 
-                            as ImageProvider,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          post['authorName'],
-                          style: Theme.of(context).textTheme.titleMedium,
+                  InkWell(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => UserProfilePage(
+                          userId: post['authorId'],
+                          userName: post['authorName'], 
+                          userAvatar: post['authorAvatar'],
                         ),
-                        Text(
-                          DateFormat('dd.MM.yyyy HH:mm').format(time),
-                          style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 20,
+                          backgroundImage: post['authorAvatar'].isNotEmpty
+                              ? NetworkImage(post['authorAvatar'])
+                              : const AssetImage('assets/img/noavatar.png') as ImageProvider,
+                        ),
+                        const SizedBox(width: 8),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              post['authorName'],
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            Text(
+                              DateFormat('dd.MM.yyyy HH:mm').format(time),
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
+                  // Rest of the row content...
                 ],
               ),
               const SizedBox(height: 8),
