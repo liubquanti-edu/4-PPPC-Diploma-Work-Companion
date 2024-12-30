@@ -219,17 +219,52 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
 
-  Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
-    final doc = await FirebaseFirestore.instance
-        .collection('bell')
-        .doc(lessonNumber.toString())
-        .get();
-        
-    return {
-      'start': doc.data()?['start'],
-      'end': doc.data()?['end'],
-    };
+Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
+  final doc = await FirebaseFirestore.instance
+      .collection('bell')
+      .doc(lessonNumber.toString())
+      .get();
+
+  final startParts = (doc.data()?['start'] as String?)?.split(':') ?? [];
+  final endParts = (doc.data()?['end'] as String?)?.split(':') ?? [];
+  
+  if (startParts.length != 2 || endParts.length != 2) {
+    return {'start': '', 'end': ''};
   }
+
+  final now = DateTime.now();
+  
+  final ukraineOffset = () {
+    final month = now.month;
+    final isDST = month >= 3 && month <= 10;
+    return isDST ? 3 : 2;
+  }();
+  
+  final startTime = DateTime.utc(
+    now.year,
+    now.month,
+    now.day,
+    int.parse(startParts[0]) - ukraineOffset,
+    int.parse(startParts[1])
+  );
+  
+  final endTime = DateTime.utc(
+    now.year,
+    now.month,
+    now.day,
+    int.parse(endParts[0]) - ukraineOffset,
+    int.parse(endParts[1])
+  );
+
+  final localStartTime = startTime.toLocal();
+  final localEndTime = endTime.toLocal();
+
+  final formatter = DateFormat('HH:mm');
+  return {
+    'start': formatter.format(localStartTime),
+    'end': formatter.format(localEndTime),
+  };
+}
 
   Future<void> _fetchEmergencyMessages() async {
     try {
