@@ -126,12 +126,24 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         widget.post['authorName'],
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
-                      Text(
-                        DateFormat('dd.MM.yyyy HH:mm')
-                          .format(DateTime.fromMillisecondsSinceEpoch(
-                            widget.post['timestamp']
-                          )),
-                        style: Theme.of(context).textTheme.bodySmall,
+                      Row(
+                        children: [
+                          Text(
+                            DateFormat('dd.MM.yyyy HH:mm')
+                              .format(DateTime.fromMillisecondsSinceEpoch(
+                                widget.post['timestamp']
+                              )),
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          if (widget.post['edited'] == true) ...[
+                            const SizedBox(width: 4),
+                            Icon(
+                              Icons.edit,
+                              size: 12,
+                              color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
+                            ),
+                          ],
+                        ],
                       ),
                     ],
                   ),
