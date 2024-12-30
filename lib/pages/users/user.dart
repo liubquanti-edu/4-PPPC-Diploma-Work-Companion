@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:intl/intl.dart';
 import 'package:pppc_companion/pages/wall/post.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:pppc_companion/pages/wall/edit_post.dart';
 
 class UserProfilePage extends StatelessWidget {
   final String userId;
@@ -247,6 +248,64 @@ class UserProfilePage extends StatelessWidget {
                                             ],
                                           ),
                                         ),
+                                        if (post['authorId'] == _auth.currentUser!.uid)
+                                          PopupMenuButton(
+                                            icon: const Icon(Icons.more_vert),
+                                            itemBuilder: (context) => [
+                                              PopupMenuItem(
+                                                child: const Row(
+                                                  children: [
+                                                    Icon(Icons.edit),
+                                                    SizedBox(width: 8),
+                                                    Text('Редагувати'),
+                                                  ],
+                                                ),
+                                                onTap: () {
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) => EditPostScreen(
+                                                        postId: post['id'],
+                                                        currentText: post['text'],
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                              PopupMenuItem(
+                                                child: const Row(
+                                                  children: [
+                                                    Icon(Icons.delete),
+                                                    SizedBox(width: 8),
+                                                    Text('Видалити'),
+                                                  ],
+                                                ),
+                                                onTap: () async {
+                                                  final confirm = await showDialog<bool>(
+                                                    context: context,
+                                                    builder: (context) => AlertDialog(
+                                                      title: const Text('Видалити допис'),
+                                                      content: const Text('Ви впевнені, що хочете видалити цей допис?'),
+                                                      actions: [
+                                                        TextButton(
+                                                          onPressed: () => Navigator.pop(context, false),
+                                                          child: const Text('Скасувати'),
+                                                        ),
+                                                        TextButton(
+                                                          onPressed: () => Navigator.pop(context, true),
+                                                          child: const Text('Видалити'),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  );
+
+                                                  if (confirm == true) {
+                                                    await database.child('posts/${post['id']}').remove();
+                                                  }
+                                                },
+                                              ),
+                                            ],
+                                          ),
                                       ],
                                     ),
                                     const SizedBox(height: 8),
