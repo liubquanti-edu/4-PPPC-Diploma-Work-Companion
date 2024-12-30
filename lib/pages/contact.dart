@@ -235,14 +235,18 @@ class _ContactPageState extends State<ContactPage> {
                     ),
                     onPressed: () => _handleLike(postId, isLiked, isDisliked),
                   ),
-                  Text(
-                    rating.toString(),
-                    style: TextStyle(
+                  SizedBox(
+                    width: 30,
+                    child: Text(
+                      rating.toString(),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
                       color: rating > 0 
-                          ? Colors.green 
-                          : rating < 0 
-                              ? Colors.red 
-                              : null,
+                        ? Colors.green
+                        : rating < 0 
+                          ? Colors.red 
+                          : null,
+                      ),
                     ),
                   ),
                   IconButton(

@@ -275,14 +275,18 @@ class UserProfilePage extends StatelessWidget {
                                           stream: database.child('posts/${post['id']}/rating').onValue,
                                           builder: (context, snapshot) {
                                             final rating = (snapshot.data?.snapshot.value as int?) ?? 0;
-                                            return Text(
-                                              rating.toString(),
-                                              style: TextStyle(
+                                            return SizedBox(
+                                              width: 30,
+                                              child: Text(
+                                                rating.toString(),
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
                                                 color: rating > 0 
-                                                    ? Colors.green 
-                                                    : rating < 0 
-                                                        ? Colors.red 
-                                                        : null,
+                                                  ? Colors.green
+                                                  : rating < 0 
+                                                    ? Colors.red 
+                                                    : null,
+                                                ),
                                               ),
                                             );
                                           },
