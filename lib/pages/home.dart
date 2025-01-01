@@ -15,6 +15,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '/models/schedule.dart';
 import '/models/week_type.dart';
 import '/pages/news/read.dart';
+import '/pages/info/subject.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -472,78 +473,92 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                     return Column(
                                       children: [
                                       if (index > 0) const SizedBox(height: 10.0),
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                        Row(
+                                      InkWell(
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => LessonDetailsScreen(
+                                                lesson: lesson,
+                                                startTime: bellSnapshot.data!['start'] ?? '',
+                                                endTime: bellSnapshot.data!['end'] ?? '',
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                          SizedBox(
-                                            height: 60, 
-                                            width: 5,
-                                            child: DecoratedBox(
-                                            decoration: BoxDecoration(
-                                              color: Theme.of(context).colorScheme.secondary,
-                                              borderRadius: BorderRadius.circular(5),
-                                            ),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 10.0),
-                                          Expanded(
-                                            child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                              lesson.name,
-                                              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16.0),
-                                              overflow: TextOverflow.ellipsis,
-                                              maxLines: 1,
-                                              ),
-                                              Row(
+                                            Row(
                                               children: [
-                                                Icon(
-                                                Icons.info_outline,
-                                                size: 16.0,
-                                                color: Theme.of(context).colorScheme.secondary,
+                                                SizedBox(
+                                                  height: 60, 
+                                                  width: 5,
+                                                  child: DecoratedBox(
+                                                    decoration: BoxDecoration(
+                                                      color: Theme.of(context).colorScheme.secondary,
+                                                      borderRadius: BorderRadius.circular(5),
+                                                    ),
+                                                  ),
                                                 ),
-                                                const SizedBox(width: 5.0),
+                                                const SizedBox(width: 10.0),
                                                 Expanded(
-                                                child: Text(
-                                                  '${lesson.prof} ${lesson.place}',
-                                                  style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0),
-                                                  overflow: TextOverflow.ellipsis,
-                                                  maxLines: 1,
-                                                ),
+                                                  child: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text(
+                                                        lesson.name,
+                                                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16.0),
+                                                        overflow: TextOverflow.ellipsis,
+                                                        maxLines: 1,
+                                                      ),
+                                                      Row(
+                                                        children: [
+                                                          Icon(
+                                                            Icons.info_outline,
+                                                            size: 16.0,
+                                                            color: Theme.of(context).colorScheme.secondary,
+                                                          ),
+                                                          const SizedBox(width: 5.0),
+                                                          Expanded(
+                                                            child: Text(
+                                                              '${lesson.prof} ${lesson.place}',
+                                                              style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0),
+                                                              overflow: TextOverflow.ellipsis,
+                                                              maxLines: 1,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      Row(
+                                                        children: [
+                                                          Icon(
+                                                            Icons.access_time_outlined,
+                                                            size: 16.0,
+                                                            color: Theme.of(context).colorScheme.secondary,
+                                                          ),
+                                                          const SizedBox(width: 5.0),
+                                                          Expanded(
+                                                            child: Text(
+                                                              '${bellSnapshot.data!['start']} - ${bellSnapshot.data!['end']}',
+                                                              style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0),
+                                                              overflow: TextOverflow.ellipsis,
+                                                              maxLines: 1,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
                                               ],
-                                              ),
-                                              Row(
-                                              children: [
-                                                Icon(
-                                                Icons.access_time_outlined,
-                                                size: 16.0,
-                                                color: Theme.of(context).colorScheme.secondary,
-                                                ),
-                                                const SizedBox(width: 5.0),
-                                                Expanded(
-                                                child: Text(
-                                                  '${bellSnapshot.data!['start']} - ${bellSnapshot.data!['end']}',
-                                                  style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0),
-                                                  overflow: TextOverflow.ellipsis,
-                                                  maxLines: 1,
-                                                ),
-                                                ),
-                                              ],
-                                              ),
-                                            ],
                                             ),
-                                          ),
                                           ],
                                         ),
-                                        ],
                                       ),
                                       ],
                                     );
-                                    }
+                                  }
                                   return Padding(
                                     padding: index < snapshot.data!.length - 1 ? const EdgeInsets.only(bottom: 10.0) : EdgeInsets.zero,
                                     child: Row(
