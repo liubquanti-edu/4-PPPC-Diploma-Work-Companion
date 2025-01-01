@@ -55,7 +55,6 @@ class NewsDetailScreen extends StatelessWidget {
               "body": Style(
                 fontSize: FontSize(14),
                 fontFamily: 'Comfortaa',
-                textAlign: TextAlign.justify,
               ),
               },
             ),
