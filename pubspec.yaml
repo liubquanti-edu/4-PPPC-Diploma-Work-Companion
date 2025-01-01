@@ -45,6 +45,9 @@ flutter:
     - assets/img/oleh.png
     - assets/img/noavatar.png
     - assets/gif/spongebob-i-quit.gif
+    - assets/img/map/1.jpg
+    - assets/img/map/2.jpg
+    - assets/img/map/3.jpg
   uses-material-design: true
   fonts:
     - family: Comfortaa
