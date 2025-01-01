@@ -780,7 +780,12 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                         children: [
                                           Row(
                                             children: [
-                                              Icon(Icons.thermostat_rounded, color: Theme.of(context).colorScheme.secondary),
+                                                Icon(
+                                                Icons.thermostat_rounded, 
+                                                color: (_weather!.tempFeelsLike?.celsius ?? 0) < -15 || (_weather!.tempFeelsLike?.celsius ?? 0) > 30
+                                                  ? Colors.red.shade400 
+                                                  : Theme.of(context).colorScheme.secondary
+                                                ),
                                               const SizedBox(width: 2),
                                               Text(
                                                   '${_weather!.tempFeelsLike?.celsius?.round()}°C',
@@ -804,7 +809,7 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                             children: [
                                               Transform.rotate(
                                                 angle: (_weather!.windDegree ?? 0) * (3.1415927 / 360),
-                                                child: Icon(Icons.navigation_rounded, color: Theme.of(context).colorScheme.secondary),
+                                                child: Icon(Icons.navigation_rounded, color: (_weather!.windSpeed ?? 0) > 13 ? Colors.red.shade400 : Theme.of(context).colorScheme.secondary),
                                               ),
                                               const SizedBox(width: 2),
                                               Text(
