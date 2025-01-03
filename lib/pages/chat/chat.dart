@@ -43,7 +43,6 @@ class _ChatScreenState extends State<ChatScreen> {
     if (_messageController.text.trim().isEmpty) return;
 
     if (_isEditing) {
-      // Update existing message
       await _database.child('chats/$chatRoomId/messages/$_editingMessageKey').update({
         'text': _messageController.text.trim(),
         'edited': true,
@@ -51,7 +50,6 @@ class _ChatScreenState extends State<ChatScreen> {
       });
       _cancelEdit();
     } else {
-      // Send new message
       final messageRef = _database.child('chats/$chatRoomId/messages').push();
       final message = {
         'senderId': _auth.currentUser!.uid,
@@ -85,7 +83,6 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  // Helper method to format date
   String _formatMessageDate(DateTime date) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -101,7 +98,6 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  // Helper method to group messages by date
   Map<String, List<Map<String, dynamic>>> _groupMessagesByDate(List<Map<String, dynamic>> messages) {
     final grouped = <String, List<Map<String, dynamic>>>{};
     
@@ -393,8 +389,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                             if (message['replyTo'] != null) ...[
                                                 Container(
                                                   margin: const EdgeInsets.only(top: 4),
-                                                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                                                decoration: BoxDecoration(
+                                                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                                                  decoration: BoxDecoration(
                                                   borderRadius: BorderRadius.circular(10),
                                                   color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.4),
                                                   border: Border(
@@ -543,7 +539,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             ? 'Редагування...' 
                             : 'Написати...',
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(10),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16,

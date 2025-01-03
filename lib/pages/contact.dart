@@ -41,7 +41,6 @@ class _ContactPageState extends State<ContactPage> {
           ),
         ],
       ),
-      // Add FAB
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
@@ -69,7 +68,7 @@ class _ContactPageState extends State<ContactPage> {
             
             postsData.forEach((key, value) {
               final post = Map<String, dynamic>.from(value);
-              post['id'] = key; // Store post ID
+              post['id'] = key;
               posts.add(post);
             });
             
@@ -101,16 +100,14 @@ class _ContactPageState extends State<ContactPage> {
     final ratingRef = _database.child('posts/$postId/rating');
 
     if (currentLiked) {
-      // Remove like
       await likesRef.remove();
       await ratingRef.set(ServerValue.increment(-1));
     } else {
-      // Add like and remove dislike if exists
       await likesRef.set(true);
       await ratingRef.set(ServerValue.increment(1));
       if (currentDisliked) {
         await dislikesRef.remove();
-        await ratingRef.set(ServerValue.increment(1)); // +1 for removing dislike
+        await ratingRef.set(ServerValue.increment(1));
       }
     }
   }
@@ -122,23 +119,21 @@ class _ContactPageState extends State<ContactPage> {
     final ratingRef = _database.child('posts/$postId/rating');
 
     if (currentDisliked) {
-      // Remove dislike
       await dislikesRef.remove();
       await ratingRef.set(ServerValue.increment(1));
     } else {
-      // Add dislike and remove like if exists
       await dislikesRef.set(true);
       await ratingRef.set(ServerValue.increment(-1));
       if (currentLiked) {
         await likesRef.remove();
-        await ratingRef.set(ServerValue.increment(-1)); // -1 for removing like
+        await ratingRef.set(ServerValue.increment(-1));
       }
     }
   }
 
   Widget _buildPost(Map<String, dynamic> post, String postId, DateTime time) {
-    final userId = _auth.currentUser!.uid;
-    final rating = post['rating'] as int? ?? 0;
+    final userId = _auth.currentUser?.uid;
+    final rating = (post['rating'] as int?) ?? 0;
     final isLiked = (post['likes'] as Map?)?.containsKey(userId) ?? false;
     final isDisliked = (post['dislikes'] as Map?)?.containsKey(userId) ?? false;
     final text = post['text'] as String;
@@ -147,6 +142,9 @@ class _ContactPageState extends State<ContactPage> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: InkWell(
+        customBorder: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
         onTap: () {
           Navigator.push(
             context,
@@ -158,7 +156,7 @@ class _ContactPageState extends State<ContactPage> {
             ),
           );
         },
-        child: Container(
+        child: Ink(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.onSecondary,
@@ -174,6 +172,9 @@ class _ContactPageState extends State<ContactPage> {
               Row(
                 children: [
                   InkWell(
+                    customBorder: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(60),
+                    ),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -218,6 +219,7 @@ class _ContactPageState extends State<ContactPage> {
                             ),
                           ],
                         ),
+                        const SizedBox(width: 10),
                       ],
                     ),
                   ),

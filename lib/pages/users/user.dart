@@ -63,7 +63,6 @@ class UserProfilePage extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // User Info Section
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
@@ -144,7 +143,6 @@ class UserProfilePage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            // User Posts Section
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(

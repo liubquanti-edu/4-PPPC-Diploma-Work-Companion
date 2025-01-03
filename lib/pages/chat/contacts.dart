@@ -45,7 +45,6 @@ class _ChatsPageState extends State<ChatsPage> {
     return users[0] == _auth.currentUser!.uid ? users[1] : users[0];
   }
 
-  // Update return type to include sender info
   Stream<Map<String, dynamic>?> getLastMessage(String recipientId) {
     final chatRoomId = getChatRoomId(_auth.currentUser!.uid, recipientId);
     return _database
@@ -130,7 +129,6 @@ class _ChatsPageState extends State<ChatsPage> {
 
                   return FutureBuilder<List<Map<String, dynamic>>>(
                     future: Future.wait([
-                      // Get active chat users
                       ...chatRoomIds.map((roomId) async {
                         final otherUserId = getOtherUserId(roomId);
                         final userDoc = await _firestore.collection('students').doc(otherUserId).get();
@@ -142,7 +140,6 @@ class _ChatsPageState extends State<ChatsPage> {
                           'lastMessageTime': lastMessage?['timestamp'] ?? 0,
                         };
                       }),
-                      // Get available group members without chats
                       ...groupMembers
                           .where((member) => !chatRoomIds.any((roomId) => 
                               roomId.split('_').contains(member.id)))
@@ -175,7 +172,6 @@ class _ChatsPageState extends State<ChatsPage> {
                               .compareTo(userDataB['surname'].toString());
                         });
 
-                      // Rest of the ListView build remains the same
                       return ListView(
                         padding: const EdgeInsets.all(16),
                         children: [
@@ -186,19 +182,19 @@ class _ChatsPageState extends State<ChatsPage> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 5),
                             ...activeChats.map((item) => _buildUserTile(item['doc'] as DocumentSnapshot)),
                             if (availableContacts.isNotEmpty) ...[
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 5),
                               const Divider(thickness: 1),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 10),
                               Text(
                                 'Доступні контакти',
                                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 5),
                             ],
                           ],
                           ...availableContacts.map((item) => _buildUserTile(item['doc'] as DocumentSnapshot)),
@@ -219,8 +215,9 @@ class _ChatsPageState extends State<ChatsPage> {
     final userData = user.data() as Map<String, dynamic>;
     
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 5),
       child: InkWell(
+        borderRadius: BorderRadius.circular(100),
         onTap: () {
           Navigator.push(
             context,
@@ -234,15 +231,7 @@ class _ChatsPageState extends State<ChatsPage> {
           );
         },
         child: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.onSecondary,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: Theme.of(context).colorScheme.primary,
-              width: 2,
-            ),
-          ),
+          padding: const EdgeInsets.all(10),
           child: Row(
             children: [
               CircleAvatar(

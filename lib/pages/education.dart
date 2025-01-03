@@ -18,7 +18,6 @@ class _EducationPageState extends State<EducationPage> {
 
   Future<Course?> _fetchMainCourse() async {
     try {
-      // Get user's group
       final userDoc = await _firestore
           .collection('students')
           .doc(_auth.currentUser?.uid)
@@ -29,7 +28,6 @@ class _EducationPageState extends State<EducationPage> {
 
       final now = Timestamp.now();
 
-      // Modified query to work with composite index
       final coursesSnapshot = await _firestore
           .collection('courses')
           .where('groups', arrayContains: userGroup)
