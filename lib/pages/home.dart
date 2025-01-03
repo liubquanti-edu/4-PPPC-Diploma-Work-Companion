@@ -439,21 +439,26 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          'Сьогодні вихідний',
+                                            'На сьогодні занять немає',
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
                                           style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 20.0),
                                         ),
                                         Row(
                                           children: [
-                                            Icon(
-                                              Icons.weekend_outlined,
-                                              size: 16.0,
-                                              color: Theme.of(context).colorScheme.secondary,
-                                            ),
-                                            const SizedBox(width: 5.0),
-                                            Text(
-                                              'Відпочивай та набирайся сил!',
+                                          Icon(
+                                            Icons.weekend_outlined,
+                                            size: 16.0,
+                                            color: Theme.of(context).colorScheme.secondary,
+                                          ),
+                                          const SizedBox(width: 5.0),
+                                          Expanded(
+                                            child: Text(
+                                            'Відпочивай та набирайся сил!',
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
                                               style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0),
-                                            ),
+                                            ),),
                                           ],
                                         ),
                                       ],
