@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:pppc_companion/pages/wall/post.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pppc_companion/pages/wall/edit_post.dart';
+import '/models/avatars.dart';
 
 class UserProfilePage extends StatelessWidget {
   final String userId;
@@ -67,20 +68,9 @@ class UserProfilePage extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 children: [
-                  CircleAvatar(
+                  CachedAvatar(
+                    imageUrl: userAvatar,
                     radius: 80,
-                    backgroundImage: userAvatar.isNotEmpty
-                        ? NetworkImage(userAvatar)
-                        : const AssetImage('assets/img/noavatar.png') as ImageProvider,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Theme.of(context).colorScheme.primary,
-                          width: 2.0,
-                        ),
-                      ),
-                    ),
                   ),
                   const SizedBox(height: 5.0),
                   Text(
@@ -223,12 +213,9 @@ class UserProfilePage extends StatelessWidget {
                                   children: [
                                     Row(
                                       children: [
-                                        CircleAvatar(
+                                        CachedAvatar(
+                                          imageUrl: post['authorAvatar'],
                                           radius: 20,
-                                          backgroundImage: post['authorAvatar'].isNotEmpty
-                                              ? NetworkImage(post['authorAvatar'])
-                                              : const AssetImage('assets/img/noavatar.png') 
-                                                  as ImageProvider,
                                         ),
                                         const SizedBox(width: 8),
                                         Expanded(

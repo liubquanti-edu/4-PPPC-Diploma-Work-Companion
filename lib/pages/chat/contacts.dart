@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pppc_companion/pages/chat/chat.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_core/firebase_core.dart';
+import '/models/avatars.dart';
 
 class ChatsPage extends StatefulWidget {
   const ChatsPage({Key? key}) : super(key: key);
@@ -234,11 +235,9 @@ class _ChatsPageState extends State<ChatsPage> {
           padding: const EdgeInsets.all(10),
           child: Row(
             children: [
-              CircleAvatar(
+              CachedAvatar(
+                imageUrl: userData['avatar'],
                 radius: 25,
-                backgroundImage: userData['avatar'] != null
-                    ? NetworkImage(userData['avatar'])
-                    : const AssetImage('assets/img/noavatar.png') as ImageProvider,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -358,10 +357,9 @@ class UserSearchDelegate extends SearchDelegate<String> {
           itemBuilder: (context, index) {
             final userData = users[index].data() as Map<String, dynamic>;
             return ListTile(
-              leading: CircleAvatar(
-                backgroundImage: userData['avatar'] != null
-                    ? NetworkImage(userData['avatar'])
-                    : const AssetImage('assets/img/noavatar.png') as ImageProvider,
+              leading: CachedAvatar(
+                imageUrl: userData['avatar'],
+                radius: 80,
               ),
               title: Text('${userData['surname']} ${userData['name']}'),
               subtitle: Text('@${userData['nickname']}'),

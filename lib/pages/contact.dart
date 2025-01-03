@@ -8,6 +8,7 @@ import 'package:pppc_companion/pages/wall/post.dart';
 import 'package:pppc_companion/pages/wall/create_post.dart';
 import 'package:pppc_companion/pages/users/user.dart';
 import 'package:pppc_companion/pages/wall/edit_post.dart';
+import '/models/avatars.dart';
 
 
 class ContactPage extends StatefulWidget {
@@ -187,11 +188,9 @@ class _ContactPageState extends State<ContactPage> {
                     ),
                     child: Row(
                       children: [
-                        CircleAvatar(
+                        CachedAvatar(
+                          imageUrl: post['authorAvatar'],
                           radius: 20,
-                          backgroundImage: post['authorAvatar'].isNotEmpty
-                              ? NetworkImage(post['authorAvatar'])
-                              : const AssetImage('assets/img/noavatar.png') as ImageProvider,
                         ),
                         const SizedBox(width: 8),
                         Column(

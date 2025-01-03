@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:pppc_companion/pages/users/user.dart';
+import '/models/avatars.dart';
 
 class PostDetailScreen extends StatefulWidget {
   final Map<String, dynamic> post;
@@ -113,10 +114,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               ),
               child: Row(
                 children: [
-                  CircleAvatar(
-                    backgroundImage: widget.post['authorAvatar'].isNotEmpty
-                        ? NetworkImage(widget.post['authorAvatar'])
-                        : const AssetImage('assets/img/noavatar.png') as ImageProvider,
+                  CachedAvatar(
+                    imageUrl: widget.post['authorAvatar'],
+                    radius: 20,
                   ),
                   const SizedBox(width: 8),
                   Column(
@@ -221,11 +221,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           ),
                           child: Row(
                             children: [
-                            CircleAvatar(
+                            CachedAvatar(
+                              imageUrl: comment['authorAvatar'],
                               radius: 16,
-                              backgroundImage: comment['authorAvatar'].isNotEmpty
-                              ? NetworkImage(comment['authorAvatar'])
-                              : const AssetImage('assets/img/noavatar.png') as ImageProvider,
                             ),
                             const SizedBox(width: 8),
                               Column(

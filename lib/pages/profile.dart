@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'setings/edit_profile.dart';
 import 'setings/appearance.dart';
 import 'setings/about_page.dart';
+import '/models/avatars.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -42,20 +43,9 @@ class _ProfilePageState extends State<ProfilePage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  CircleAvatar(
+                  CachedAvatar(
+                    imageUrl: userData?['avatar'],
                     radius: 80,
-                    backgroundImage: userData?['avatar'] != null 
-                      ? NetworkImage(userData!['avatar'])
-                      : const AssetImage('assets/img/noavatar.png') as ImageProvider,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Theme.of(context).colorScheme.primary,
-                          width: 2.0,
-                        ),
-                      ),
-                    ),
                   ),
                   const SizedBox(height: 5.0, width: double.infinity),
                   Text(
