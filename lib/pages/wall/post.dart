@@ -114,8 +114,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               ),
               child: Row(
                 children: [
-                  CachedAvatar(
-                    imageUrl: widget.post['authorAvatar'],
+                  UserAvatar(
+                    userId: widget.post['authorId'],
                     radius: 20,
                   ),
                   const SizedBox(width: 8),
@@ -221,8 +221,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           ),
                           child: Row(
                             children: [
-                            CachedAvatar(
-                              imageUrl: comment['authorAvatar'],
+                            UserAvatar(
+                              userId: comment['authorId'],
                               radius: 16,
                             ),
                             const SizedBox(width: 8),

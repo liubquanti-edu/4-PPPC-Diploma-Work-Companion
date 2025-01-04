@@ -39,7 +39,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         'text': _postController.text.trim(),
         'authorId': _auth.currentUser!.uid,
         'authorName': '${userData['surname']} ${userData['name']}',
-        'authorAvatar': userData['avatar'] ?? '',
         'timestamp': ServerValue.timestamp,
         'rating': 0,
       });

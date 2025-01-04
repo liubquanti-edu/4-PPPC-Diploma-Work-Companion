@@ -188,8 +188,8 @@ class _ContactPageState extends State<ContactPage> {
                     ),
                     child: Row(
                       children: [
-                        CachedAvatar(
-                          imageUrl: post['authorAvatar'],
+                        UserAvatar(
+                          userId: post['authorId'],
                           radius: 20,
                         ),
                         const SizedBox(width: 8),
