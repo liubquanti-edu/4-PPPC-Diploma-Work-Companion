@@ -181,8 +181,6 @@ class _ChatScreenState extends State<ChatScreen> {
             MaterialPageRoute(
               builder: (context) => UserProfilePage(
                 userId: widget.recipientId,
-                userName: widget.recipientName,
-                userAvatar: widget.recipientAvatar,
               ),
             ),
           ),

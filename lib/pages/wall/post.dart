@@ -107,8 +107,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 MaterialPageRoute(
                   builder: (context) => UserProfilePage(
                     userId: widget.post['authorId'],
-                    userName: widget.post['authorName'],
-                    userAvatar: widget.post['authorAvatar'],
                   ),
                 ),
               ),
@@ -210,14 +208,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                       children: [
                         InkWell(
                           onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
+                          context,
+                          MaterialPageRoute(
                             builder: (context) => UserProfilePage(
                               userId: comment['authorId'],
-                              userName: comment['authorName'],
-                              userAvatar: comment['authorAvatar'],
                             ),
-                            ),
+                          ),
                           ),
                           child: Row(
                             children: [

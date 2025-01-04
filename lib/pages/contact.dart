@@ -181,8 +181,6 @@ class _ContactPageState extends State<ContactPage> {
                       MaterialPageRoute(
                         builder: (context) => UserProfilePage(
                           userId: post['authorId'],
-                          userName: post['authorName'], 
-                          userAvatar: post['authorAvatar'],
                         ),
                       ),
                     ),
