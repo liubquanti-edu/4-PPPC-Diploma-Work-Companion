@@ -23,6 +23,10 @@ class PostDetailScreen extends StatefulWidget {
 
 class _PostDetailScreenState extends State<PostDetailScreen> {
   final _commentController = TextEditingController();
+  final _scrollController = ScrollController();
+  final _commentsKey = GlobalKey();
+  bool _showScrollToComments = false;
+  bool _showScrollToTop = false;
   final _auth = FirebaseAuth.instance;
   final _database = FirebaseDatabase.instanceFor(
     app: Firebase.app(),
@@ -30,6 +34,17 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   ).ref();
   final _firestore = FirebaseFirestore.instance;
   bool _isCommenting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(() {
+      setState(() {
+        _showScrollToComments = _scrollController.offset < 100;
+        _showScrollToTop = _scrollController.offset >= 100;
+      });
+    });
+  }
 
   Future<void> _addComment() async {
     if (_commentController.text.trim().isEmpty) return;
@@ -66,30 +81,82 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
   }
 
+  void _scrollToComments() {
+    final RenderBox commentsBox = _commentsKey.currentContext?.findRenderObject() as RenderBox;
+    final position = commentsBox.localToGlobal(Offset.zero);
+    
+    _scrollController.animateTo(
+      position.dy - AppBar().preferredSize.height - 16,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  void _scrollToTop() {
+    _scrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Допис'),
       ),
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildPost(),
-                  const Divider(height: 32),
-                  const Text('Коментарі:'),
-                  const SizedBox(height: 16),
-                  _buildComments(),
-                ],
+          Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildPost(),
+                      Divider(height: 32, key: _commentsKey),
+                      Container(
+                        child: const Text('Коментарі:'),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildComments(),
+                      const SizedBox(height: 60),
+                    ],
+                  ),
+                ),
               ),
+              _buildCommentInput(),
+            ],
+          ),
+          Positioned(
+            right: 15,
+            bottom: 100,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (_showScrollToComments)
+                  FloatingActionButton(
+                    heroTag: 'scrollToComments',
+                    mini: true, 
+                    onPressed: _scrollToComments,
+                    child: const Icon(Icons.comment),
+                  ),
+                if (_showScrollToTop) ...[
+                  const SizedBox(height: 8),
+                  FloatingActionButton(
+                    heroTag: 'scrollToTop',
+                    mini: true,
+                    onPressed: _scrollToTop,
+                    child: const Icon(Icons.arrow_upward),
+                  ),
+                ],
+              ],
             ),
           ),
-          _buildCommentInput(),
         ],
       ),
     );
@@ -297,6 +364,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _commentController.dispose();
     super.dispose();
   }
