@@ -284,7 +284,9 @@ class _ContactPageState extends State<ContactPage> {
                 ],
               ),
               const SizedBox(height: 8),
-              Text(
+                Text(
+                maxLines: isLongText ? 10 : null,
+                overflow: isLongText ? TextOverflow.ellipsis : null,
                 isLongText 
                     ? '${text.substring(0, 250)}...'
                     : text,
