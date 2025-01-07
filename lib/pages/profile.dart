@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'setings/edit_profile.dart';
 import 'setings/appearance.dart';
 import 'setings/about_page.dart';
+import 'setings/privacy.dart';
 import '/models/avatars.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -223,7 +224,12 @@ class _ProfilePageState extends State<ProfilePage> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       onTap: () {
-                      
+                        Navigator.push(
+                          context, 
+                          MaterialPageRoute(
+                            builder: (context) => const PrivacySettings(),
+                          ),
+                        );
                       },
                       child: Ink(
                         padding: const EdgeInsets.all(10.0),

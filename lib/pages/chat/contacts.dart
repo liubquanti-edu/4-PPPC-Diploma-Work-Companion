@@ -328,15 +328,12 @@ class UserSearchDelegate extends SearchDelegate<String> {
 
   Widget _buildSearchResults() {
     if (query.isEmpty) {
-      return const Center(child: Text('Почніть вводити дані користувача.'));
+      return const Center(child: Text('Почніть вводити ім\'я, прізвище або нікнейм користувача'));
     }
-
-    final searchQuery = query.toLowerCase();
 
     return StreamBuilder<QuerySnapshot>(
       stream: _firestore
           .collection('students')
-          .orderBy('nickname')
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
@@ -347,15 +344,20 @@ class UserSearchDelegate extends SearchDelegate<String> {
           return const Center(child: CircularProgressIndicator());
         }
 
+        final searchQuery = query.toLowerCase();
+        
         final users = snapshot.data!.docs.where((doc) {
           final data = doc.data() as Map<String, dynamic>;
           final nickname = (data['nickname'] ?? '').toString().toLowerCase();
           final name = (data['name'] ?? '').toString().toLowerCase();
           final surname = (data['surname'] ?? '').toString().toLowerCase();
+          final isPrivate = data['isPrivate'] ?? false;
 
-          return nickname.contains(searchQuery) ||
-                 name.contains(searchQuery) ||
-                 surname.contains(searchQuery);
+          return !isPrivate && (
+            nickname.contains(searchQuery) ||
+            name.contains(searchQuery) ||
+            surname.contains(searchQuery)
+          );
         }).toList();
 
         if (users.isEmpty) {
@@ -371,7 +373,16 @@ class UserSearchDelegate extends SearchDelegate<String> {
               title: Text('${userData['surname']} ${userData['name']}'),
               subtitle: Text('@${userData['nickname']}'),
               onTap: () {
-                close(context, users[index].id);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChatScreen(
+                      recipientId: users[index].id,
+                      recipientName: '${userData['surname']} ${userData['name']}',
+                      recipientAvatar: userData['avatar'] ?? '',
+                    ),
+                  ),
+                );
               },
             );
           },
