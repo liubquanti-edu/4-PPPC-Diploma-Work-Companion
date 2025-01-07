@@ -328,14 +328,15 @@ class UserSearchDelegate extends SearchDelegate<String> {
 
   Widget _buildSearchResults() {
     if (query.isEmpty) {
-      return const Center(child: Text('Почніть вводити нікнейм користувача'));
+      return const Center(child: Text('Почніть вводити дані користувача.'));
     }
+
+    final searchQuery = query.toLowerCase();
 
     return StreamBuilder<QuerySnapshot>(
       stream: _firestore
           .collection('students')
-          .where('nickname', isGreaterThanOrEqualTo: query)
-          .where('nickname', isLessThanOrEqualTo: query + '\uf8ff')
+          .orderBy('nickname')
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
@@ -346,7 +347,16 @@ class UserSearchDelegate extends SearchDelegate<String> {
           return const Center(child: CircularProgressIndicator());
         }
 
-        final users = snapshot.data!.docs;
+        final users = snapshot.data!.docs.where((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          final nickname = (data['nickname'] ?? '').toString().toLowerCase();
+          final name = (data['name'] ?? '').toString().toLowerCase();
+          final surname = (data['surname'] ?? '').toString().toLowerCase();
+
+          return nickname.contains(searchQuery) ||
+                 name.contains(searchQuery) ||
+                 surname.contains(searchQuery);
+        }).toList();
 
         if (users.isEmpty) {
           return const Center(child: Text('Користувачів не знайдено'));
@@ -357,23 +367,11 @@ class UserSearchDelegate extends SearchDelegate<String> {
           itemBuilder: (context, index) {
             final userData = users[index].data() as Map<String, dynamic>;
             return ListTile(
-              leading: CachedAvatar(
-                imageUrl: userData['avatar'],
-                radius: 80,
-              ),
+              leading: UserAvatar(userId: users[index].id),
               title: Text('${userData['surname']} ${userData['name']}'),
               subtitle: Text('@${userData['nickname']}'),
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ChatScreen(
-                      recipientId: users[index].id,
-                      recipientName: '${userData['surname']} ${userData['name']}',
-                      recipientAvatar: userData['avatar'] ?? '',
-                    ),
-                  ),
-                );
+                close(context, users[index].id);
               },
             );
           },
