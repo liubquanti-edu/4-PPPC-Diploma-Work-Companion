@@ -49,10 +49,6 @@ class _PrivacySettingsState extends State<PrivacySettings> {
           _isPrivate = value;
           _isLoading = false;
         });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Налаштування оновлено')),
-        );
       }
     } catch (e) {
       if (mounted) {
@@ -71,26 +67,32 @@ class _PrivacySettingsState extends State<PrivacySettings> {
         title: const Text('Приватність'),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  side: BorderSide(
-                    color: Theme.of(context).colorScheme.primary,
-                    width: 2,
+        ? const Center(child: CircularProgressIndicator())
+        : ListView(
+            padding: const EdgeInsets.all(10.0),
+            children: [
+              Container(
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Приховати профіль',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      SwitchListTile(
+                        title: const Text('Пошук'),
+                        subtitle: const Text('Ваш профіль не буде відображатися в пошуку.'),
+                        value: _isPrivate,
+                        onChanged: _updatePrivacySettings,
+                      ),
+                    ],
                   ),
                 ),
-                color: Theme.of(context).colorScheme.onSecondary,
-                child: SwitchListTile(
-                  title: const Text('Приховати профіль'),
-                  subtitle: const Text('Ваш профіль не буде відображатися в пошуку'),
-                  value: _isPrivate,
-                  onChanged: _updatePrivacySettings,
-                ),
               ),
-            ),
+            ],
+          ),
     );
   }
 }

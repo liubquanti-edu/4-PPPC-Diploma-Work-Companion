@@ -328,7 +328,7 @@ class UserSearchDelegate extends SearchDelegate<String> {
 
   Widget _buildSearchResults() {
     if (query.isEmpty) {
-      return const Center(child: Text('Почніть вводити ім\'я, прізвище або нікнейм користувача'));
+      return const Center(child: Text('Почніть вводити дані користувача.'));
     }
 
     return StreamBuilder<QuerySnapshot>(

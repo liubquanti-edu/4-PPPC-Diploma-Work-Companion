@@ -14,27 +14,18 @@ class AppearanceSettings extends StatelessWidget {
       body: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
           return ListView(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(10.0),
             children: [
-              Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  side: BorderSide(
-                    color: Theme.of(context).colorScheme.primary,
-                    width: 2,
-                  ),
-                ),
-                color: Theme.of(context).colorScheme.onSecondary,
+              Container(
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'Тема',
-                        style: Theme.of(context).textTheme.titleMedium,
+                        style: Theme.of(context).textTheme.titleLarge,
                       ),
-                      const SizedBox(height: 8),
                       RadioListTile(
                         title: const Text('Системна'),
                         value: ThemeMode.system,
@@ -69,28 +60,18 @@ class AppearanceSettings extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-              Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  side: BorderSide(
-                    color: Theme.of(context).colorScheme.primary,
-                    width: 2,
-                  ),
-                ),
-                color: Theme.of(context).colorScheme.onSecondary,
+              Container(
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'Динамічні кольори',
-                        style: Theme.of(context).textTheme.titleMedium,
+                        style: Theme.of(context).textTheme.titleLarge,
                       ),
-                      const SizedBox(height: 8),
                       SwitchListTile(
-                        title: const Text('Використовувати кольори системи'),
+                        title: const Text('Системний колір'),
                         subtitle: const Text('Доступно на Android 12+'),
                         value: themeProvider.useDynamicColors,
                         onChanged: (bool value) {
