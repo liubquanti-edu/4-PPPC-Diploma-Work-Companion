@@ -38,17 +38,13 @@ class NewsDetailScreen extends StatelessWidget {
             const SizedBox(height: 5),
             Text(
               newsItem['title'] ?? '',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 10),
-            Container(
-              height: 3,
-              decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary,
-              borderRadius: BorderRadius.circular(15),
-              ),
+              style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 5),
+            Divider(
+              color: Theme.of(context).colorScheme.primary,
+              thickness: 2,
+            ),
             Html(
               data: newsItem['description'] ?? '',
               style: {
@@ -58,12 +54,9 @@ class NewsDetailScreen extends StatelessWidget {
               ),
               },
             ),
-            Container(
-              height: 3,
-              decoration: BoxDecoration(
+            Divider(
               color: Theme.of(context).colorScheme.primary,
-              borderRadius: BorderRadius.circular(15),
-              ),
+              thickness: 2,
             ),
             if (newsItem['link'] != null)
                 Center(
@@ -71,11 +64,11 @@ class NewsDetailScreen extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 10.0),
                   child: ElevatedButton(
                   onPressed: () => launch(newsItem['link']),
-                  child: const Text('Відкрити веб-версію'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.onSecondary,
                     foregroundColor: Theme.of(context).colorScheme.primary,
                   ),
+                  child: const Text('Відкрити веб-версію'),
                   ),
                 ),
                 ),

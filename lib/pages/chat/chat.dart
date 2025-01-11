@@ -242,11 +242,11 @@ class _ChatScreenState extends State<ChatScreen> {
                 return ListView.builder(
                   reverse: true,
                   controller: _scrollController,
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(10),
                   itemCount: dates.length * 2 - 1,
                   itemBuilder: (context, index) {
                     if (index.isOdd) {
-                      return const SizedBox(height: 8);
+                      return const SizedBox(height: 0);
                     }
 
                     final dateIndex = index ~/ 2;
@@ -255,28 +255,37 @@ class _ChatScreenState extends State<ChatScreen> {
 
                     return Column(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          child: Center(
+                        Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Divider(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.1),
+                            ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Center(
                             child: Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 4,
+                              horizontal: 12,
+                              vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.surfaceVariant,
-                                borderRadius: BorderRadius.circular(12),
+                              color: Theme.of(context).colorScheme.surfaceVariant,
+                              borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
-                                date,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                ),
+                              date,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              ),
                               ),
                             ),
+                            ),
                           ),
+                          ],
                         ),
+                        const SizedBox(height: 8),
                         ...messagesForDate.map((message) {
                           final isMe = message['senderId'] == _auth.currentUser!.uid;
                           final time = DateTime.fromMillisecondsSinceEpoch(
