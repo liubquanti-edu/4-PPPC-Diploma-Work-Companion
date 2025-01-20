@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:pppc_companion/pages/users/user.dart';
 import '/models/avatars.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ChatScreen extends StatefulWidget {
   final String recipientId;
@@ -175,24 +176,77 @@ class _ChatScreenState extends State<ChatScreen> {
     return Scaffold(
       appBar: AppBar(
         titleSpacing: 0,
-        title: GestureDetector(
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => UserProfilePage(
-                userId: widget.recipientId,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            GestureDetector(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => UserProfilePage(
+                    userId: widget.recipientId,
+                  ),
+                ),
+              ),
+              child: Row(
+                children: [
+                  CachedAvatar(
+                    imageUrl: widget.recipientAvatar,
+                  ),
+                  const SizedBox(width: 8),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(widget.recipientName,
+                      style: TextStyle(
+                          fontSize: 18,
+                        ),
+                      ),
+                      StreamBuilder<DocumentSnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('students')
+                          .doc(widget.recipientId)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) return const SizedBox.shrink();
+                        
+                        final userData = snapshot.data!.data() as Map<String, dynamic>?;
+                        final lastSeen = userData?['lastSeen'] as Timestamp?;
+                        
+                        if (lastSeen == null) return const SizedBox.shrink();
+                        
+                        final now = DateTime.now();
+                        final lastSeenDate = lastSeen.toDate();
+                        final difference = now.difference(lastSeenDate);
+                        
+                        String lastSeenText;
+                        if (difference.inMinutes < 1) {
+                          lastSeenText = 'Онлайн';
+                        } else if (difference.inHours < 1) {
+                          lastSeenText = 'Був(ла) ${difference.inMinutes} хв тому';
+                        } else if (difference.inDays < 1) {
+                          lastSeenText = 'Був(ла) ${difference.inHours} год тому';
+                        } else {
+                          lastSeenText = 'Був(ла) ${DateFormat('dd.MM.yyyy HH:mm').format(lastSeenDate)}';
+                        }
+                        
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Text(
+                            lastSeenText,
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              fontSize: 10,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-          ),
-          child: Row(
-            children: [
-              CachedAvatar(
-                imageUrl: widget.recipientAvatar,
-              ),
-              const SizedBox(width: 8),
-              Text(widget.recipientName),
-            ],
-          ),
+          ],
         ),
       ),
       body: Column(
