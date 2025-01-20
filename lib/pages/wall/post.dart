@@ -25,7 +25,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   final _commentController = TextEditingController();
   final _scrollController = ScrollController();
   final _commentsKey = GlobalKey();
-  bool _showScrollToComments = false;
+  bool _showScrollToComments = true;
   bool _showScrollToTop = false;
   final _auth = FirebaseAuth.instance;
   final _database = FirebaseDatabase.instanceFor(
@@ -40,8 +40,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     super.initState();
     _scrollController.addListener(() {
       setState(() {
-        _showScrollToComments = _scrollController.offset < 100;
-        _showScrollToTop = _scrollController.offset >= 100;
+        _showScrollToComments = _scrollController.offset < 600;
+        _showScrollToTop = _scrollController.offset >= 600;
       });
     });
   }
@@ -309,7 +309,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 8),
                         Padding(
                         padding: const EdgeInsets.only(left: 40),
                         child: Text(comment['text']),
