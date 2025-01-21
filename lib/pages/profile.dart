@@ -9,6 +9,7 @@ import 'setings/appearance.dart';
 import 'setings/about_page.dart';
 import 'setings/privacy.dart';
 import '/models/avatars.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -65,30 +66,91 @@ class _ProfilePageState extends State<ProfilePage> {
                     'Інженерія програмного забезпечення',
                     style: TextStyle(fontSize: 12),
                   ),
-                  const SizedBox(height: 10.0, width: double.infinity),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12.0),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.onSecondary,
-                      borderRadius: BorderRadius.circular(10.0),
-                      border: Border.all(
-                        color: Theme.of(context).colorScheme.primary,
-                        width: 2.0,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.numbers_rounded, color: Theme.of(context).colorScheme.primary),
-                        const SizedBox(width: 10.0),
-                        Icon(Icons.code, color: Theme.of(context).colorScheme.primary),
-                        const SizedBox(width: 10.0),
-                        Icon(Icons.local_police_rounded, color: Theme.of(context).colorScheme.primary),
-                      ],
-                    ),
+                  StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('students')
+                        .doc(_auth.currentUser?.uid)
+                        .collection('badgets')
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const SizedBox.shrink();
+                      }
+
+                      final badgets = snapshot.data!.docs;
+                      if (badgets.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+                      return Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12.0),
+                        margin: const EdgeInsets.only(top: 10.0),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.onSecondary,
+                          borderRadius: BorderRadius.circular(10.0),
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.primary,
+                            width: 2.0,
+                          ),
+                        ),
+                        child: Center(
+                          child: Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: snapshot.data!.docs.map((badget) {
+                              final data = badget.data() as Map<String, dynamic>;
+                              return InkWell(
+                                onTap: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      icon: SvgPicture.asset(
+                                        'assets/badgets/${data['logo']}.svg',
+                                        colorFilter: ColorFilter.mode(
+                                          Theme.of(context).colorScheme.primary,
+                                          BlendMode.srcIn
+                                        ),
+                                        height: 48,
+                                        width: 48,
+                                      ),
+                                      title: Text(
+                                        data['name'],
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      content: Text(
+                                        data['description'],
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(context),
+                                          child: const Text('Закрити'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                                child: Tooltip(
+                                  message: '${data['name']}\n${data['description']}',
+                                  textAlign: TextAlign.center,
+                                  child: SvgPicture.asset(
+                                    'assets/badgets/${data['logo']}.svg',
+                                    colorFilter: ColorFilter.mode(
+                                      Theme.of(context).colorScheme.primary,
+                                      BlendMode.srcIn
+                                    ),
+                                    height: 24,
+                                    width: 24,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                  const SizedBox(height: 10.0, width: double.infinity),
+                  const SizedBox(height: 10),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 10.0),
                     child: InkWell(

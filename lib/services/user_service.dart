@@ -84,4 +84,16 @@ class UserService {
   Future<void> removeUserAvatar() async {
     await updateUserAvatar(null);
   }
+
+  Future<void> awardBadge(String userId, String name, String description, String logo) async {
+    await FirebaseFirestore.instance
+        .collection('students')
+        .doc(userId)
+        .collection('badgets')
+        .add({
+          'name': name,
+          'description': description,
+          'logo': logo
+        });
+  }
 }
