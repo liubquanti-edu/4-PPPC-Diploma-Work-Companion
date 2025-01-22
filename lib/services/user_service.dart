@@ -89,7 +89,7 @@ class UserService {
     await FirebaseFirestore.instance
         .collection('students')
         .doc(userId)
-        .collection('badgets')
+        .collection('badges')
         .add({
           'name': name,
           'description': description,

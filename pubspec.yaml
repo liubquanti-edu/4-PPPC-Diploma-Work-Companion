@@ -49,8 +49,8 @@ flutter:
     - assets/img/map/2.jpg
     - assets/img/map/3.jpg
   
-    - assets/badgets/square-terminal.svg
-    - assets/badgets/test-tube.svg
+    - assets/badges/square-terminal.svg
+    - assets/badges/test-tube.svg
 
   uses-material-design: true
   fonts:

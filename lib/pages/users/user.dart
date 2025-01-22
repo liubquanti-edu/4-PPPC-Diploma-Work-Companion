@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pppc_companion/pages/wall/edit_post.dart';
 import '/models/avatars.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:pppc_companion/services/badges_service.dart';
 
 class UserProfilePage extends StatelessWidget {
   final String userId;
@@ -112,19 +113,26 @@ class UserProfilePage extends StatelessWidget {
                           );
                         },
                       ),
-                      StreamBuilder<QuerySnapshot>(
+                      StreamBuilder<DocumentSnapshot>(
                         stream: FirebaseFirestore.instance
                             .collection('students')
                             .doc(userId)
-                            .collection('badgets')
                             .snapshots(),
                         builder: (context, snapshot) {
-                          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                          if (!snapshot.hasData || !snapshot.data!.exists) {
+                            return const SizedBox.shrink();
+                          }
+
+                          final userData = snapshot.data!.data() as Map<String, dynamic>;
+                          final badges = (userData['badges'] as List?)?.cast<String>() ?? [];
+
+                          if (badges.isEmpty) {
                             return Divider(
                               color: Theme.of(context).colorScheme.primary,
                               thickness: 2,
                             );
                           }
+
                           return Container(
                             width: double.infinity,
                             padding: const EdgeInsets.all(12.0),
@@ -141,52 +149,59 @@ class UserProfilePage extends StatelessWidget {
                               child: Wrap(
                                 spacing: 8,
                                 runSpacing: 8,
-                                children: snapshot.data!.docs.map((badget) {
-                                  final data = badget.data() as Map<String, dynamic>;
-                                  return InkWell(
-                                    onTap: () {
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) => AlertDialog(
-                                          icon: SvgPicture.asset(
-                                            'assets/badgets/${data['logo']}.svg',
+                                children: badges.map((badgeId) {
+                                  return FutureBuilder<Map<String, dynamic>?>(
+                                    future: BadgeService().getBadge(badgeId),
+                                    builder: (context, badgeSnapshot) {
+                                      if (!badgeSnapshot.hasData) return const SizedBox.shrink();
+                                      
+                                      final badge = badgeSnapshot.data!;
+                                      return InkWell(
+                                        onTap: () {
+                                          showDialog(
+                                            context: context,
+                                            builder: (context) => AlertDialog(
+                                              icon: SvgPicture.asset(
+                                                'assets/badges/${badge['logo']}.svg',
+                                                colorFilter: ColorFilter.mode(
+                                                  Theme.of(context).colorScheme.primary,
+                                                  BlendMode.srcIn
+                                                ),
+                                                height: 48,
+                                                width: 48,
+                                              ),
+                                              title: Text(
+                                                badge['name'],
+                                                textAlign: TextAlign.center,
+                                              ),
+                                              content: Text(
+                                                badge['description'],
+                                                textAlign: TextAlign.center,
+                                              ),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () => Navigator.pop(context),
+                                                  child: const Text('Закрити'),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        },
+                                        child: Tooltip(
+                                          message: '${badge['name']}\n${badge['description']}',
+                                          textAlign: TextAlign.center,
+                                          child: SvgPicture.asset(
+                                            'assets/badges/${badge['logo']}.svg',
                                             colorFilter: ColorFilter.mode(
                                               Theme.of(context).colorScheme.primary,
                                               BlendMode.srcIn
                                             ),
-                                            height: 48,
-                                            width: 48,
+                                            height: 24,
+                                            width: 24,
                                           ),
-                                          title: Text(
-                                            data['name'],
-                                            textAlign: TextAlign.center,
-                                          ),
-                                          content: Text(
-                                            data['description'],
-                                            textAlign: TextAlign.center,
-                                          ),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () => Navigator.pop(context),
-                                              child: const Text('Закрити'),
-                                            ),
-                                          ],
                                         ),
                                       );
                                     },
-                                    child: Tooltip(
-                                      message: '${data['name']}\n${data['description']}',
-                                      textAlign: TextAlign.center,
-                                      child: SvgPicture.asset(
-                                        'assets/badgets/${data['logo']}.svg',
-                                        colorFilter: ColorFilter.mode(
-                                          Theme.of(context).colorScheme.primary,
-                                          BlendMode.srcIn
-                                        ),
-                                        height: 24,
-                                        width: 24,
-                                      ),
-                                    ),
                                   );
                                 }).toList(),
                               ),
