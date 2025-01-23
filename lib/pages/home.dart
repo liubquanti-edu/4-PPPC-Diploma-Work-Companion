@@ -82,14 +82,15 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         _news = items.map((item) {
           final title = item.findElements('title').single.text;
-          final description = _parseHtmlString(item.findElements('description').single.text);
+          // Store raw description without parsing
+          final description = item.findElements('description').single.text;
           final link = item.findElements('link').single.text;
           final thumbnail = item.findElements('media:thumbnail').isEmpty 
               ? 'assets/img/news.jpg'
               : item.findElements('media:thumbnail').single.getAttribute('url') ?? 'assets/img/news.jpg';
           return {
             'title': title,
-            'description': description,
+            'description': description,  // Raw HTML content
             'link': link,
             'thumbnail': thumbnail
           };
@@ -1111,7 +1112,7 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                           maxLines: 1,
                                         ),
                                         Text(
-                                          newsItem['description'] ?? '',
+                                          _parseHtmlString(newsItem['description'] ?? ''),
                                           style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 10.0),
                                           overflow: TextOverflow.ellipsis,
                                           maxLines: 4,
