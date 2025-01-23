@@ -9,6 +9,7 @@ import 'package:pppc_companion/pages/wall/edit_post.dart';
 import '/models/avatars.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pppc_companion/services/badges_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class UserProfilePage extends StatelessWidget {
   final String userId;
@@ -113,6 +114,48 @@ class UserProfilePage extends StatelessWidget {
                           );
                         },
                       ),
+                      if ((userData['contactnumber']?.isNotEmpty ?? false) || 
+                          (userData['contactemail']?.isNotEmpty ?? false)) ...[
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (userData['contactnumber']?.isNotEmpty ?? false)
+                                ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Theme.of(context).colorScheme.onSecondary,
+                                  foregroundColor: Theme.of(context).colorScheme.primary,
+                                ),
+                                icon: const Icon(Icons.phone),
+                                label: const Text('Телефон'),
+                                onPressed: () async {
+                                  final Uri url = Uri.parse('tel:${userData['contactnumber']}');
+                                  if (!await launchUrl(url)) {
+                                  throw Exception('Could not launch $url');
+                                  }
+                                },
+                                ),
+                            if (userData['contactemail']?.isNotEmpty ?? false) ...[
+                              if (userData['contactnumber']?.isNotEmpty ?? false)
+                                const SizedBox(width: 10),
+                                ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Theme.of(context).colorScheme.onSecondary,
+                                  foregroundColor: Theme.of(context).colorScheme.primary,
+                                ),
+                                icon: const Icon(Icons.email),
+                                label: const Text('Пошта'),
+                                onPressed: () async {
+                                  final Uri url = Uri.parse('mailto:${userData['contactemail']}');
+                                  if (!await launchUrl(url)) {
+                                  throw Exception('Could not launch $url');
+                                  }
+                                },
+                                ),
+                            ],
+                          ],
+                        ),
+                      ],
                       StreamBuilder<DocumentSnapshot>(
                         stream: FirebaseFirestore.instance
                             .collection('students')

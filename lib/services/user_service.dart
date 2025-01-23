@@ -96,4 +96,30 @@ class UserService {
           'logo': logo
         });
   }
+
+  Future<void> updateUserContacts(String? phone, String? email) async {
+    final user = _auth.currentUser;
+    if (user != null) {
+      final updates = <String, dynamic>{};
+      
+      if (phone?.isEmpty ?? true) {
+        updates['contactnumber'] = FieldValue.delete();
+      } else {
+        updates['contactnumber'] = phone;
+      }
+      
+      if (email?.isEmpty ?? true) {
+        updates['contactemail'] = FieldValue.delete();
+      } else {
+        updates['contactemail'] = email;
+      }
+      
+      if (updates.isNotEmpty) {
+        await _firestore
+            .collection('students')
+            .doc(user.uid)
+            .update(updates);
+      }
+    }
+  }
 }

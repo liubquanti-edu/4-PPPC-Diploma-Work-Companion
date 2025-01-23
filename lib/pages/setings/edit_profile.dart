@@ -7,8 +7,14 @@ import '/services/imgbb_service.dart';
 class EditProfilePage extends StatefulWidget {
   final String currentNickname;
   final String currentAvatar;
+  final Map<String, dynamic> userData;
 
-  const EditProfilePage({Key? key, required this.currentNickname, required this.currentAvatar}) : super(key: key);
+  const EditProfilePage({
+    Key? key, 
+    required this.currentNickname, 
+    required this.currentAvatar,
+    required this.userData,
+  }) : super(key: key);
 
   @override
   State<EditProfilePage> createState() => _EditProfilePageState();
@@ -18,6 +24,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final _formKey = GlobalKey<FormState>();
   final _nicknameController = TextEditingController();
   final _avatarController = TextEditingController();
+  final _contactNumberController = TextEditingController();
+  final _contactEmailController = TextEditingController();
   final _userService = UserService();
   bool _isLoading = false;
   File? _imageFile;
@@ -28,6 +36,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
     super.initState();
     _nicknameController.text = widget.currentNickname;
     _avatarController.text = widget.currentAvatar;
+    _contactNumberController.text = widget.userData['contactnumber'] ?? '';
+    _contactEmailController.text = widget.userData['contactemail'] ?? '';
   }
 
   Future<void> _pickImage() async {
@@ -52,6 +62,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
       if (_nicknameController.text != widget.currentNickname) {
         await _userService.updateUserNickname(_nicknameController.text);
       }
+      await _userService.updateUserContacts(
+        _contactNumberController.text,
+        _contactEmailController.text,
+      );
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -176,6 +190,34 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 },
               ),
               const SizedBox(height: 20),
+              TextFormField(
+                controller: _contactNumberController,
+                decoration: const InputDecoration(
+                  labelText: 'Контактний номер',
+                  border: OutlineInputBorder(),
+                  helperText: 'Номер телефону для зв\'язку',
+                ),
+                keyboardType: TextInputType.phone,
+              ),
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: _contactEmailController,
+                decoration: const InputDecoration(
+                  labelText: 'Контактна пошта',
+                  border: OutlineInputBorder(),
+                  helperText: 'Електронна пошта для зв\'язку',
+                ),
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) {
+                  if (value != null && value.isNotEmpty) {
+                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                      return 'Введіть коректний email';
+                    }
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 20),
               _isLoading
                 ? const CircularProgressIndicator()
                 : ElevatedButton(
@@ -197,6 +239,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
   void dispose() {
     _nicknameController.dispose();
     _avatarController.dispose();
+    _contactNumberController.dispose();
+    _contactEmailController.dispose();
     super.dispose();
   }
 }
