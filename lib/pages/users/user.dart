@@ -159,6 +159,48 @@ class UserProfilePage extends StatelessWidget {
                       StreamBuilder<DocumentSnapshot>(
                         stream: FirebaseFirestore.instance
                             .collection('students')
+                            .doc(_auth.currentUser!.uid)
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) return const SizedBox();
+
+                          final currentUserData = snapshot.data!.data() as Map<String, dynamic>;
+                          final following = (currentUserData['following'] as List?)?.cast<String>() ?? [];
+                          final isFollowing = following.contains(userId);
+
+                          if (userId == _auth.currentUser!.uid) return const SizedBox();
+
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Theme.of(context).colorScheme.onSecondary,
+                                foregroundColor: Theme.of(context).colorScheme.primary,
+                              ),
+                              icon: Icon(isFollowing ? Icons.person_remove : Icons.person_add),
+                              label: Text(isFollowing ? 'Не стежити' : 'Стежити'),
+                              onPressed: () async {
+                                final docRef = FirebaseFirestore.instance
+                                    .collection('students')
+                                    .doc(_auth.currentUser!.uid);
+                                    
+                                if (isFollowing) {
+                                  await docRef.update({
+                                    'following': FieldValue.arrayRemove([userId])
+                                  });
+                                } else {
+                                  await docRef.update({
+                                    'following': FieldValue.arrayUnion([userId])
+                                  });
+                                }
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                      StreamBuilder<DocumentSnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection('students')
                             .doc(userId)
                             .snapshots(),
                         builder: (context, snapshot) {

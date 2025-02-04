@@ -82,6 +82,40 @@ class AppearanceSettings extends StatelessWidget {
                   ),
                 ),
               ),
+              Container(
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Стіна за замовчуванням',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      RadioListTile(
+                        title: const Text('Потік'),
+                        value: 0,
+                        groupValue: themeProvider.defaultContactTab,
+                        onChanged: (int? value) {
+                          if (value != null) {
+                            themeProvider.setDefaultContactTab(value);
+                          }
+                        },
+                      ),
+                      RadioListTile(
+                        title: const Text('Стежу'),
+                        value: 1,
+                        groupValue: themeProvider.defaultContactTab,
+                        onChanged: (int? value) {
+                          if (value != null) {
+                            themeProvider.setDefaultContactTab(value);
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           );
         },
