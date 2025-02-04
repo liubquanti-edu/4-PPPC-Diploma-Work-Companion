@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart' as xml;
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:card_loading/card_loading.dart';
 import 'package:weather/weather.dart';
 import 'package:parallax_rain/parallax_rain.dart';
 import 'dart:async';
-import 'dart:convert';
 import 'config/api.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -16,6 +16,7 @@ import '/models/schedule.dart';
 import '/models/week_type.dart';
 import '/pages/news/read.dart';
 import '/pages/info/subject.dart';
+import '/providers/alert_provider.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -33,9 +34,6 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _isWeatherLoading = true;
   late ScrollController _scrollController;
   bool _showAppBarLogo = false;
-  bool _isAlertLoading = true;
-  AlertInfo _alertInfo = AlertInfo(status: 'N');
-  Timer? _alertTimer;
   List<Map<String, dynamic>> _emergencyMessages = [];
 
   @override
@@ -53,9 +51,7 @@ class _MyHomePageState extends State<MyHomePage> {
       });
     });
     _fetchWeather();
-    _fetchAlertStatus();
     _fetchEmergencyMessages();
-    _alertTimer = Timer.periodic(const Duration(seconds: 30), (_) => _fetchAlertStatus());
   }
 
   @override
@@ -70,7 +66,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void dispose() {
     _scrollController.dispose();
-    _alertTimer?.cancel();
     super.dispose();
   }
 
@@ -128,49 +123,6 @@ class _MyHomePageState extends State<MyHomePage> {
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
-    }
-  }
-
-  Future<void> _fetchAlertStatus() async {
-    try {
-      setState(() {
-        _isAlertLoading = true;
-      });
-      
-      final response = await http.get(
-        Uri.parse('https://api.alerts.in.ua/v1/alerts/active.json'),
-        headers: {'Authorization': 'Bearer ${ApiConfig.alertsApiKey}'}
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final alerts = data['alerts'] as List;
-        
-        final poltavaAlert = alerts.firstWhere(
-          (alert) => alert['location_uid'] == '19' && alert['alert_type'] == 'air_raid',
-          orElse: () => null
-        );
-
-        setState(() {
-          if (poltavaAlert != null) {
-            _alertInfo = AlertInfo(
-              status: 'A',
-              startTime: DateTime.parse(poltavaAlert['started_at'])
-            );
-          } else {
-            _alertInfo = AlertInfo(status: 'N');
-          }
-          _isAlertLoading = false;
-        });
-      } else {
-        throw Exception('Failed to load alert status');
-      }
-    } catch (e) {
-      debugPrint('Error fetching alert status: $e');
-      setState(() {
-        _isAlertLoading = false;
-        _alertInfo = AlertInfo(status: 'N');
-      });
     }
   }
 
@@ -884,116 +836,120 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                     ),
                   ),
                   const SizedBox(height: 10.0, width: double.infinity),
-                  GestureDetector(
-                    child: Ink(
-                      height: 80,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.onSecondary,
-                        borderRadius: BorderRadius.circular(10.0),
-                        border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
-                      ),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(10.0),
-                        onTap: () => _launchUrl('https://alerts.in.ua'),
-                        child: Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: _isAlertLoading
-                            ? Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                CardLoading(
-                                height: 25,
-                                width: 250,
-                                borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                animationDuration: const Duration(milliseconds: 1000),
-                                animationDurationTwo: const Duration(milliseconds: 700),
-                                cardLoadingTheme: CardLoadingTheme(
-                                  colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                                  colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                                ),
-                                ),
-                                const SizedBox(height: 10.0),
-                                CardLoading(
-                                height: 20,
-                                width: 300,
-                                borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                animationDuration: const Duration(milliseconds: 1000),
-                                animationDurationTwo: const Duration(milliseconds: 700),
-                                cardLoadingTheme: CardLoadingTheme(
-                                  colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                                  colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                                ),
-                                ),
-                              ],
-                              )
-                            : Row(
-                                children: [
-                                  SizedBox(
-                                    height: 50,
-                                    width: 50,
-                                    child: DecoratedBox(
-                                      decoration: BoxDecoration(
-                                        color: Theme.of(context).colorScheme.surfaceContainer,
-                                        borderRadius: BorderRadius.circular(5),
-                                      ),
-                                      child: Icon(
-                                        _alertInfo.status == 'A' 
-                                          ? Icons.warning_rounded
-                                          : Icons.check_box_rounded,
-                                        size: 30.0,
-                                        color: _alertInfo.status == 'A' 
-                                          ? Colors.red.shade400
-                                          : Theme.of(context).colorScheme.primary,
-                                      ),
+                  Consumer<AlertProvider>(
+                    builder: (context, alertProvider, child) {
+                      return GestureDetector(
+                        child: Ink(
+                          height: 80,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.onSecondary,
+                            borderRadius: BorderRadius.circular(10.0),
+                            border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
+                          ),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(10.0),
+                            onTap: () => _launchUrl('https://alerts.in.ua'),
+                            child: Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: alertProvider.isLoading
+                                ? Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    CardLoading(
+                                    height: 25,
+                                    width: 250,
+                                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                    animationDuration: const Duration(milliseconds: 1000),
+                                    animationDurationTwo: const Duration(milliseconds: 700),
+                                    cardLoadingTheme: CardLoadingTheme(
+                                      colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                      colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                                     ),
-                                  ),
-                                  const SizedBox(width: 10.0),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        SizedBox(
-                                          width: double.infinity,
-                                          child: Text(
-                                          _alertInfo.status == 'A'
-                                          ? 'Повітряна тривога!'
-                                          : 'Тривоги немає',
-                                          style: Theme.of(context).textTheme.titleLarge,
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 1,
+                                    ),
+                                    const SizedBox(height: 10.0),
+                                    CardLoading(
+                                    height: 20,
+                                    width: 300,
+                                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                    animationDuration: const Duration(milliseconds: 1000),
+                                    animationDurationTwo: const Duration(milliseconds: 700),
+                                    cardLoadingTheme: CardLoadingTheme(
+                                      colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                      colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                    ),
+                                    ),
+                                  ],
+                                  )
+                                : Row(
+                                    children: [
+                                      SizedBox(
+                                        height: 50,
+                                        width: 50,
+                                        child: DecoratedBox(
+                                          decoration: BoxDecoration(
+                                            color: Theme.of(context).colorScheme.surfaceContainer,
+                                            borderRadius: BorderRadius.circular(5),
+                                          ),
+                                          child: Icon(
+                                            alertProvider.alertInfo.status == 'A' 
+                                              ? Icons.warning_rounded
+                                              : Icons.check_box_rounded,
+                                            size: 30.0,
+                                            color: alertProvider.alertInfo.status == 'A' 
+                                              ? Colors.red.shade400
+                                              : Theme.of(context).colorScheme.primary,
                                           ),
                                         ),
-                                        SizedBox(
-                                          width: MediaQuery.of(context).size.width * 0.6,
-                                          child: Text(
-                                            _alertInfo.status == 'A'
-                                            ? 'Початок: ${DateFormat('HH:mm').format(_alertInfo.startTime!.toLocal())}'
-                                            ' • ${(() {
-                                              final diff = DateTime.now().difference(_alertInfo.startTime!);
-                                              if (diff.inDays > 0) {
-                                              return '${diff.inDays}:${diff.inHours.remainder(24).toString().padLeft(2, '0')}:${diff.inMinutes.remainder(60).toString().padLeft(2, '0')}';
-                                              } else if (diff.inHours > 0) {
-                                              return '${diff.inHours}:${diff.inMinutes.remainder(60).toString().padLeft(2, '0')}';
-                                              } else {
-                                              return '0:${diff.inMinutes.toString().padLeft(2, '0')}';
-                                              }
-                                            })()}'
-                                            : 'Оповіщень не надходило.',
-                                            style: Theme.of(context).textTheme.bodyMedium,
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 1,
-                                          ),
+                                      ),
+                                      const SizedBox(width: 10.0),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            SizedBox(
+                                              width: double.infinity,
+                                              child: Text(
+                                              alertProvider.alertInfo.status == 'A'
+                                              ? 'Повітряна тривога!'
+                                              : 'Тривоги немає',
+                                              style: Theme.of(context).textTheme.titleLarge,
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                              ),
+                                            ),
+                                            SizedBox(
+                                              width: MediaQuery.of(context).size.width * 0.6,
+                                              child: Text(
+                                                alertProvider.alertInfo.status == 'A'
+                                                ? 'Початок: ${DateFormat('HH:mm').format(alertProvider.alertInfo.startTime!.toLocal())}'
+                                                ' • ${(() {
+                                                  final diff = DateTime.now().difference(alertProvider.alertInfo.startTime!);
+                                                  if (diff.inDays > 0) {
+                                                  return '${diff.inDays}:${diff.inHours.remainder(24).toString().padLeft(2, '0')}:${diff.inMinutes.remainder(60).toString().padLeft(2, '0')}';
+                                                  } else if (diff.inHours > 0) {
+                                                  return '${diff.inHours}:${diff.inMinutes.remainder(60).toString().padLeft(2, '0')}';
+                                                  } else {
+                                                  return '0:${diff.inMinutes.toString().padLeft(2, '0')}';
+                                                  }
+                                                })()}'
+                                                : 'Оповіщень не надходило.',
+                                                style: Theme.of(context).textTheme.bodyMedium,
+                                                overflow: TextOverflow.ellipsis,
+                                                maxLines: 1,
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 20.0, width: double.infinity),
                   SizedBox(

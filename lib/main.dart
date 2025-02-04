@@ -15,6 +15,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'providers/theme_provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'providers/alert_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -46,64 +47,69 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ThemeProvider>(
-      builder: (context, themeProvider, child) {
-        if (!themeProvider.isInitialized) {
-          return MaterialApp(
-            home: Container(
-              color: Colors.white,
-              child: const Center(
-                child: CircularProgressIndicator(),
-              ),
-            ),
-          );
-        }
-
-        return DynamicColorBuilder(
-          builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
-            ColorScheme lightColorScheme;
-            ColorScheme darkColorScheme;
-
-            if (themeProvider.useDynamicColors && lightDynamic != null && darkDynamic != null) {
-              lightColorScheme = lightDynamic.harmonized();
-              darkColorScheme = darkDynamic.harmonized();
-            } else {
-              lightColorScheme = ColorScheme.fromSeed(
-                seedColor: Colors.deepOrange,
-                brightness: Brightness.light,
-              );
-              darkColorScheme = ColorScheme.fromSeed(
-                seedColor: Colors.deepOrange,
-                brightness: Brightness.dark,
-              );
-            }
-
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AlertProvider()),
+      ],
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          if (!themeProvider.isInitialized) {
             return MaterialApp(
-              title: 'Flutter Demo',
-              theme: ThemeData(
-                colorScheme: lightColorScheme,
-                useMaterial3: true,
-                fontFamily: 'Comfortaa',
-              ),
-              darkTheme: ThemeData(
-                colorScheme: darkColorScheme,
-                useMaterial3: true,
-                fontFamily: 'Comfortaa',
-              ),
-              themeMode: themeProvider.themeMode,
-              home: StreamBuilder<User?>(
-                stream: FirebaseAuth.instance.authStateChanges(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    return const MainScreen();
-                  }
-                  return const EmailScreen();
-                },
+              home: Container(
+                color: Colors.white,
+                child: const Center(
+                  child: CircularProgressIndicator(),
+                ),
               ),
             );
-          },
-        );
-      },
+          }
+
+          return DynamicColorBuilder(
+            builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
+              ColorScheme lightColorScheme;
+              ColorScheme darkColorScheme;
+
+              if (themeProvider.useDynamicColors && lightDynamic != null && darkDynamic != null) {
+                lightColorScheme = lightDynamic.harmonized();
+                darkColorScheme = darkDynamic.harmonized();
+              } else {
+                lightColorScheme = ColorScheme.fromSeed(
+                  seedColor: Colors.deepOrange,
+                  brightness: Brightness.light,
+                );
+                darkColorScheme = ColorScheme.fromSeed(
+                  seedColor: Colors.deepOrange,
+                  brightness: Brightness.dark,
+                );
+              }
+
+              return MaterialApp(
+                title: 'Flutter Demo',
+                theme: ThemeData(
+                  colorScheme: lightColorScheme,
+                  useMaterial3: true,
+                  fontFamily: 'Comfortaa',
+                ),
+                darkTheme: ThemeData(
+                  colorScheme: darkColorScheme,
+                  useMaterial3: true,
+                  fontFamily: 'Comfortaa',
+                ),
+                themeMode: themeProvider.themeMode,
+                home: StreamBuilder<User?>(
+                  stream: FirebaseAuth.instance.authStateChanges(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      return const MainScreen();
+                    }
+                    return const EmailScreen();
+                  },
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
