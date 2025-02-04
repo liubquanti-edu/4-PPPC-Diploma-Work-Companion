@@ -19,11 +19,9 @@ class NewsDetailScreen extends StatelessWidget {
     final images = document.getElementsByTagName('img');
     return images.map((img) {
       String src = img.attributes['src'] ?? '';
-      // Отримуємо оригінальний розмір зображення
       if (src.contains('s1600')) {
         return src;
       }
-      // Перетворюємо URL для отримання повного розміру
       return src.replaceAll(RegExp(r'w\d+-h\d+'), 's1600');
     }).toList();
   }
@@ -109,12 +107,16 @@ class NewsDetailScreen extends StatelessWidget {
                     tag: imageUrl,
                     child: CachedNetworkImage(
                     imageUrl: imageUrl,
-                    placeholder: (context, url) => const Center(
-                        child: CardLoading(
-                        height: 200,
-                        width: double.infinity,
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
+                    placeholder: (context, url) => Center(
+                      child: CardLoading(
+                      height: 200,
+                      width: double.infinity,
+                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                      cardLoadingTheme: CardLoadingTheme(
+                          colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                          colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                         ),
+                      ),
                     ),
                     errorWidget: (context, url, error) => const Icon(Icons.error),
                     fit: BoxFit.contain,
