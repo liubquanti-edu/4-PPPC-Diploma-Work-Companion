@@ -114,90 +114,83 @@ class UserProfilePage extends StatelessWidget {
                           );
                         },
                       ),
-                      if ((userData['contactnumber']?.isNotEmpty ?? false) || 
-                          (userData['contactemail']?.isNotEmpty ?? false)) ...[
-                        const SizedBox(height: 10),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            if (userData['contactnumber']?.isNotEmpty ?? false)
-                                ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Theme.of(context).colorScheme.onSecondary,
-                                  foregroundColor: Theme.of(context).colorScheme.primary,
-                                ),
-                                icon: const Icon(Icons.phone),
-                                label: const Text('Телефон'),
-                                onPressed: () async {
-                                  final Uri url = Uri.parse('tel:${userData['contactnumber']}');
-                                  if (!await launchUrl(url)) {
-                                  throw Exception('Could not launch $url');
-                                  }
-                                },
-                                ),
-                            if (userData['contactemail']?.isNotEmpty ?? false) ...[
-                              if (userData['contactnumber']?.isNotEmpty ?? false)
-                                const SizedBox(width: 10),
-                                ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Theme.of(context).colorScheme.onSecondary,
-                                  foregroundColor: Theme.of(context).colorScheme.primary,
-                                ),
-                                icon: const Icon(Icons.email),
-                                label: const Text('Пошта'),
-                                onPressed: () async {
-                                  final Uri url = Uri.parse('mailto:${userData['contactemail']}');
-                                  if (!await launchUrl(url)) {
-                                  throw Exception('Could not launch $url');
-                                  }
-                                },
-                                ),
-                            ],
-                          ],
-                        ),
-                      ],
-                      StreamBuilder<DocumentSnapshot>(
-                        stream: FirebaseFirestore.instance
-                            .collection('students')
-                            .doc(_auth.currentUser!.uid)
-                            .snapshots(),
-                        builder: (context, snapshot) {
-                          if (!snapshot.hasData) return const SizedBox();
-
-                          final currentUserData = snapshot.data!.data() as Map<String, dynamic>;
-                          final following = (currentUserData['following'] as List?)?.cast<String>() ?? [];
-                          final isFollowing = following.contains(userId);
-
-                          if (userId == _auth.currentUser!.uid) return const SizedBox();
-
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Theme.of(context).colorScheme.onSecondary,
-                                foregroundColor: Theme.of(context).colorScheme.primary,
-                              ),
-                              icon: Icon(isFollowing ? Icons.person_remove : Icons.person_add),
-                              label: Text(isFollowing ? 'Не стежити' : 'Стежити'),
-                              onPressed: () async {
-                                final docRef = FirebaseFirestore.instance
-                                    .collection('students')
-                                    .doc(_auth.currentUser!.uid);
-                                    
-                                if (isFollowing) {
-                                  await docRef.update({
-                                    'following': FieldValue.arrayRemove([userId])
-                                  });
-                                } else {
-                                  await docRef.update({
-                                    'following': FieldValue.arrayUnion([userId])
-                                  });
-                                }
-                              },
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (userData['contactnumber']?.isNotEmpty ?? false)
+                          ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).colorScheme.onSecondary,
+                            foregroundColor: Theme.of(context).colorScheme.primary,
                             ),
-                          );
-                        },
-                      ),
+                            icon: const Icon(Icons.phone),
+                            label: const Text('Телефон'),
+                            onPressed: () async {
+                            final Uri url = Uri.parse('tel:${userData['contactnumber']}');
+                            if (!await launchUrl(url)) {
+                              throw Exception('Could not launch $url');
+                            }
+                            },
+                          ),
+                          if (userData['contactemail']?.isNotEmpty ?? false) ...[
+                          if (userData['contactnumber']?.isNotEmpty ?? false)
+                            const SizedBox(width: 10),
+                          ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).colorScheme.onSecondary,
+                            foregroundColor: Theme.of(context).colorScheme.primary,
+                            ),
+                            icon: const Icon(Icons.email),
+                            label: const Text('Пошта'),
+                            onPressed: () async {
+                            final Uri url = Uri.parse('mailto:${userData['contactemail']}');
+                            if (!await launchUrl(url)) {
+                              throw Exception('Could not launch $url');
+                            }
+                            },
+                          ),
+                          ],
+                          if (userId != _auth.currentUser!.uid) ...[
+                          const SizedBox(width: 10),
+                          StreamBuilder<DocumentSnapshot>(
+                            stream: FirebaseFirestore.instance
+                              .collection('students')
+                              .doc(_auth.currentUser!.uid)
+                              .snapshots(),
+                            builder: (context, snapshot) {
+                            if (!snapshot.hasData) return const SizedBox();
+
+                            final currentUserData = snapshot.data!.data() as Map<String, dynamic>;
+                            final following = (currentUserData['following'] as List?)?.cast<String>() ?? [];
+                            final isFollowing = following.contains(userId);
+
+                            return ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).colorScheme.onSecondary,
+                              foregroundColor: Theme.of(context).colorScheme.primary,
+                              ),
+                              child: Icon(isFollowing ? Icons.person_remove : Icons.person_add),
+                              onPressed: () async {
+                              final docRef = FirebaseFirestore.instance
+                                .collection('students')
+                                .doc(_auth.currentUser!.uid);
+                                
+                              if (isFollowing) {
+                                await docRef.update({
+                                'following': FieldValue.arrayRemove([userId])
+                                });
+                              } else {
+                                await docRef.update({
+                                'following': FieldValue.arrayUnion([userId])
+                                });
+                              }
+                              },
+                            );
+                            },
+                          ),
+                          ],
+                        ],
+                        ),
                       StreamBuilder<DocumentSnapshot>(
                         stream: FirebaseFirestore.instance
                             .collection('students')
