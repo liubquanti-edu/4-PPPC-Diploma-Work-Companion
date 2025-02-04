@@ -86,6 +86,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                       return Container(
                         width: double.infinity,
+                        height: 50,
                         padding: const EdgeInsets.all(12.0),
                         margin: const EdgeInsets.only(top: 10.0),
                         decoration: BoxDecoration(
@@ -105,7 +106,6 @@ class _ProfilePageState extends State<ProfilePage> {
                                 future: BadgeService().getBadge(badgeId),
                                 builder: (context, badgeSnapshot) {
                                   if (!badgeSnapshot.hasData) return const SizedBox.shrink();
-                                  
                                   final badge = badgeSnapshot.data!;
                                   return InkWell(
                                     onTap: () {
