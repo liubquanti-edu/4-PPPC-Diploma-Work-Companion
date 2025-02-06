@@ -6,6 +6,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:pppc_companion/pages/users/user.dart';
 import '/models/avatars.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class ChatScreen extends StatefulWidget {
   final String recipientId;
@@ -41,34 +43,79 @@ class _ChatScreenState extends State<ChatScreen> {
     return ids.join('_');
   }
 
-  void _sendMessage() async {
+  Future<void> _sendMessage() async {
     if (_messageController.text.trim().isEmpty) return;
 
-    if (_isEditing) {
-      await _database.child('chats/$chatRoomId/messages/$_editingMessageKey').update({
-        'text': _messageController.text.trim(),
-        'edited': true,
-        'editedAt': ServerValue.timestamp,
-      });
-      _cancelEdit();
-    } else {
-      final messageRef = _database.child('chats/$chatRoomId/messages').push();
-      final message = {
-        'senderId': _auth.currentUser!.uid,
-        'text': _messageController.text.trim(),
-        'timestamp': ServerValue.timestamp,
-      };
-      
-      if (_replyTo != null) {
-        message['replyTo'] = {
-          'messageId': _replyTo!['key'],
-          'text': _replyTo!['text'],
-          'senderId': _replyTo!['senderId'],
+    try {
+      if (_isEditing) {
+        await _database.child('chats/$chatRoomId/messages/$_editingMessageKey').update({
+          'text': _messageController.text.trim(),
+          'edited': true,
+          'editedAt': ServerValue.timestamp,
+        });
+        _cancelEdit();
+      } else {
+        final messageRef = _database.child('chats/$chatRoomId/messages').push();
+        final message = {
+          'senderId': _auth.currentUser!.uid,
+          'text': _messageController.text.trim(),
+          'timestamp': ServerValue.timestamp,
         };
+        
+        if (_replyTo != null) {
+          message['replyTo'] = {
+            'messageId': _replyTo!['key'],
+            'text': _replyTo!['text'],
+            'senderId': _replyTo!['senderId'],
+          };
+        }
+        
+        await messageRef.set(message);
+        _cancelReply();
       }
+
+      // Get recipient's FCM token
+      final recipientDoc = await FirebaseFirestore.instance
+          .collection('students')
+          .doc(widget.recipientId)
+          .get();
       
-      await messageRef.set(message);
-      _cancelReply();
+      if (recipientDoc.exists) {
+        final recipientToken = recipientDoc.data()?['fcmToken'];
+        
+        // Get sender's name
+        final senderDoc = await FirebaseFirestore.instance
+            .collection('students')
+            .doc(_auth.currentUser!.uid)
+            .get();
+        final senderData = senderDoc.data();
+        final senderName = '${senderData?['surname']} ${senderData?['name']}';
+
+        if (recipientToken != null) { 
+          debugPrint('Sending notification to token: $recipientToken');
+          final response = await http.post(
+            Uri.parse('https://us-central1-pppc-companion.cloudfunctions.net/sendChatNotification'),
+            headers: {'Content-Type': 'application/json'},
+            body: json.encode({
+              'token': recipientToken,
+              'title': senderName, // Changed from widget.recipientName to senderName
+              'body': _messageController.text.trim(),
+              'data': {
+                'chatRoomId': chatRoomId,
+                'senderId': _auth.currentUser!.uid,
+                'type': 'chat_message'
+              }
+            }),
+          );
+          debugPrint('Notification response: ${response.statusCode} - ${response.body}');
+
+          if (response.statusCode != 200) {
+            debugPrint('Notification error: ${response.body}');
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error sending message: $e');
     }
 
     _messageController.clear();

@@ -9,6 +9,7 @@ import 'package:pppc_companion/pages/profile.dart';
 import 'pages/home.dart';
 import 'pages/education.dart';
 import 'pages/auth/email_screen.dart';
+import 'pages/chat/chat.dart';
 import 'services/user_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,9 +17,42 @@ import 'providers/theme_provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'providers/alert_provider.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'dart:io';
+import 'dart:convert';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  
+  // Get FCM token
+  final fcmToken = await FirebaseMessaging.instance.getToken();
+  
+  // Save token to Firestore
+  if (fcmToken != null) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      await FirebaseFirestore.instance
+          .collection('students')
+          .doc(user.uid)
+          .update({'fcmToken': fcmToken});
+    }
+  }
+  
+  // Handle token refresh
+  FirebaseMessaging.instance.onTokenRefresh.listen((token) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      FirebaseFirestore.instance
+          .collection('students')
+          .doc(user.uid)
+          .update({'fcmToken': token});
+    }
+  });
+
   final prefs = await SharedPreferences.getInstance();
 
   try {
@@ -34,16 +68,168 @@ void main() async {
 
   await initializeDateFormatting('uk');
 
+  // Handle notification when app is in background
+  FirebaseMessaging.onMessageOpenedApp.listen((message) {
+    final chatRoomId = message.data['chatRoomId'];
+    if (chatRoomId != null) {
+      // Get recipient info and navigate to chat
+      _handleNotificationTap(chatRoomId);
+    }
+  });
+
+  await _initNotifications();
+
+  // Handle foreground messages
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    if (message.notification != null) {
+      FlutterLocalNotificationsPlugin().show(
+        0,
+        message.notification!.title,
+        message.notification!.body,
+        NotificationDetails(
+          android: AndroidNotificationDetails(
+            'chat_channel',
+            'Chat Notifications',
+            importance: Importance.high,
+            priority: Priority.high,
+          ),
+        ),
+        payload: json.encode(message.data),
+      );
+    }
+  });
+
+  // Handle notification tap
+  FlutterLocalNotificationsPlugin().initialize(
+    InitializationSettings(
+      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+    ),
+    onDidReceiveNotificationResponse: (details) async {
+      if (details.payload != null) {
+        final data = json.decode(details.payload!);
+        if (data['type'] == 'chat_message') {
+          // Очікуємо ініціалізації Firebase і авторизації
+          await Firebase.initializeApp();
+          final auth = FirebaseAuth.instance;
+          if (auth.currentUser == null) {
+            navigatorKey.currentState?.pushReplacement(
+              MaterialPageRoute(builder: (context) => const EmailScreen())
+            );
+            return;
+          }
+          _handleNotificationTap(data['chatRoomId']);
+        }
+      }
+    },
+  );
+
+  // Request notification permissions
+  await FirebaseMessaging.instance.requestPermission(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
+
+  // Configure notification settings
+  await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
+
   runApp(
     ChangeNotifierProvider(
       create: (_) => ThemeProvider(prefs),
-      child: const MyApp(),
+      child: MyApp(navigatorKey: navigatorKey),  // Pass the key to MyApp
     ),
   );
 }
 
+Future<void> _initNotifications() async {
+  try {
+    await FirebaseMessaging.instance.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+      provisional: false,
+    );
+
+    final fcmToken = await FirebaseMessaging.instance.getToken();
+    debugPrint('FCM Token: $fcmToken');
+
+    await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    if (Platform.isAndroid) {
+      await FlutterLocalNotificationsPlugin()
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+          ?.createNotificationChannel(
+            const AndroidNotificationChannel(
+              'chat_channel',
+              'Chat Notifications',
+              description: 'Notifications for new chat messages',
+              importance: Importance.max,
+              playSound: true,
+              enableVibration: true,
+              showBadge: true,
+            ),
+          );
+    }
+  } catch (e) {
+    debugPrint('Error initializing notifications: $e');
+  }
+}
+
+void _handleNotificationTap(String chatRoomId) async {
+  try {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return;
+
+    final recipientId = chatRoomId.split('_').firstWhere(
+      (id) => id != currentUser.uid,
+    );
+
+    final recipientDoc = await FirebaseFirestore.instance
+        .collection('students')
+        .doc(recipientId)
+        .get();
+
+    if (recipientDoc.exists) {
+      final data = recipientDoc.data()!;
+      
+      // Перевіряємо чи є активний навігатор
+      if (navigatorKey.currentState?.mounted ?? false) {
+        navigatorKey.currentState!.pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (context) => MainScreen(), // Спочатку відкриваємо головний екран
+          ),
+          (route) => false,
+        );
+        
+        // Потім відкриваємо чат
+        navigatorKey.currentState?.push(
+          MaterialPageRoute(
+            builder: (context) => ChatScreen(
+              recipientId: recipientId,
+              recipientName: '${data['surname']} ${data['name']}',
+              recipientAvatar: data['avatar'] ?? '',
+            ),
+          ),
+        );
+      }
+    }
+  } catch (e) {
+    debugPrint('Error handling notification tap: $e');
+  }
+}
+
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final GlobalKey<NavigatorState> navigatorKey;
+  
+  const MyApp({Key? key, required this.navigatorKey}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -84,6 +270,7 @@ class MyApp extends StatelessWidget {
               }
 
               return MaterialApp(
+                navigatorKey: navigatorKey,  // Set the navigator key
                 title: 'Flutter Demo',
                 theme: ThemeData(
                   colorScheme: lightColorScheme,
