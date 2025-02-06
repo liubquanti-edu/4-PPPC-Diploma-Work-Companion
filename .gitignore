@@ -47,3 +47,5 @@ app.*.map.json
 /ios/Runner/GoogleService-Info.plist
 /android/app/google-services.json
 example.json
+/.firebaserc
+/functions
