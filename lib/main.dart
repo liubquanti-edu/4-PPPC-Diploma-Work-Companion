@@ -92,6 +92,7 @@ void main() async {
             'Chat Notifications',
             importance: Importance.high,
             priority: Priority.high,
+            icon: 'notification_icon' // Add this line
           ),
         ),
         payload: json.encode(message.data),
@@ -102,7 +103,7 @@ void main() async {
   // Handle notification tap
   FlutterLocalNotificationsPlugin().initialize(
     InitializationSettings(
-      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+      android: AndroidInitializationSettings('notification_icon'), // Changed from ic_launcher
     ),
     onDidReceiveNotificationResponse: (details) async {
       if (details.payload != null) {
