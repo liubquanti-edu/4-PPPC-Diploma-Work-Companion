@@ -26,6 +26,9 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 String? currentOpenChatId;
 
+// Додайте змінну для відстеження ID сповіщень
+int _notificationId = 0;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -89,8 +92,11 @@ void main() async {
       
       // Show notification only if it's not from the current open chat
       if (notificationChatId != currentOpenChatId) {
+        // Збільшуємо ID для кожного нового сповіщення
+        _notificationId++;
+        
         FlutterLocalNotificationsPlugin().show(
-          0,
+          _notificationId, // Використовуємо унікальний ID замість 0
           message.notification!.title,
           message.notification!.body,
           NotificationDetails(
@@ -99,10 +105,34 @@ void main() async {
               'Chat Notifications',
               importance: Importance.high,
               priority: Priority.high,
-              icon: 'notification_icon'
+              icon: 'notification_icon',
+              // Додаємо налаштування для групування сповіщень
+              groupKey: 'chat_messages',
+              setAsGroupSummary: false,
+              groupAlertBehavior: GroupAlertBehavior.all,
+              channelShowBadge: true,
+              autoCancel: true,
             ),
           ),
           payload: json.encode(message.data),
+        );
+
+        // Показуємо групове сповіщення
+        FlutterLocalNotificationsPlugin().show(
+          0, // ID для групового сповіщення завжди 0
+          'Нові повідомлення',
+          'У вас є непрочитані повідомлення',
+          NotificationDetails(
+            android: AndroidNotificationDetails(
+              'chat_channel',
+              'Chat Notifications',
+              groupKey: 'chat_messages',
+              setAsGroupSummary: true,
+              icon: 'notification_icon',
+              importance: Importance.high,
+              priority: Priority.high,
+            ),
+          ),
         );
       }
     }
