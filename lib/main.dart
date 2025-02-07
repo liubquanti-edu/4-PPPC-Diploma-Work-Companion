@@ -24,6 +24,8 @@ import 'dart:convert';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
+String? currentOpenChatId;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -82,21 +84,27 @@ void main() async {
   // Handle foreground messages
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
     if (message.notification != null) {
-      FlutterLocalNotificationsPlugin().show(
-        0,
-        message.notification!.title,
-        message.notification!.body,
-        NotificationDetails(
-          android: AndroidNotificationDetails(
-            'chat_channel',
-            'Chat Notifications',
-            importance: Importance.high,
-            priority: Priority.high,
-            icon: 'notification_icon' // Add this line
+      // Check if the notification is from the currently open chat
+      final notificationChatId = message.data['chatRoomId'];
+      
+      // Show notification only if it's not from the current open chat
+      if (notificationChatId != currentOpenChatId) {
+        FlutterLocalNotificationsPlugin().show(
+          0,
+          message.notification!.title,
+          message.notification!.body,
+          NotificationDetails(
+            android: AndroidNotificationDetails(
+              'chat_channel',
+              'Chat Notifications',
+              importance: Importance.high,
+              priority: Priority.high,
+              icon: 'notification_icon'
+            ),
           ),
-        ),
-        payload: json.encode(message.data),
-      );
+          payload: json.encode(message.data),
+        );
+      }
     }
   });
 

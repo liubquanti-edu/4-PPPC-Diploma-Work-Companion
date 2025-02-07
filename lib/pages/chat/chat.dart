@@ -8,6 +8,7 @@ import '/models/avatars.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:pppc_companion/main.dart';
 
 class ChatScreen extends StatefulWidget {
   final String recipientId;
@@ -41,6 +42,13 @@ class _ChatScreenState extends State<ChatScreen> {
     final List<String> ids = [_auth.currentUser!.uid, widget.recipientId];
     ids.sort();
     return ids.join('_');
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Set current chat when opened
+    currentOpenChatId = chatRoomId;
   }
 
   Future<void> _sendMessage() async {
@@ -675,6 +683,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
+    // Clear current chat when closed
+    currentOpenChatId = null;
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
