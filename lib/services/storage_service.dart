@@ -49,13 +49,16 @@ class StorageService {
     try {
       final ref = FirebaseStorage.instance.refFromURL(oldAvatarUrl);
       await ref.delete();
-      debugPrint('Old avatar deleted: $oldAvatarUrl');
+      debugPrint('Avatar deleted successfully from Storage: $oldAvatarUrl');
     } on FirebaseException catch (e) {
-      debugPrint('Delete Error: ${e.code} - ${e.message}');
-      // Ignore object-not-found errors
+      debugPrint('Firebase Storage Error: ${e.code} - ${e.message}');
+      // Ignore if file doesn't exist
       if (e.code != 'object-not-found') {
-        throw Exception('Помилка видалення старого аватара');
+        throw Exception('Помилка видалення аватара зі сховища');
       }
+    } catch (e) {
+      debugPrint('Unexpected error: $e');
+      throw Exception('Помилка видалення аватара');
     }
   }
 }

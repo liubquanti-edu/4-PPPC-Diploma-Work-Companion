@@ -5,7 +5,6 @@ import 'dart:io';
 import '/services/storage_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 
 class EditProfilePage extends StatefulWidget {
   final String currentNickname;
@@ -99,16 +98,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
           newAvatarUrl = await StorageService.uploadAvatar(_imageFile!, userId);
           debugPrint('New avatar URL: $newAvatarUrl');
           
-          if (newAvatarUrl != null) {
-            // Add new avatar URL to update data
-            updateData['avatar'] = newAvatarUrl;
-            
-            // Delete old avatar after successful upload and Firestore update
-            if (widget.currentAvatar.isNotEmpty) {
-              await StorageService.deleteOldAvatar(widget.currentAvatar);
-            }
+          // Add new avatar URL to update data
+          updateData['avatar'] = newAvatarUrl;
+          
+          // Delete old avatar after successful upload and Firestore update
+          if (widget.currentAvatar.isNotEmpty) {
+            await StorageService.deleteOldAvatar(widget.currentAvatar);
           }
-        } catch (e) {
+                } catch (e) {
           debugPrint('Error uploading new avatar: $e');
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(

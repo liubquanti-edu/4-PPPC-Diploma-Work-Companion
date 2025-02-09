@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'storage_service.dart';
 
@@ -86,14 +87,27 @@ class UserService {
     final user = _auth.currentUser;
     if (user != null) {
       try {
+        // First get the current avatar URL
+        final userDoc = await _firestore
+            .collection('students')
+            .doc(user.uid)
+            .get();
         
-        // Then, remove the avatar URL from Firestore
+        final currentAvatar = userDoc.data()?['avatar'] as String?;
+        
+        if (currentAvatar != null && currentAvatar.isNotEmpty) {
+          // Delete from Storage
+          await StorageService.deleteOldAvatar(currentAvatar);
+        }
+        
+        // Then remove from Firestore
         await _firestore
             .collection('students')
             .doc(user.uid)
             .update({'avatar': FieldValue.delete()});
-            
+              
       } catch (e) {
+        debugPrint('Error removing avatar: $e');
         throw Exception('Помилка видалення аватара: $e');
       }
     }
