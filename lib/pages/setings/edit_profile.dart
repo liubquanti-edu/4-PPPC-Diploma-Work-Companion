@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:pppc_companion/services/user_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import '/services/imgbb_service.dart';
+import '/services/storage_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class EditProfilePage extends StatefulWidget {
   final String currentNickname;
@@ -49,29 +52,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
     }
   }
 
-  Future<void> _saveChanges() async {
-    if (!_formKey.currentState!.validate()) return;
-
+  Future<void> _removeAvatar() async {
     setState(() => _isLoading = true);
-
     try {
-      if (_imageFile != null) {
-        final imageUrl = await ImgbbService.uploadImage(_imageFile!);
-        await _userService.updateUserAvatar(imageUrl); 
-      }
-      if (_nicknameController.text != widget.currentNickname) {
-        await _userService.updateUserNickname(_nicknameController.text);
-      }
-      await _userService.updateUserContacts(
-        _contactNumberController.text,
-        _contactEmailController.text,
-      );
+      await _userService.removeUserAvatar();
       
       if (mounted) {
+        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Профіль успішно оновлено')),
+          const SnackBar(content: Text('Аватар успішно видалено')),
         );
-        Navigator.pop(context, true);
       }
     } catch (e) {
       if (mounted) {
@@ -86,20 +76,67 @@ class _EditProfilePageState extends State<EditProfilePage> {
     }
   }
 
-  Future<void> _removeAvatar() async {
+  Future<void> _saveChanges() async {
+    if (_isLoading || !_formKey.currentState!.validate()) return;
+    
     setState(() => _isLoading = true);
+    
     try {
-      await _userService.removeUserAvatar();
+      final userId = FirebaseAuth.instance.currentUser!.uid;
+      String? newAvatarUrl;
+
+      // Prepare update data
+      final Map<String, dynamic> updateData = {
+        'nickname': _nicknameController.text.trim(),
+        'contactnumber': _contactNumberController.text.trim(),
+        'contactemail': _contactEmailController.text.trim(),
+      };
+
+      // Upload new avatar if selected
+      if (_imageFile != null) {
+        try {
+          // Upload new avatar first
+          newAvatarUrl = await StorageService.uploadAvatar(_imageFile!, userId);
+          debugPrint('New avatar URL: $newAvatarUrl');
+          
+          if (newAvatarUrl != null) {
+            // Add new avatar URL to update data
+            updateData['avatar'] = newAvatarUrl;
+            
+            // Delete old avatar after successful upload and Firestore update
+            if (widget.currentAvatar.isNotEmpty) {
+              await StorageService.deleteOldAvatar(widget.currentAvatar);
+            }
+          }
+        } catch (e) {
+          debugPrint('Error uploading new avatar: $e');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Помилка завантаження аватара: $e')),
+            );
+          }
+          setState(() => _isLoading = false);
+          return;
+        }
+      }
+
+      // Update Firestore document
+      await FirebaseFirestore.instance
+          .collection('students')
+          .doc(userId)
+          .update(updateData);
+
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Аватар видалено')),
-        );
         Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Профіль успішно оновлено')),
+        );
       }
     } catch (e) {
+      debugPrint('Error updating profile: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
+          SnackBar(content: Text('Помилка оновлення профілю: $e')),
         );
       }
     } finally {

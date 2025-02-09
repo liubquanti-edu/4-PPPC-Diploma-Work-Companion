@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
+import 'storage_service.dart';
 
 class UserService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -82,7 +83,20 @@ class UserService {
   }
 
   Future<void> removeUserAvatar() async {
-    await updateUserAvatar(null);
+    final user = _auth.currentUser;
+    if (user != null) {
+      try {
+        
+        // Then, remove the avatar URL from Firestore
+        await _firestore
+            .collection('students')
+            .doc(user.uid)
+            .update({'avatar': FieldValue.delete()});
+            
+      } catch (e) {
+        throw Exception('Помилка видалення аватара: $e');
+      }
+    }
   }
 
   Future<void> awardBadge(String userId, String name, String description, String logo) async {
