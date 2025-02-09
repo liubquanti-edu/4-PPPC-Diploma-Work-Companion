@@ -147,8 +147,8 @@ class _ChatScreenState extends State<ChatScreen> {
             headers: {'Content-Type': 'application/json'},
             body: json.encode({
               'token': recipientToken,
-              'title': senderName, // Changed from widget.recipientName to senderName
-              'body': _messageController.text.trim(),
+              'title': senderName,
+              'body': isImage ? '📷 Фото' : _messageController.text.trim(), // Add this change
               'data': {
                 'chatRoomId': chatRoomId,
                 'senderId': _auth.currentUser!.uid,
@@ -230,29 +230,60 @@ class _ChatScreenState extends State<ChatScreen> {
   FocusScope.of(context).requestFocus();
 }
 
-  void _deleteMessage(String messageKey) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Видалити повідомлення'),
-        content: const Text('Ви впевнені, що хочете видалити це повідомлення?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Скасувати'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Видалити'),
-          ),
-        ],
-      ),
-    );
+  Future<void> _deleteMessage(String messageKey) async {
+  // Отримуємо дані повідомлення перед видаленням
+  final messageSnapshot = await _database
+      .child('chats/$chatRoomId/messages/$messageKey')
+      .get();
+  
+  if (!messageSnapshot.exists) return;
+  
+  final messageData = Map<String, dynamic>.from(
+    messageSnapshot.value as Map
+  );
 
-    if (confirmed == true) {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Видалити повідомлення'),
+      content: const Text('Ви впевнені, що хочете видалити це повідомлення?'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Скасувати'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: const Text('Видалити'),
+        ),
+      ],
+    ),
+  );
+
+  if (confirmed == true) {
+    try {
+      // Якщо повідомлення містить зображення, видаляємо його з Storage
+      if (messageData['type'] == 'image' && messageData['imageUrl'] != null) {
+        try {
+          // Отримуємо посилання на зображення у Storage з URL
+          final imageRef = FirebaseStorage.instance.refFromURL(messageData['imageUrl']);
+          await imageRef.delete();
+        } catch (e) {
+          debugPrint('Помилка видалення зображення: $e');
+        }
+      }
+
+      // Видаляємо саме повідомлення з бази даних
       await _database.child('chats/$chatRoomId/messages/$messageKey').remove();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Помилка видалення: $e')),
+        );
+      }
     }
   }
+}
 
   void _cancelEdit() {
     setState(() {
@@ -265,7 +296,7 @@ class _ChatScreenState extends State<ChatScreen> {
   setState(() {
     _replyTo = {
       'key': message['key'],
-      'text': message['type'] == 'image' ? '[Зображення]' : message['text'],
+      'text': message['type'] == 'image' ? '📷 Фото' : message['text'],
       'senderId': message['senderId'],
       'imageUrl': message['type'] == 'image' ? message['imageUrl'] : null,
     };
@@ -467,7 +498,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                 background: Container(
                                   padding: const EdgeInsets.only(right: 16),
                                   alignment: Alignment.centerRight,
-                                  child: const Icon(Icons.reply),
+                                  child: const Icon(Icons.reply_rounded),
                                 ),
                                 child: Padding(
                                   padding: const EdgeInsets.only(bottom: 8),
@@ -486,7 +517,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                                 },
                                                 child: const Row(
                                                   children: [
-                                                    Icon(Icons.reply),
+                                                    Icon(Icons.reply_rounded),
                                                     SizedBox(width: 8),
                                                     Text('Відповісти'),
                                                   ],
@@ -501,7 +532,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                                     },
                                                     child: const Row(
                                                       children: [
-                                                        Icon(Icons.edit),
+                                                        Icon(Icons.edit_rounded),
                                                         SizedBox(width: 8),
                                                         Text('Редагувати'),
                                                       ],
@@ -514,7 +545,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                                   },
                                                   child: const Row(
                                                     children: [
-                                                      Icon(Icons.delete),
+                                                      Icon(Icons.delete_rounded),
                                                       SizedBox(width: 8),
                                                       Text('Видалити'),
                                                     ],
@@ -675,7 +706,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                                               borderRadius: BorderRadius.circular(10),
                                                             ),
                                                             child: const Center(
-                                                              child: Icon(Icons.error),
+                                                              child: Icon(Icons.error_rounded),
                                                             ),
                                                           ),
                                                         ),
@@ -730,7 +761,7 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
               Container(
                 padding: const EdgeInsets.all(8),
-                color: Theme.of(context).colorScheme.surface,
+                color: Theme.of(context).colorScheme.onSecondary,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -776,7 +807,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               ),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.close),
+                              icon: const Icon(Icons.close_rounded),
                               onPressed: _cancelReply,
                               padding: EdgeInsets.zero,
                               constraints: const BoxConstraints(),
@@ -786,13 +817,14 @@ class _ChatScreenState extends State<ChatScreen> {
                       ),
                     Row(
                       children: [
-                        IconButton(
-                          icon: const Icon(Icons.image),
+                        if (!_isEditing)
+                          IconButton(
+                          icon: const Icon(Icons.image_rounded),
                           onPressed: _pickImage,
-                        ),
+                          ),
                         if (_isEditing)
                           IconButton(
-                            icon: const Icon(Icons.close),
+                            icon: const Icon(Icons.close_rounded),
                             onPressed: _cancelEdit,
                           ),
                         Expanded(
@@ -805,6 +837,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                 : 'Написати...',
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
                               ),
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 16,
@@ -816,12 +849,10 @@ class _ChatScreenState extends State<ChatScreen> {
                             onSubmitted: (_) => _sendMessage(),
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        FloatingActionButton(
+                        IconButton(
                           onPressed: _sendMessage,
-                          child: Icon(_isEditing ? Icons.check : Icons.send),
+                          icon: Icon(_isEditing ? Icons.check_rounded : Icons.send_rounded),
                         ),
-                        const SizedBox(width: 8),
                       ],
                     ),
                   ],

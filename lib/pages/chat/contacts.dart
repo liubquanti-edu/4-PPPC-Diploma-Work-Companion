@@ -62,6 +62,7 @@ class _ChatsPageState extends State<ChatsPage> {
         'text': lastMessage['text'] as String?,
         'senderId': lastMessage['senderId'] as String?,
         'timestamp': lastMessage['timestamp'] as int?,
+        'type': lastMessage['type'] as String?,
       };
     });
   }
@@ -263,9 +264,10 @@ class _ChatsPageState extends State<ChatsPage> {
                         final message = snapshot.data!;
                         final isMe = message['senderId'] == _auth.currentUser!.uid;
                         final prefix = isMe ? 'Ти: ' : '${userData['name']}: ';
+                        final isImage = message['type'] == 'image';
 
                         return Text(
-                          '$prefix${message['text'] ?? ''}',
+                          '$prefix${isImage ? '📷 Фото' : message['text'] ?? ''}',
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
                           ),
