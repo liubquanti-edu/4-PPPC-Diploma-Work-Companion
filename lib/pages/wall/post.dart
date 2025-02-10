@@ -6,6 +6,8 @@ import 'package:intl/intl.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:pppc_companion/pages/users/user.dart';
 import '/models/avatars.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class PostDetailScreen extends StatefulWidget {
   final Map<String, dynamic> post;
@@ -70,6 +72,37 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         'authorAvatar': userData['avatar'] ?? '',
         'timestamp': ServerValue.timestamp,
       });
+
+      // Отримуємо токен автора поста
+      final postAuthorId = widget.post['authorId'];
+      if (postAuthorId != _auth.currentUser!.uid) { // Перевіряємо, що автор поста - не поточний користувач
+        final authorDoc = await _firestore
+            .collection('students')
+            .doc(postAuthorId)
+            .get();
+        
+        final authorToken = authorDoc.data()?['fcmToken'];
+        
+        if (authorToken != null) {
+          final response = await http.post(
+            Uri.parse('https://us-central1-pppc-companion.cloudfunctions.net/sendChatNotification'),
+            headers: {'Content-Type': 'application/json'},
+            body: json.encode({
+              'token': authorToken,
+              'title': 'Новий коментар від ${userData['surname']} ${userData['name']}',
+              'body': _commentController.text.trim(),
+              'data': {
+                'type': 'post_comment',
+                'postId': widget.postId,
+              }
+            }),
+          );
+
+          if (response.statusCode != 200) {
+            debugPrint('Notification error: ${response.body}');
+          }
+        }
+      }
 
       _commentController.clear();
     } catch (e) {

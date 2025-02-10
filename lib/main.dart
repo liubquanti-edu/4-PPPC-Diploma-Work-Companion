@@ -138,6 +138,37 @@ void main() async {
     }
   });
 
+  // Додайте в функцію main() після існуючої обробки сповіщень:
+
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    if (message.notification != null) {
+      final notificationType = message.data['type'];
+      
+      // Показуємо сповіщення тільки якщо це коментар до поста
+      if (notificationType == 'post_comment') {
+        _notificationId++;
+        
+        FlutterLocalNotificationsPlugin().show(
+          _notificationId,
+          message.notification!.title,
+          message.notification!.body,
+          NotificationDetails(
+            android: AndroidNotificationDetails(
+              'post_comments_channel', // Новий канал для сповіщень коментарів
+              'Post Comments Notifications',
+              importance: Importance.high,
+              priority: Priority.high,
+              icon: 'notification_icon',
+              channelShowBadge: true,
+              autoCancel: true,
+            ),
+          ),
+          payload: json.encode(message.data),
+        );
+      }
+    }
+  });
+
   // Handle notification tap
   FlutterLocalNotificationsPlugin().initialize(
     InitializationSettings(
@@ -210,6 +241,22 @@ Future<void> _initNotifications() async {
               'chat_channel',
               'Chat Notifications',
               description: 'Notifications for new chat messages',
+              importance: Importance.max,
+              playSound: true,
+              enableVibration: true,
+              showBadge: true,
+            ),
+          );
+    }
+
+    if (Platform.isAndroid) {
+      await FlutterLocalNotificationsPlugin()
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+          ?.createNotificationChannel(
+            const AndroidNotificationChannel(
+              'post_comments_channel',
+              'Post Comments Notifications',
+              description: 'Notifications for post comments',
               importance: Importance.max,
               playSound: true,
               enableVibration: true,
