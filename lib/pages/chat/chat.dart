@@ -199,7 +199,10 @@ class _ChatScreenState extends State<ChatScreen> {
     } else if (messageDate == yesterday) {
       return 'Вчора';
     } else {
-      return DateFormat('d MMMM y', 'uk').format(date);
+      final now = DateTime.now();
+      return date.year == now.year
+          ? DateFormat('d MMMM', 'uk').format(date)
+          : DateFormat('d MMMM y', 'uk').format(date);
     }
   }
 
