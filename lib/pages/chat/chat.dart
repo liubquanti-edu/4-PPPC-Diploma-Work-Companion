@@ -767,11 +767,12 @@ class _ChatScreenState extends State<ChatScreen> {
                   children: [
                     if (_replyTo != null)
                       Container(
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.only(right: 8, left: 8, top: 0, bottom: 0),
                         margin: const EdgeInsets.only(bottom: 8),
                         decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.surfaceVariant,
                           borderRadius: BorderRadius.circular(12),
+                          border: Border.all(width: 2, color: Theme.of(context).colorScheme.primary),
                         ),
                         child: Row(
                           children: [
@@ -779,30 +780,36 @@ class _ChatScreenState extends State<ChatScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    'Відповідь на',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Theme.of(context).colorScheme.primary,
-                                    ),
-                                  ),
-                                  if (_replyTo!['imageUrl'] != null) ...[
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: Image.network(
-                                        _replyTo!['imageUrl'],
-                                        width: 40,
-                                        height: 40,
-                                        fit: BoxFit.cover,
+                                  Row(
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.only(right: 8, left: 10, top: 0, bottom: 0),
+                                        child: Icon(
+                                          Icons.reply_rounded,
+                                          color: Theme.of(context).colorScheme.primary,
+                                        ),
                                       ),
-                                    ),
-                                  ] else ...[
-                                    Text(
-                                      _replyTo!['text'],
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
+                                      const SizedBox(width: 8),
+                                      if (_replyTo!['imageUrl'] != null) ...[
+                                        Expanded(
+                                          child: Text(
+                                            '📷 Фото',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                      ] else ...[
+                                        Expanded(
+                                          child: Text(
+                                            _replyTo!['text'],
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  )
                                 ],
                               ),
                             ),
