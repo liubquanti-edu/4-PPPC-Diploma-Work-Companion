@@ -75,7 +75,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
       // Отримуємо токен автора поста
       final postAuthorId = widget.post['authorId'];
-      if (postAuthorId != _auth.currentUser!.uid) { // Перевіряємо, що автор поста - не поточний користувач
+      if (postAuthorId != _auth.currentUser!.uid) {
         final authorDoc = await _firestore
             .collection('students')
             .doc(postAuthorId)
@@ -111,6 +111,40 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       );
     } finally {
       setState(() => _isCommenting = false);
+    }
+  }
+
+  Future<void> _deleteComment(String commentId) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Видалити коментар'),
+        content: const Text('Ви впевнені, що хочете видалити цей коментар?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Скасувати'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Видалити'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      try {
+        await _database
+            .child('posts/${widget.postId}/comments/$commentId')
+            .remove();
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Помилка видалення: $e'))
+          );
+        }
+      }
     }
   }
 
@@ -278,7 +312,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           );
           
           commentsData.forEach((key, value) {
-            comments.add(Map<String, dynamic>.from(value));
+            final comment = Map<String, dynamic>.from(value);
+            comment['id'] = key;
+            comments.add(comment);
           });
           
           comments.sort((a, b) => 
@@ -302,53 +338,60 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         InkWell(
                           onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => UserProfilePage(
-                              userId: comment['authorId'],
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => UserProfilePage(
+                                userId: comment['authorId'],
+                              ),
                             ),
-                          ),
                           ),
                           child: Row(
                             children: [
-                            UserAvatar(
-                              userId: comment['authorId'],
-                              radius: 16,
-                            ),
-                            const SizedBox(width: 8),
+                              UserAvatar(
+                                userId: comment['authorId'],
+                                radius: 16,
+                              ),
+                              const SizedBox(width: 8),
                               Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                comment['authorName'],
-                                style: const TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                Text(
-                                DateFormat('dd.MM.yyyy HH:mm').format(
-                                  DateTime.fromMillisecondsSinceEpoch(
-                                  comment['timestamp']
-                                  )
-                                ),
-                                style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                              ],
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    comment['authorName'],
+                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(
+                                    DateFormat('dd.MM.yyyy HH:mm').format(
+                                      DateTime.fromMillisecondsSinceEpoch(
+                                        comment['timestamp']
+                                      )
+                                    ),
+                                    style: Theme.of(context).textTheme.bodySmall,
+                                  ),
+                                ],
                               ),
                             ],
                           ),
                         ),
                         Padding(
-                        padding: const EdgeInsets.only(left: 40),
-                        child: Text(comment['text']),
+                          padding: const EdgeInsets.only(left: 40),
+                          child: Text(comment['text']),
                         ),
                       ],
                     ),
                   ),
+                  if (comment['authorId'] == _auth.currentUser!.uid)
+                    IconButton(
+                      onPressed: () => _deleteComment(comment['id']),
+                      icon: const Icon(Icons.delete_outline),
+                      constraints: const BoxConstraints(),
+                      padding: EdgeInsets.zero,
+                    ),
                 ],
               ),
             );
