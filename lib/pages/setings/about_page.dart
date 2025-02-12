@@ -16,70 +16,90 @@ class AboutPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 16),
-            Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-                side: BorderSide(
-                  color: Theme.of(context).colorScheme.primary,
-                  width: 2,
-                ),
-              ),
-              color: Theme.of(context).colorScheme.onSecondary,
+            Container(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                   Text(
+                    'Мій ППФК',
+                    style: Theme.of(context).textTheme.titleLarge,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  const Text('Компаньйон студентів та викладачів коледжа, який має на цілі полегшити студентське життя навчального закладу та спростити модель взаємодії з ним.', textAlign: TextAlign.center),
+                  const SizedBox(height: 16),
+                  Text(
                     'Розробник',
                     style: Theme.of(context).textTheme.titleLarge,
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
-                  const Text('Любченко Олег', textAlign: TextAlign.center),
+                  const Text('Створено силами білого серця для безсердечних.', textAlign: TextAlign.center),
                   const SizedBox(height: 16),
-                  Text(
-                    'Зв\'язок',
-                    style: Theme.of(context).textTheme.titleLarge,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                    IconButton(
-                      icon: const Icon(Icons.play_arrow),
-                      onPressed: () async {
-                      final Uri url = Uri.parse('https://www.youtube.com/@liubquanti');
-                      if (!await launchUrl(url)) {
-                        throw Exception('Could not launch $url');
-                      }
-                      },
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.telegram),
-                      onPressed: () async {
-                      final Uri url = Uri.parse('https://t.me/liubquanti');
-                      if (!await launchUrl(url)) {
-                        throw Exception('Could not launch $url');
-                      }
-                      },
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.camera_alt_outlined),
-                      onPressed: () async {
-                      final Uri url = Uri.parse('https://instagram.com/liubquanti');
-                      if (!await launchUrl(url)) {
-                        throw Exception('Could not launch $url');
-                      }
-                      },
-                    ),
+                      Column(
+                      children: [
+                        GestureDetector(
+                        onTap: () => launchUrl(Uri.parse('https://sites.google.com/polytechnic.co.cc/main')),
+                        child: Container(
+                        decoration: BoxDecoration(
+                        border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2),
+                        shape: BoxShape.circle,
+                        ),
+                        child: ClipOval(
+                        child: Image.asset('assets/img/pppclogo.png', width: 80),
+                        ),
+                        ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                        'ППФК',
+                        style: Theme.of(context).textTheme.titleMedium,
+                        textAlign: TextAlign.center,
+                        ),
+                      ],
+                      ),
+                      const SizedBox(width: 20),
+                      Text(
+                      '//',
+                      style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(width: 20),
+                      Column(
+                      children: [
+                        GestureDetector(
+                        onTap: () => launchUrl(Uri.parse('https://liubquanti.click/')),
+                        child: Container(
+                          decoration: BoxDecoration(
+                          border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2),
+                          shape: BoxShape.circle,
+                          ),
+                          child: ClipOval(
+                          child: Image.asset('assets/img/liubquantilogo.png', width: 80),
+                          ),
+                        ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                        'liubquanti',
+                        style: Theme.of(context).textTheme.titleMedium,
+                        textAlign: TextAlign.center,
+                        ),
+                      ],
+                      ),
                     ],
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'Версія',
-                    style: Theme.of(context).textTheme.titleLarge,
+                    style: Theme.of(context).textTheme.titleMedium,
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
