@@ -422,8 +422,10 @@ class __FollowingPostsTabState extends State<_FollowingPostsTab> with AutomaticK
 
         final userData = userSnapshot.data!.data() as Map<String, dynamic>;
         final following = (userData['following'] as List?)?.cast<String>() ?? [];
+        // Add current user's ID to following list to show their posts too
+        final followingWithSelf = [...following, _auth.currentUser!.uid];
 
-        if (following.isEmpty) {
+        if (followingWithSelf.isEmpty) {
           return const Center(child: Text('Ви ще ні за ким не стежите'));
         }
 
@@ -443,12 +445,12 @@ class __FollowingPostsTabState extends State<_FollowingPostsTab> with AutomaticK
             
             postsData.forEach((key, value) {
               final post = Map<String, dynamic>.from(value);
-              if (following.contains(post['authorId'])) {
+              if (followingWithSelf.contains(post['authorId'])) {
                 post['id'] = key;
                 posts.add(post);
               }
             });
-            
+
             posts.sort((a, b) => (b['timestamp'] as int).compareTo(a['timestamp'] as int));
 
             if (posts.isEmpty) {
