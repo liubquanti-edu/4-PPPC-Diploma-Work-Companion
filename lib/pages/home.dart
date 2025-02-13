@@ -8,6 +8,7 @@ import 'package:card_loading/card_loading.dart';
 import 'package:weather/weather.dart';
 import 'package:parallax_rain/parallax_rain.dart';
 import 'dart:async';
+import 'dart:convert';
 import 'config/api.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -17,6 +18,7 @@ import '/models/week_type.dart';
 import '/pages/news/read.dart';
 import '/pages/info/subject.dart';
 import '/providers/alert_provider.dart';
+import '../models/transport.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -35,6 +37,8 @@ class _MyHomePageState extends State<MyHomePage> {
   late ScrollController _scrollController;
   bool _showAppBarLogo = false;
   List<Map<String, dynamic>> _emergencyMessages = [];
+  List<TransportSchedule>? _schedules;
+  bool _isScheduleLoading = false;
 
   @override
   void initState() {
@@ -52,6 +56,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
     _fetchWeather();
     _fetchEmergencyMessages();
+    _loadSchedule();
   }
 
   @override
@@ -241,6 +246,48 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
       debugPrint('Error fetching emergency messages: $e');
     }
   }
+
+  Future<List<TransportSchedule>> _fetchSchedule() async {
+  try {
+    final response = await http.get(
+      Uri.parse('https://gps.easyway.info/api/city/poltava/lang/ua/stop/80'),
+    );
+    
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data['status'] == 'ok') {
+        final routes = (data['data']['routes'] as List)
+          .map((route) => TransportSchedule.fromJson(route))
+          .toList();
+        return routes;
+      }
+    }
+    throw Exception('Failed to load schedule');
+  } catch (e) {
+    debugPrint('Error fetching schedule: $e');
+    rethrow;
+  }
+}
+
+  Future<void> _loadSchedule() async {
+  try {
+    setState(() => _isScheduleLoading = true);
+    final schedules = await _fetchSchedule();
+    setState(() {
+      _schedules = schedules;
+      _isScheduleLoading = false;
+    });
+  } catch (e) {
+    setState(() => _isScheduleLoading = false);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Помилка завантаження розкладу: $e'),
+        backgroundColor: Theme.of(context).colorScheme.error,
+      ),
+    );
+  }
+}
 
   PreferredSizeWidget _buildNormalAppBar() {
   return AppBar(
@@ -950,6 +997,59 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                         ),
                       );
                     },
+                  ),
+                  const SizedBox(height: 20.0, width: double.infinity),
+                  SizedBox(
+                    width: double.infinity,
+                    child: Text(
+                      'Транспорт 🚍',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 20.0), 
+                      textAlign: TextAlign.left,
+                    ),
+                  ),
+                    Container(
+                    margin: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.onSecondary,
+                      borderRadius: BorderRadius.circular(10.0),
+                      border: Border.all(
+                      color: Theme.of(context).colorScheme.primary,
+                      width: 2.0,
+                      ),
+                    ),
+                    child: _isScheduleLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : _schedules == null
+                        ? const Center(child: Text('Немає даних про розклад'))
+                        : Column(
+                          children: _schedules!.map((schedule) {
+                            return Container(
+                            child: ListTile(
+                              leading: schedule.transportName == 'Тролейбус'
+                                ? SvgPicture.asset('assets/svg/transport/trolleybus.svg', width: 20, color: const Color(0xFFA2C9FE))
+                                : schedule.transportName == 'Автобус'
+                                  ? SvgPicture.asset('assets/svg/transport/bus.svg', width: 20, color: const Color(0xff9ed58b))
+                                  : SvgPicture.asset('assets/svg/transport/route.svg', width: 20, color: const Color(0xfffeb49f)),
+                              title: Text(
+                              '№${schedule.routeName} • ${schedule.directionName}',
+                              ),
+                              subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Інтервал: ${schedule.interval} хв'),
+                                if (schedule.times.isNotEmpty) ...[
+                                Text(
+                                  'Наступний: ${schedule.times.first.arrivalTimeFormatted}${schedule.times.first.bortNumber != null 
+                                  ? ' (${schedule.times.first.bortNumber})'
+                                  : ''}',
+                                ),
+                                ],
+                              ],
+                              ),
+                            ),
+                            );
+                          }).toList(),
+                          ),
                   ),
                   const SizedBox(height: 20.0, width: double.infinity),
                   SizedBox(

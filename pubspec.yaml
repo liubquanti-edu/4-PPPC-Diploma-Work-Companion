@@ -44,6 +44,9 @@ dev_dependencies:
 flutter:
   assets:
     - assets/svg/ППФК.svg
+    - assets/svg/transport/bus.svg
+    - assets/svg/transport/route.svg
+    - assets/svg/transport/trolleybus.svg
     - assets/img/news.jpg
     - assets/img/oleh.png
     - assets/img/liubquantilogo.png
