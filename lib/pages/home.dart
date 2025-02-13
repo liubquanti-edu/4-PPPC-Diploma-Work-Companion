@@ -19,6 +19,7 @@ import '/pages/news/read.dart';
 import '/pages/info/subject.dart';
 import '/providers/alert_provider.dart';
 import '../models/transport.dart';
+import '/pages/transport/transport_schedule.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -257,11 +258,11 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
       final data = json.decode(response.body);
       if (data['status'] == 'ok') {
         final routes = (data['data']['routes'] as List)
-          .map((route) => TransportSchedule.fromJson(route))
-          .toList();
-        
-        // Сортуємо маршрути за часом прибуття
-        routes.sort(TransportSchedule.compareByArrivalTime);
+            .map((route) => TransportSchedule.fromJson(route))
+            .toList();
+            
+        // Sort routes by arrival time
+        routes.sort((a, b) => a.nextArrivalTime.compareTo(b.nextArrivalTime));
         
         return routes;
       }
@@ -1011,53 +1012,77 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                       textAlign: TextAlign.left,
                     ),
                   ),
-                    Container(
+                  Container(
                     margin: const EdgeInsets.symmetric(vertical: 10),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.onSecondary,
-                      borderRadius: BorderRadius.circular(10.0),
-                      border: Border.all(
-                      color: Theme.of(context).colorScheme.primary,
-                      width: 2.0,
-                      ),
-                    ),
                     child: _isScheduleLoading
                       ? const Center(child: CircularProgressIndicator())
                       : _schedules == null
                         ? const Center(child: Text('Немає даних про розклад'))
-                        : Column(
-                          children: _schedules!.map((schedule) {
-                            return Container(
-                            child: ListTile(
-                              leading: schedule.transportName == 'Тролейбус'
-                                ? SvgPicture.asset('assets/svg/transport/trolleybus.svg', width: 20, color: const Color(0xFFA2C9FE))
-                                : schedule.transportName == 'Автобус'
-                                  ? SvgPicture.asset('assets/svg/transport/bus.svg', width: 20, color: const Color(0xff9ed58b))
-                                  : schedule.transportName == 'Маршрутка'
-                                  ? SvgPicture.asset('assets/svg/transport/route.svg', width: 20, color: const Color(0xfffeb49f))
-                                  : SvgPicture.asset('assets/svg/transport/bus.svg', width: 20, color: const Color(0xFFFE9F9F)),
-                              title: Text(
-                              '№${schedule.routeName} • ${schedule.directionName}',
-                              ),
-                              subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Інтервал: ${schedule.interval} хв'),
-                                if (schedule.times.isNotEmpty) ...[
-                                Text(
-                                  'Наступний: ${schedule.times.first.arrivalTimeFormatted}${schedule.times.first.bortNumber != null 
-                                  ? ' (${schedule.times.first.bortNumber})'
-                                  : ''}',
+                        : InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => TransportScheduleScreen(
+                                    schedules: _schedules!,
+                                  ),
                                 ),
+                              );
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.onSecondary,
+                                borderRadius: BorderRadius.circular(10.0),
+                                border: Border.all(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  width: 2.0,
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  ..._schedules!.take(5).map((schedule) {
+                                    return Column(
+                                      children: [
+                                        ListTile(
+                                          leading: schedule.transportName == 'Тролейбус'
+                                            ? SvgPicture.asset('assets/svg/transport/trolleybus.svg', 
+                                                width: 20, color: const Color(0xFFA2C9FE))
+                                            : schedule.transportName == 'Автобус'
+                                              ? SvgPicture.asset('assets/svg/transport/bus.svg', 
+                                                  width: 20, color: const Color(0xff9ed58b))
+                                              : schedule.transportName == 'Маршрутка'
+                                                ? SvgPicture.asset('assets/svg/transport/route.svg', 
+                                                    width: 20, color: const Color(0xfffeb49f))
+                                                : SvgPicture.asset('assets/svg/transport/bus.svg', 
+                                                    width: 20, color: const Color(0xFFFE9F9F)),
+                                          title: Text(
+                                            '№${schedule.routeName} • ${schedule.directionName}',
+                                          ),
+                                          subtitle: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              if (schedule.times.isNotEmpty) ...[
+                                                Row(
+                                                  children: [
+                                                    const Icon(Icons.transfer_within_a_station_rounded, size: 16),
+                                                    Text(' ${schedule.times.first.arrivalTimeFormatted} • '),
+                                                    const Icon(Icons.timelapse_rounded, size: 16),
+                                                    Text(' ${schedule.interval} хв'),
+                                                  ],
+                                                ),
+                                              ],
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  }),
                                 ],
-                              ],
                               ),
                             ),
-                            );
-                          }).toList(),
                           ),
                   ),
-                  const SizedBox(height: 20.0, width: double.infinity),
+                  const SizedBox(height: 10.0, width: double.infinity),
                   SizedBox(
                     width: double.infinity,
                     child: Text(
