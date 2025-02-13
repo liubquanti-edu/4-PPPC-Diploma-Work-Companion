@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../models/transport.dart';
+import 'route_details.dart';
 
 class TransportScheduleScreen extends StatelessWidget {
   final List<TransportSchedule> schedules;
@@ -29,10 +30,10 @@ class TransportScheduleScreen extends StatelessWidget {
                   final schedule = schedules[index];
                   return ListTile(
                     leading: _getTransportIcon(schedule.transportName),
-                    title: Text(
-                      '№${schedule.routeName} • ${schedule.directionName}',
-                    ),
-                    subtitle: Column(
+                      title: Text(
+                        '№${schedule.routeName} • ${schedule.directionName}',
+                      ),
+                      subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         if (schedule.times.isNotEmpty) ...[
@@ -46,6 +47,18 @@ class TransportScheduleScreen extends StatelessWidget {
                         Text('Інтервал: ${schedule.interval} хв'),
                       ],
                     ),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => RouteDetailsScreen(
+                              routeId: schedule.routeId,
+                              routeName: schedule.routeName,
+                              transportName: schedule.transportName,
+                            ),
+                          ),
+                        );
+                      },
                   );
                 },
               ),

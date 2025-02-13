@@ -27,7 +27,7 @@ class TransportProvider with ChangeNotifier {
       notifyListeners();
 
       final response = await http.get(
-        Uri.parse('https://gps.easyway.info/api/city/poltava/lang/ua/stop/63765'),
+        Uri.parse('https://gps.easyway.info/api/city/poltava/lang/ua/stop/80'),
       );
       
       if (response.statusCode == 200) {
