@@ -29,22 +29,45 @@ class TransportSchedule {
   }
 
   DateTime get nextArrivalTime {
+    final now = DateTime.now();
+    
     if (times.isNotEmpty) {
       // Парсимо час прибуття з рядка у форматі "HH:mm"
       final timeStr = times.first.arrivalTimeFormatted;
-      final now = DateTime.now();
       final parts = timeStr.split(':');
-      return DateTime(
+      final hours = int.parse(parts[0]);
+      final minutes = int.parse(parts[1]);
+
+      // Створюємо час в українській часовій зоні
+      var arrivalTime = DateTime(
         now.year,
         now.month,
         now.day,
-        int.parse(parts[0]),
-        int.parse(parts[1]),
+        hours,
+        minutes,
       );
+
+      // Якщо час вже пройшов, додаємо 24 години
+      if (arrivalTime.isBefore(now)) {
+        arrivalTime = arrivalTime.add(const Duration(days: 1));
+      }
+
+      return arrivalTime;
     } else {
       // Якщо немає точного часу, використовуємо інтервал
-      final intervalMinutes = int.tryParse(interval.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
-      return DateTime.now().add(Duration(minutes: intervalMinutes));
+      final intervalMinutes = int.tryParse(
+        interval.replaceAll(RegExp(r'[^0-9]'), '')
+      ) ?? 0;
+      
+      // Отримуємо поточний час в українській часовій зоні
+      final ukraineOffset = () {
+        final month = now.month;
+        final isDST = month >= 3 && month <= 10;
+        return Duration(hours: isDST ? 3 : 2);
+      }();
+      
+      final ukraineNow = now.toUtc().add(ukraineOffset);
+      return ukraineNow.add(Duration(minutes: intervalMinutes));
     }
   }
 
