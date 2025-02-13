@@ -285,7 +285,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           ],
         ),
         const SizedBox(height: 16),
-        Text(widget.post['text']),
+        SelectableText(
+          widget.post['text'],
+          style: Theme.of(context).textTheme.bodyMedium,
+          toolbarOptions: const ToolbarOptions(
+            copy: true,
+            selectAll: true,
+          ),
+        ),
       ],
     );
   }
