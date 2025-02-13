@@ -1068,6 +1068,13 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                                         Text(' ${schedule.interval} хв'),
                                                       ],
                                                     ),
+                                                  ] else ...[
+                                                    Row(
+                                                      children: [
+                                                        const Icon(Icons.timelapse_rounded, size: 16),
+                                                        Text(' ${schedule.interval} хв'),
+                                                      ],
+                                                    ),
                                                   ],
                                                 ],
                                               ),
