@@ -1033,7 +1033,9 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                 ? SvgPicture.asset('assets/svg/transport/trolleybus.svg', width: 20, color: const Color(0xFFA2C9FE))
                                 : schedule.transportName == 'Автобус'
                                   ? SvgPicture.asset('assets/svg/transport/bus.svg', width: 20, color: const Color(0xff9ed58b))
-                                  : SvgPicture.asset('assets/svg/transport/route.svg', width: 20, color: const Color(0xfffeb49f)),
+                                  : schedule.transportName == 'Маршрутка'
+                                  ? SvgPicture.asset('assets/svg/transport/route.svg', width: 20, color: const Color(0xfffeb49f))
+                                  : SvgPicture.asset('assets/svg/transport/bus.svg', width: 20, color: const Color(0xFFFE9F9F)),
                               title: Text(
                               '№${schedule.routeName} • ${schedule.directionName}',
                               ),
