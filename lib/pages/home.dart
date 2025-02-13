@@ -976,41 +976,43 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                 width: 2.0,
                               ),
                               ),
-                              child: Column(
-                              children: List.generate(5, (index) => ListTile(
-                                leading: CardLoading(
-                                height: 20,
-                                width: 20,
-                                borderRadius: BorderRadius.circular(5),
-                                margin: const EdgeInsets.all(0),
-                                animationDuration: const Duration(milliseconds: 1000),
-                                cardLoadingTheme: CardLoadingTheme(
+                                child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 10.0),
+                                child: Column(
+                                  children: List.generate(5, (index) => ListTile(
+                                  leading: CardLoading(
+                                  height: 20,
+                                  width: 20,
+                                  borderRadius: BorderRadius.circular(5),
+                                  margin: const EdgeInsets.all(0),
+                                  animationDuration: const Duration(milliseconds: 1000),
+                                  cardLoadingTheme: CardLoadingTheme(
                                   colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                                   colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                                ),
-                                ),
-                                title: CardLoading(
-                                height: 20,
-                                borderRadius: BorderRadius.circular(5),
-                                margin: const EdgeInsets.only(bottom: 5),
-                                animationDuration: const Duration(milliseconds: 1000),
-                                cardLoadingTheme: CardLoadingTheme(
+                                  ),
+                                  ),
+                                  title: CardLoading(
+                                  height: 20,
+                                  borderRadius: BorderRadius.circular(5),
+                                  margin: const EdgeInsets.only(bottom: 5),
+                                  animationDuration: const Duration(milliseconds: 1000),
+                                  cardLoadingTheme: CardLoadingTheme(
                                   colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                                   colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                                ),
-                                ),
-                                subtitle: CardLoading(
-                                height: 15,
-                                borderRadius: BorderRadius.circular(5),
-                                margin: const EdgeInsets.all(0),
-                                animationDuration: const Duration(milliseconds: 1000),
-                                cardLoadingTheme: CardLoadingTheme(
+                                  ),
+                                  ),
+                                  subtitle: CardLoading(
+                                  height: 15,
+                                  borderRadius: BorderRadius.circular(5),
+                                  margin: const EdgeInsets.all(0),
+                                  animationDuration: const Duration(milliseconds: 1000),
+                                  cardLoadingTheme: CardLoadingTheme(
                                   colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                                   colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                                ),
-                                ),
+                                  ),
+                                  ),
                               )),
-                              ),
+                              ),),
                             )
                           : transportProvider.schedules == null
                             ? const Center(child: Text('Немає даних про розклад'))
@@ -1072,7 +1074,7 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                             ),
                                           ],
                                         );
-                                      }).toList(),
+                                      }),
                                     ],
                                   ),
                                 ),
