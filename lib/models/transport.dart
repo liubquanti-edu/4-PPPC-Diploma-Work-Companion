@@ -27,6 +27,30 @@ class TransportSchedule {
           .toList(),
     );
   }
+
+  DateTime get nextArrivalTime {
+    if (times.isNotEmpty) {
+      // Парсимо час прибуття з рядка у форматі "HH:mm"
+      final timeStr = times.first.arrivalTimeFormatted;
+      final now = DateTime.now();
+      final parts = timeStr.split(':');
+      return DateTime(
+        now.year,
+        now.month,
+        now.day,
+        int.parse(parts[0]),
+        int.parse(parts[1]),
+      );
+    } else {
+      // Якщо немає точного часу, використовуємо інтервал
+      final intervalMinutes = int.tryParse(interval.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+      return DateTime.now().add(Duration(minutes: intervalMinutes));
+    }
+  }
+
+  static int compareByArrivalTime(TransportSchedule a, TransportSchedule b) {
+    return a.nextArrivalTime.compareTo(b.nextArrivalTime);
+  }
 }
 
 class ScheduleTime {

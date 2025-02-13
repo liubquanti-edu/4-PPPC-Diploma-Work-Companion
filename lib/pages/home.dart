@@ -259,6 +259,10 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
         final routes = (data['data']['routes'] as List)
           .map((route) => TransportSchedule.fromJson(route))
           .toList();
+        
+        // Сортуємо маршрути за часом прибуття
+        routes.sort(TransportSchedule.compareByArrivalTime);
+        
         return routes;
       }
     }
