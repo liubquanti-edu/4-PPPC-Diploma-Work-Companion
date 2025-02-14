@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 class RouteDetails {
   final List<RouteDirection> directions;
 
@@ -66,6 +68,11 @@ class StopTime {
     required this.arrivalTime,
     this.vehicleNumber,
   });
+
+  String get localTimeFormatted {
+    final ukraineTime = DateTime.fromMillisecondsSinceEpoch(arrivalTime * 1000);
+    return DateFormat('HH:mm').format(ukraineTime.toLocal());
+  }
 
   factory StopTime.fromJson(Map<String, dynamic> json) {
     return StopTime(

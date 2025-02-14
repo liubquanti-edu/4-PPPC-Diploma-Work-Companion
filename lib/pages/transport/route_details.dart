@@ -185,12 +185,12 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: stop.times.map((time) {
                                               return Text(
-                                                'Прибуття: ${time.arrivalTimeFormatted}'
-                                                '${time.vehicleNumber != null ? ' (${time.vehicleNumber})' : ''}',
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              );
+                                              'Прибуття: ${time.localTimeFormatted}'
+                                              '${time.vehicleNumber != null ? ' (${time.vehicleNumber})' : ''}',
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            );
                                             }).toList(),
                                           )
                                         : const Text(

@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 class TransportSchedule {
   final int routeId;
   final String routeName;
@@ -32,37 +34,16 @@ class TransportSchedule {
   }
 
   DateTime get nextArrivalTime {
-    final now = DateTime.now();
-    
     if (times.isNotEmpty) {
-      // Парсимо час прибуття з рядка у форматі "HH:mm"
-      final timeStr = times.first.arrivalTimeFormatted;
-      final parts = timeStr.split(':');
-      final hours = int.parse(parts[0]);
-      final minutes = int.parse(parts[1]);
-
-      // Створюємо час в українській часовій зоні
-      var arrivalTime = DateTime(
-        now.year,
-        now.month,
-        now.day,
-        hours,
-        minutes,
-      );
-
-      // Якщо час вже пройшов, додаємо 24 години
-      if (arrivalTime.isBefore(now)) {
-        arrivalTime = arrivalTime.add(const Duration(days: 1));
-      }
-
-      return arrivalTime;
+      // Use Unix timestamp directly
+      return DateTime.fromMillisecondsSinceEpoch(times.first.arrivalTime * 1000);
     } else {
-      // Якщо немає точного часу, використовуємо інтервал
+      // If no exact time, use interval logic
+      final now = DateTime.now();
       final intervalMinutes = int.tryParse(
         interval.replaceAll(RegExp(r'[^0-9]'), '')
       ) ?? 0;
       
-      // Отримуємо поточний час в українській часовій зоні
       final ukraineOffset = () {
         final month = now.month;
         final isDST = month >= 3 && month <= 10;
@@ -87,15 +68,24 @@ class TransportSchedule {
 class ScheduleTime {
   final String arrivalTimeFormatted;
   final String? bortNumber;
+  final int arrivalTime;
 
   ScheduleTime({
     required this.arrivalTimeFormatted,
+    required this.arrivalTime,
     this.bortNumber,
   });
+
+  // Add method to get localized time
+  String get localTimeFormatted {
+    final ukraineTime = DateTime.fromMillisecondsSinceEpoch(arrivalTime * 1000);
+    return DateFormat('HH:mm').format(ukraineTime.toLocal());
+  }
 
   factory ScheduleTime.fromJson(Map<String, dynamic> json) {
     return ScheduleTime(
       arrivalTimeFormatted: json['arrival_time_formatted'],
+      arrivalTime: json['arrival_time'],
       bortNumber: json['bort_number'],
     );
   }

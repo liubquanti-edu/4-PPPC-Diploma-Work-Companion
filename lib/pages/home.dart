@@ -1126,14 +1126,19 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                         if (schedule.times.isNotEmpty)
                                         Row(
                                           children: [
-                                          const Icon(Icons.transfer_within_a_station_rounded, size: 16),
-                                          Text(' ${schedule.times.first.arrivalTimeFormatted}'),
+                                            const Icon(Icons.transfer_within_a_station_rounded, size: 16),
+                                            Text(' ${schedule.times.first.localTimeFormatted}'),
+                                          ],
+                                        ),
+                                        if (schedule.times.isNotEmpty & schedule.interval.isNotEmpty)
+                                        const Row(
+                                          children: [
+                                          Text(' • '),
                                           ],
                                         ),
                                         if (schedule.interval.isNotEmpty)
                                         Row(
                                           children: [
-                                          Text(' • '),
                                           const Icon(Icons.timelapse_rounded, size: 16),
                                           Text(' ${schedule.interval} хв'),
                                           ],

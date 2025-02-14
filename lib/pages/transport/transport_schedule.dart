@@ -41,9 +41,8 @@ class TransportScheduleScreen extends StatelessWidget {
                       children: [
                         if (schedule.times.isNotEmpty) ...[
                           Text(
-                            'Наступний: ${schedule.times.first.arrivalTimeFormatted}${schedule.times.first.bortNumber != null 
-                              ? ' (${schedule.times.first.bortNumber})'
-                              : ''}',
+                            'Наступний: ${schedule.times.first.localTimeFormatted}'
+                            '${schedule.times.first.bortNumber != null ? ' (${schedule.times.first.bortNumber})' : ''}',
                           ),
                         ],
                         if (schedule.interval.isNotEmpty)
