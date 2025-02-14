@@ -50,7 +50,7 @@ class TransportScheduleScreen extends StatelessWidget {
                         if (!schedule.worksNow)
                         Row(
                           children: [
-                            Text('Сьогодні не працює', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                            Text('Не функціонує', style: TextStyle(color: Theme.of(context).colorScheme.error)),
                           ],
                         ),
                       ],

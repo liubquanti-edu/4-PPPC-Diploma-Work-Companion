@@ -1121,37 +1121,41 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                         ),
                                       },
                                       title: Text('№${schedule.routeName} • ${schedule.directionName}', overflow: TextOverflow.ellipsis, maxLines: 1, style: TextStyle(decoration: schedule.worksNow ? null : TextDecoration.lineThrough)),
-                                      subtitle: Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                        if (schedule.times.isNotEmpty)
-                                        Row(
-                                          children: [
-                                            const Icon(Icons.transfer_within_a_station_rounded, size: 16),
-                                            Text(' ${schedule.times.first.localTimeFormatted}'),
-                                          ],
+                                      subtitle: SizedBox(
+                                        width: double.infinity,
+                                        child: SingleChildScrollView(
+                                          scrollDirection: Axis.horizontal,
+                                          child: Row(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              if (schedule.times.isNotEmpty)
+                                                Row(
+                                                  children: [
+                                                    const Icon(Icons.transfer_within_a_station_rounded, size: 16),
+                                                    Text(' ${schedule.times.first.localTimeFormatted}'),
+                                                  ],
+                                                ),
+                                              if (schedule.times.isNotEmpty && schedule.interval.isNotEmpty)
+                                                const Text(' • '),
+                                              if (schedule.interval.isNotEmpty)
+                                                Row(
+                                                  children: [
+                                                    const Icon(Icons.timelapse_rounded, size: 16),
+                                                    Text(' ${schedule.interval} хв'),
+                                                  ],
+                                                ),
+                                              if (schedule.times.isNotEmpty || schedule.interval.isNotEmpty)
+                                                const Text(' • '),
+                                              if (!schedule.worksNow)
+                                                Row(
+                                                  children: [
+                                                    Icon(Icons.cancel_outlined, size: 16, color: Theme.of(context).colorScheme.error),
+                                                    Text(' Не функціонує', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                                                  ],
+                                                ),
+                                            ],
+                                          ),
                                         ),
-                                        if (schedule.times.isNotEmpty & schedule.interval.isNotEmpty)
-                                        const Row(
-                                          children: [
-                                          Text(' • '),
-                                          ],
-                                        ),
-                                        if (schedule.interval.isNotEmpty)
-                                        Row(
-                                          children: [
-                                          const Icon(Icons.timelapse_rounded, size: 16),
-                                          Text(' ${schedule.interval} хв'),
-                                          ],
-                                        ),
-                                        if (!schedule.worksNow)
-                                        Row(
-                                          children: [
-                                          Icon(Icons.cancel_outlined, size: 16, color: Theme.of(context).colorScheme.error),
-                                          Text('Сьогодні не працює', style: TextStyle(color: Theme.of(context).colorScheme.error)),
-                                          ],
-                                        ),
-                                        ],
                                       ),
                                       ),
                                     ],
