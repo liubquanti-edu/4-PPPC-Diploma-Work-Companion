@@ -47,7 +47,7 @@ class TransportProvider with ChangeNotifier {
               .map((route) => TransportSchedule.fromJson(route))
               .toList();
           
-          routes.sort((a, b) => a.nextArrivalTime.compareTo(b.nextArrivalTime));
+          routes.sort(TransportSchedule.compareByArrivalTime);
           
           _schedules = routes;
         }

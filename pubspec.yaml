@@ -47,6 +47,9 @@ flutter:
     - assets/svg/transport/bus.svg
     - assets/svg/transport/route.svg
     - assets/svg/transport/trolleybus.svg
+    - assets/svg/transport/intercity.svg
+    - assets/svg/transport/regional.svg
+    - assets/svg/transport/train.svg
     - assets/img/news.jpg
     - assets/img/oleh.png
     - assets/img/liubquantilogo.png

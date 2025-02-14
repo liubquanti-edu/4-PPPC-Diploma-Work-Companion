@@ -32,19 +32,28 @@ class TransportScheduleScreen extends StatelessWidget {
                     leading: _getTransportIcon(schedule.transportName),
                       title: Text(
                         '№${schedule.routeName} • ${schedule.directionName}',
+                        style: TextStyle(
+                          decoration: schedule.worksNow ? null : TextDecoration.lineThrough,
+                        ),
                       ),
                       subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         if (schedule.times.isNotEmpty) ...[
                           Text(
-                            'Наступний: ${schedule.times.first.arrivalTimeFormatted}' +
-                            (schedule.times.first.bortNumber != null 
+                            'Наступний: ${schedule.times.first.arrivalTimeFormatted}${schedule.times.first.bortNumber != null 
                               ? ' (${schedule.times.first.bortNumber})'
-                              : ''),
+                              : ''}',
                           ),
                         ],
+                        if (schedule.interval.isNotEmpty)
                         Text('Інтервал: ${schedule.interval} хв'),
+                        if (!schedule.worksNow)
+                        Row(
+                          children: [
+                            Text('Сьогодні не працює', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                          ],
+                        ),
                       ],
                     ),
                       onTap: () {
@@ -71,29 +80,47 @@ class TransportScheduleScreen extends StatelessWidget {
   Widget _getTransportIcon(String transportName) {
     switch (transportName) {
       case 'Тролейбус':
-        return SvgPicture.asset(
-          'assets/svg/transport/trolleybus.svg',
-          width: 20,
-          color: const Color(0xFFA2C9FE),
-        );
+      return SvgPicture.asset(
+        'assets/svg/transport/trolleybus.svg',
+        width: 20,
+        color: const Color(0xFFA2C9FE),
+      );
       case 'Автобус':
-        return SvgPicture.asset(
-          'assets/svg/transport/bus.svg',
-          width: 20,
-          color: const Color(0xff9ed58b),
-        );
+      return SvgPicture.asset(
+        'assets/svg/transport/bus.svg',
+        width: 20,
+        color: const Color(0xff9ed58b),
+      );
       case 'Маршрутка':
-        return SvgPicture.asset(
-          'assets/svg/transport/route.svg',
-          width: 20,
-          color: const Color(0xfffeb49f),
-        );
+      return SvgPicture.asset(
+        'assets/svg/transport/route.svg',
+        width: 20,
+        color: const Color(0xfffeb49f),
+      );
+      case 'Поїзд':
+      return SvgPicture.asset(
+        'assets/svg/transport/train.svg',
+        width: 20,
+        color: const Color(0xFFC39FFE),
+      );
+      case 'Електричка':
+      return SvgPicture.asset(
+        'assets/svg/transport/regional.svg',
+        width: 20,
+        color: const Color(0xFF9FE3FE),
+      );
+      case 'Міжміський':
+      return SvgPicture.asset(
+        'assets/svg/transport/intercity.svg',
+        width: 20,
+        color: const Color(0xFFFEF89F),
+      );
       default:
-        return SvgPicture.asset(
-          'assets/svg/transport/bus.svg',
-          width: 20,
-          color: const Color(0xFFFE9F9F),
-        );
+      return SvgPicture.asset(
+        'assets/svg/transport/bus.svg',
+        width: 20,
+        color: const Color(0xFFFE9F9F),
+      );
     }
   }
 }

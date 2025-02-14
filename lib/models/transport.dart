@@ -5,6 +5,7 @@ class TransportSchedule {
   final String directionName;
   final String interval;
   final List<ScheduleTime> times;
+  final bool worksNow; // Add new field
 
   TransportSchedule({
     required this.routeId,
@@ -13,6 +14,7 @@ class TransportSchedule {
     required this.directionName,
     required this.interval,
     required this.times,
+    required this.worksNow, // Add to constructor
   });
 
   factory TransportSchedule.fromJson(Map<String, dynamic> json) {
@@ -25,6 +27,7 @@ class TransportSchedule {
       times: (json['times'] as List)
           .map((time) => ScheduleTime.fromJson(time))
           .toList(),
+      worksNow: json['works_now'] == 1, // Convert to bool
     );
   }
 
@@ -72,6 +75,11 @@ class TransportSchedule {
   }
 
   static int compareByArrivalTime(TransportSchedule a, TransportSchedule b) {
+    // First compare by works_now status
+    if (a.worksNow != b.worksNow) {
+      return a.worksNow ? -1 : 1; // Working transport goes first
+    }
+    // If both have same works_now status, compare by arrival time
     return a.nextArrivalTime.compareTo(b.nextArrivalTime);
   }
 }

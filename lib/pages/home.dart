@@ -1045,7 +1045,7 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                       ),
                                     ),
                                     const SizedBox(width: 10.0),
-                                    Expanded(
+                                    const Expanded(
                                       child: Text(
                                       'Немає даних про розклад, або не обрано зупинку.',
                                       overflow: TextOverflow.ellipsis,
@@ -1056,77 +1056,107 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                 )
                                 ))
                               )
-                            : InkWell(
+                            : GestureDetector(
+                              child: Ink(
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.onSecondary,
+                                borderRadius: BorderRadius.circular(10.0),
+                                border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
+                                ),
+                                child: InkWell(
+                                borderRadius: BorderRadius.circular(10.0),
                                 onTap: () {
                                   Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => TransportScheduleScreen(
-                                        schedules: transportProvider.schedules!,
-                                      ),
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => TransportScheduleScreen(
+                                    schedules: transportProvider.schedules!,
                                     ),
+                                  ),
                                   );
                                 },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.onSecondary,
-                                    borderRadius: BorderRadius.circular(10.0),
-                                    border: Border.all(
-                                      color: Theme.of(context).colorScheme.primary,
-                                      width: 2.0,
-                                    ),
-                                  ),
-                                  child: Column(
+                                child: Column(
+                                  children: [
+                                  ...transportProvider.schedules!.take(5).map((schedule) {
+                                    return Column(
                                     children: [
-                                      ...transportProvider.schedules!.take(5).map((schedule) {
-                                        return Column(
+                                      ListTile(
+                                      leading: switch (schedule.transportName) {
+                                        'Тролейбус' => SvgPicture.asset(
+                                        'assets/svg/transport/trolleybus.svg',
+                                        width: 20,
+                                        color: const Color(0xFFA2C9FE)
+                                        ),
+                                        'Автобус' => SvgPicture.asset(
+                                        'assets/svg/transport/bus.svg',
+                                        width: 20, 
+                                        color: const Color(0xff9ed58b)
+                                        ),
+                                        'Маршрутка' => SvgPicture.asset(
+                                        'assets/svg/transport/route.svg',
+                                        width: 20,
+                                        color: const Color(0xfffeb49f)
+                                        ),
+                                        'Поїзд' => SvgPicture.asset(
+                                        'assets/svg/transport/train.svg',
+                                        width: 20,
+                                        color: const Color(0xFFC39FFE)
+                                        ),
+                                        'Електричка' => SvgPicture.asset(
+                                        'assets/svg/transport/regional.svg',
+                                        width: 20,
+                                        color: const Color(0xFF9FE3FE)
+                                        ),
+                                        'Міжміський' => SvgPicture.asset(
+                                        'assets/svg/transport/intercity.svg',
+                                        width: 20,
+                                        color: const Color(0xFFFEF89F)
+                                        ),
+                                        _ => SvgPicture.asset(
+                                        'assets/svg/transport/bus.svg',
+                                        width: 20,
+                                        color: const Color(0xFFFE9F9F)
+                                        ),
+                                      },
+                                      title: Text('№${schedule.routeName} • ${schedule.directionName}', overflow: TextOverflow.ellipsis, maxLines: 1, style: TextStyle(decoration: schedule.worksNow ? null : TextDecoration.lineThrough)),
+                                      subtitle: Row(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                        if (schedule.times.isNotEmpty)
+                                        Row(
                                           children: [
-                                            ListTile(
-                                              leading: schedule.transportName == 'Тролейбус'
-                                                ? SvgPicture.asset('assets/svg/transport/trolleybus.svg', 
-                                                    width: 20, color: const Color(0xFFA2C9FE))
-                                                : schedule.transportName == 'Автобус'
-                                                  ? SvgPicture.asset('assets/svg/transport/bus.svg', 
-                                                      width: 20, color: const Color(0xff9ed58b))
-                                                  : schedule.transportName == 'Маршрутка'
-                                                    ? SvgPicture.asset('assets/svg/transport/route.svg', 
-                                                        width: 20, color: const Color(0xfffeb49f))
-                                                    : SvgPicture.asset('assets/svg/transport/bus.svg', 
-                                                        width: 20, color: const Color(0xFFFE9F9F)),
-                                              title: Text(
-                                                '№${schedule.routeName} • ${schedule.directionName}',
-                                              ),
-                                              subtitle: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  if (schedule.times.isNotEmpty) ...[
-                                                    Row(
-                                                      children: [
-                                                        const Icon(Icons.transfer_within_a_station_rounded, size: 16),
-                                                        Text(' ${schedule.times.first.arrivalTimeFormatted} • '),
-                                                        const Icon(Icons.timelapse_rounded, size: 16),
-                                                        Text(' ${schedule.interval} хв'),
-                                                      ],
-                                                    ),
-                                                  ] else ...[
-                                                    Row(
-                                                      children: [
-                                                        const Icon(Icons.timelapse_rounded, size: 16),
-                                                        Text(' ${schedule.interval} хв'),
-                                                      ],
-                                                    ),
-                                                  ],
-                                                ],
-                                              ),
-                                            ),
+                                          const Icon(Icons.transfer_within_a_station_rounded, size: 16),
+                                          Text(' ${schedule.times.first.arrivalTimeFormatted}'),
                                           ],
-                                        );
-                                      }),
+                                        ),
+                                        if (schedule.interval.isNotEmpty)
+                                        Row(
+                                          children: [
+                                          Text(' • '),
+                                          const Icon(Icons.timelapse_rounded, size: 16),
+                                          Text(' ${schedule.interval} хв'),
+                                          ],
+                                        ),
+                                        if (!schedule.worksNow)
+                                        Row(
+                                          children: [
+                                          Icon(Icons.cancel_outlined, size: 16, color: Theme.of(context).colorScheme.error),
+                                          Text('Сьогодні не працює', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                                          ],
+                                        ),
+                                        ],
+                                      ),
+                                      ),
                                     ],
-                                  ),
+                                    );
+                                  }),
+                                  ],
+                                ),
                                 ),
                               ),
-                      );
+                              ),
+                          );
                     },
                   ),
                   const SizedBox(height: 10.0, width: double.infinity),
