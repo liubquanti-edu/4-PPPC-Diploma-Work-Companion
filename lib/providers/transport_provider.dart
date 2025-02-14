@@ -28,7 +28,14 @@ class TransportProvider with ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
-      final stopId = _prefs.getString('stopId') ?? '80'; // Default value if not set
+      final stopId = _prefs.getString('stopId');
+      if (stopId == null) {
+        _schedules = null;
+        _isLoading = false;
+        notifyListeners();
+        return;
+      }
+
       final response = await http.get(
         Uri.parse('https://gps.easyway.info/api/city/poltava/lang/ua/stop/$stopId'),
       );

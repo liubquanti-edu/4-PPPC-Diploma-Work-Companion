@@ -2,8 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/theme_provider.dart';
 
-class AppearanceSettings extends StatelessWidget {
-  const AppearanceSettings({Key? key}) : super(key: key);
+class AppearanceSettingsScreen extends StatefulWidget {
+  const AppearanceSettingsScreen({Key? key}) : super(key: key);
+
+  @override
+  _AppearanceSettingsScreenState createState() => _AppearanceSettingsScreenState();
+}
+
+class _AppearanceSettingsScreenState extends State<AppearanceSettingsScreen> {
+  // Замість TextEditingController використовуємо ValueNotifier
+  late final ValueNotifier<String?> _stopIdNotifier;
+
+  @override
+  void initState() {
+    super.initState();
+    // Ініціалізуємо нотіфаєр початковим значенням
+    _stopIdNotifier = ValueNotifier(
+      Provider.of<ThemeProvider>(context, listen: false).stopId
+    );
+  }
+
+  @override
+  void dispose() {
+    _stopIdNotifier.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -127,27 +150,40 @@ class AppearanceSettings extends StatelessWidget {
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: 10),
-                      TextFormField(
-                        initialValue: themeProvider.stopId,
-                        decoration: const InputDecoration(
-                          labelText: 'ID зупинки',
-                          helperText: 'ID зупинки для відображення розкладу на головному екрані',
-                          border: OutlineInputBorder(),
-                        ),
-                        keyboardType: TextInputType.number,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Будь ласка, введіть ID зупинки';
-                          }
-                          if (!RegExp(r'^\d+$').hasMatch(value)) {
-                            return 'ID має містити лише цифри';
-                          }
-                          return null;
-                        },
-                        onChanged: (value) {
-                          if (value.isNotEmpty && RegExp(r'^\d+$').hasMatch(value)) {
-                            themeProvider.setStopId(value);
-                          }
+                      ValueListenableBuilder<String?>(
+                        valueListenable: _stopIdNotifier,
+                        builder: (context, stopId, _) {
+                          return TextFormField(
+                            initialValue: stopId,
+                            decoration: InputDecoration(
+                              labelText: 'ID зупинки',
+                              helperText: 'ID зупинки для відображення розкладу на головному екрані',
+                              border: const OutlineInputBorder(),
+                              suffixIcon: stopId != null ? IconButton(
+                                icon: const Icon(Icons.clear),
+                                onPressed: () {
+                                  _stopIdNotifier.value = null;
+                                  themeProvider.setStopId(null);
+                                },
+                              ) : null,
+                            ),
+                            keyboardType: TextInputType.number,
+                            validator: (value) {
+                              if (value != null && value.isNotEmpty && !RegExp(r'^\d+$').hasMatch(value)) {
+                                return 'ID має містити лише цифри';
+                              }
+                              return null;
+                            },
+                            onChanged: (value) {
+                              if (value.isEmpty) {
+                                _stopIdNotifier.value = null;
+                                themeProvider.setStopId(null);
+                              } else if (RegExp(r'^\d+$').hasMatch(value)) {
+                                _stopIdNotifier.value = value;
+                                themeProvider.setStopId(value);
+                              }
+                            },
+                          );
                         },
                       ),
                     ],

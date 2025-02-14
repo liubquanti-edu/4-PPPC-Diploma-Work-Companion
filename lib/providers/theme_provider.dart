@@ -5,7 +5,7 @@ class ThemeProvider with ChangeNotifier {
   bool _useDynamicColors = true;
   ThemeMode _themeMode = ThemeMode.system;
   int _defaultContactTab = 0;
-  String _stopId = '1';
+  String? _stopId; // Changed to nullable
   final SharedPreferences _prefs;
   bool _isInitialized = false;
 
@@ -17,13 +17,13 @@ class ThemeProvider with ChangeNotifier {
   ThemeMode get themeMode => _themeMode;
   bool get isInitialized => _isInitialized;
   int get defaultContactTab => _defaultContactTab;
-  String get stopId => _stopId;
+  String? get stopId => _stopId; // Changed to nullable
 
   Future<void> _loadPreferences() async {
     _useDynamicColors = _prefs.getBool('useDynamicColors') ?? true;
     _themeMode = ThemeMode.values[_prefs.getInt('themeMode') ?? 0];
     _defaultContactTab = _prefs.getInt('defaultContactTab') ?? 0;
-    _stopId = _prefs.getString('stopId') ?? '80';
+    _stopId = _prefs.getString('stopId'); // Removed default value
     _isInitialized = true;
     notifyListeners();
   }
@@ -52,10 +52,14 @@ class ThemeProvider with ChangeNotifier {
     }
   }
 
-  Future<void> setStopId(String id) async {
+  Future<void> setStopId(String? id) async { // Changed to accept nullable
     if (_stopId != id) {
       _stopId = id;
-      await _prefs.setString('stopId', id);
+      if (id != null) {
+        await _prefs.setString('stopId', id);
+      } else {
+        await _prefs.remove('stopId');
+      }
       notifyListeners();
     }
   }

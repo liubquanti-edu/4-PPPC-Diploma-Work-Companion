@@ -672,7 +672,7 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                       height: 80,
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.onSecondary,
-                        borderRadius: BorderRadius.circular(10.0),
+                        borderRadius: const BorderRadius.all(Radius.circular(10.0)),
                         border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
                       ),
                       child: InkWell(
@@ -1015,7 +1015,47 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                               ),),
                             )
                           : transportProvider.schedules == null
-                            ? const Center(child: Text('Немає даних про розклад'))
+                            ? Center(
+                              child: Container(
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.onSecondary,
+                                borderRadius: BorderRadius.circular(10.0),
+                                border: Border.all(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  width: 2.0,
+                                ),
+                              ),
+                                child: Padding(
+                                padding: const EdgeInsets.all(10.0),
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      height: 50,
+                                      width: 50,
+                                      child: DecoratedBox(
+                                        decoration: BoxDecoration(
+                                          color: Theme.of(context).colorScheme.surfaceContainer,
+                                          borderRadius: BorderRadius.circular(5),
+                                        ),
+                                        child: Icon(
+                                          Icons.no_transfer_rounded,
+                                          size: 30.0,
+                                          color: Theme.of(context).colorScheme.primary,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10.0),
+                                    Expanded(
+                                      child: Text(
+                                      'Немає даних про розклад, або не обрано зупинку.',
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 2,
+                                      ),
+                                    )
+                                  ]
+                                )
+                                ))
+                              )
                             : InkWell(
                                 onTap: () {
                                   Navigator.push(
