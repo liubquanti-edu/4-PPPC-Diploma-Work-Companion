@@ -3,16 +3,18 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../models/transport.dart';
 import 'dart:async';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TransportProvider with ChangeNotifier {
   List<TransportSchedule>? _schedules;
   bool _isLoading = false;
   Timer? _timer;
-
+  final SharedPreferences _prefs;
+  
   List<TransportSchedule>? get schedules => _schedules;
   bool get isLoading => _isLoading;
 
-  TransportProvider() {
+  TransportProvider(this._prefs) {
     _initScheduleUpdates();
   }
 
@@ -26,8 +28,9 @@ class TransportProvider with ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
+      final stopId = _prefs.getString('stopId') ?? '80'; // Default value if not set
       final response = await http.get(
-        Uri.parse('https://gps.easyway.info/api/city/poltava/lang/ua/stop/80'),
+        Uri.parse('https://gps.easyway.info/api/city/poltava/lang/ua/stop/$stopId'),
       );
       
       if (response.statusCode == 200) {

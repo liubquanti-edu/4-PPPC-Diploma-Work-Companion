@@ -116,6 +116,44 @@ class AppearanceSettings extends StatelessWidget {
                   ),
                 ),
               ),
+              Container(
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Розклад транспорту',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 10),
+                      TextFormField(
+                        initialValue: themeProvider.stopId,
+                        decoration: const InputDecoration(
+                          labelText: 'ID зупинки',
+                          helperText: 'ID зупинки для відображення розкладу на головному екрані',
+                          border: OutlineInputBorder(),
+                        ),
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Будь ласка, введіть ID зупинки';
+                          }
+                          if (!RegExp(r'^\d+$').hasMatch(value)) {
+                            return 'ID має містити лише цифри';
+                          }
+                          return null;
+                        },
+                        onChanged: (value) {
+                          if (value.isNotEmpty && RegExp(r'^\d+$').hasMatch(value)) {
+                            themeProvider.setStopId(value);
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           );
         },

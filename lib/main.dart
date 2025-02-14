@@ -209,8 +209,16 @@ void main() async {
   );
 
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => ThemeProvider(prefs),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => ThemeProvider(prefs),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => TransportProvider(prefs),
+        ),
+        ChangeNotifierProvider(create: (_) => AlertProvider()),
+      ],
       child: MyApp(navigatorKey: navigatorKey),  // Pass the key to MyApp
     ),
   );
@@ -320,71 +328,65 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => AlertProvider()),
-        ChangeNotifierProvider(create: (_) => TransportProvider()),
-      ],
-      child: Consumer<ThemeProvider>(
-        builder: (context, themeProvider, child) {
-          if (!themeProvider.isInitialized) {
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        if (!themeProvider.isInitialized) {
+          return MaterialApp(
+            home: Container(
+              color: Colors.white,
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
+          );
+        }
+
+        return DynamicColorBuilder(
+          builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
+            ColorScheme lightColorScheme;
+            ColorScheme darkColorScheme;
+
+            if (themeProvider.useDynamicColors && lightDynamic != null && darkDynamic != null) {
+              lightColorScheme = lightDynamic.harmonized();
+              darkColorScheme = darkDynamic.harmonized();
+            } else {
+              lightColorScheme = ColorScheme.fromSeed(
+                seedColor: Colors.deepOrange,
+                brightness: Brightness.light,
+              );
+              darkColorScheme = ColorScheme.fromSeed(
+                seedColor: Colors.deepOrange,
+                brightness: Brightness.dark,
+              );
+            }
+
             return MaterialApp(
-              home: Container(
-                color: Colors.white,
-                child: const Center(
-                  child: CircularProgressIndicator(),
-                ),
+              navigatorKey: navigatorKey,  // Set the navigator key
+              title: 'Flutter Demo',
+              theme: ThemeData(
+                colorScheme: lightColorScheme,
+                useMaterial3: true,
+                fontFamily: 'Comfortaa',
+              ),
+              darkTheme: ThemeData(
+                colorScheme: darkColorScheme,
+                useMaterial3: true,
+                fontFamily: 'Comfortaa',
+              ),
+              themeMode: themeProvider.themeMode,
+              home: StreamBuilder<User?>(
+                stream: FirebaseAuth.instance.authStateChanges(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return const MainScreen();
+                  }
+                  return const EmailScreen();
+                },
               ),
             );
-          }
-
-          return DynamicColorBuilder(
-            builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
-              ColorScheme lightColorScheme;
-              ColorScheme darkColorScheme;
-
-              if (themeProvider.useDynamicColors && lightDynamic != null && darkDynamic != null) {
-                lightColorScheme = lightDynamic.harmonized();
-                darkColorScheme = darkDynamic.harmonized();
-              } else {
-                lightColorScheme = ColorScheme.fromSeed(
-                  seedColor: Colors.deepOrange,
-                  brightness: Brightness.light,
-                );
-                darkColorScheme = ColorScheme.fromSeed(
-                  seedColor: Colors.deepOrange,
-                  brightness: Brightness.dark,
-                );
-              }
-
-              return MaterialApp(
-                navigatorKey: navigatorKey,  // Set the navigator key
-                title: 'Flutter Demo',
-                theme: ThemeData(
-                  colorScheme: lightColorScheme,
-                  useMaterial3: true,
-                  fontFamily: 'Comfortaa',
-                ),
-                darkTheme: ThemeData(
-                  colorScheme: darkColorScheme,
-                  useMaterial3: true,
-                  fontFamily: 'Comfortaa',
-                ),
-                themeMode: themeProvider.themeMode,
-                home: StreamBuilder<User?>(
-                  stream: FirebaseAuth.instance.authStateChanges(),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      return const MainScreen();
-                    }
-                    return const EmailScreen();
-                  },
-                ),
-              );
-            },
-          );
-        },
-      ),
+          },
+        );
+      },
     );
   }
 }
