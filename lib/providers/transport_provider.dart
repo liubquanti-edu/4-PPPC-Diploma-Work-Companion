@@ -6,35 +6,34 @@ import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TransportProvider with ChangeNotifier {
-  List<TransportSchedule>? _schedules;
-  bool _isLoading = false;
+  Map<String, List<TransportSchedule>> _schedulesByStop = {};
+  Map<String, bool> _loadingStates = {};
   Timer? _timer;
   final SharedPreferences _prefs;
   
-  List<TransportSchedule>? get schedules => _schedules;
-  bool get isLoading => _isLoading;
+  Map<String, List<TransportSchedule>> get schedulesByStop => _schedulesByStop;
+  Map<String, bool> get loadingStates => _loadingStates;
 
   TransportProvider(this._prefs) {
     _initScheduleUpdates();
   }
 
   void _initScheduleUpdates() {
-    fetchSchedule(); // Initial fetch
-    _timer = Timer.periodic(const Duration(seconds: 20), (_) => fetchSchedule());
+    fetchAllSchedules();
+    _timer = Timer.periodic(const Duration(seconds: 20), (_) => fetchAllSchedules());
   }
 
-  Future<void> fetchSchedule() async {
-    try {
-      _isLoading = true;
-      notifyListeners();
+  Future<void> fetchAllSchedules() async {
+    final stopIds = _prefs.getStringList('stopIds') ?? [];
+    for (final stopId in stopIds) {
+      await fetchScheduleForStop(stopId);
+    }
+  }
 
-      final stopId = _prefs.getString('stopId');
-      if (stopId == null) {
-        _schedules = null;
-        _isLoading = false;
-        notifyListeners();
-        return;
-      }
+  Future<void> fetchScheduleForStop(String stopId) async {
+    try {
+      _loadingStates[stopId] = true;
+      notifyListeners();
 
       final response = await http.get(
         Uri.parse('https://gps.easyway.info/api/city/poltava/lang/ua/stop/$stopId'),
@@ -49,13 +48,13 @@ class TransportProvider with ChangeNotifier {
           
           routes.sort(TransportSchedule.compareByArrivalTime);
           
-          _schedules = routes;
+          _schedulesByStop[stopId] = routes;
         }
       }
     } catch (e) {
-      debugPrint('Error fetching schedule: $e');
+      debugPrint('Error fetching schedule for stop $stopId: $e');
     } finally {
-      _isLoading = false;
+      _loadingStates[stopId] = false;
       notifyListeners();
     }
   }

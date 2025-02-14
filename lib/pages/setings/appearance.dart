@@ -10,21 +10,17 @@ class AppearanceSettingsScreen extends StatefulWidget {
 }
 
 class _AppearanceSettingsScreenState extends State<AppearanceSettingsScreen> {
-  // Замість TextEditingController використовуємо ValueNotifier
-  late final ValueNotifier<String?> _stopIdNotifier;
+  final TextEditingController _stopIdController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    // Ініціалізуємо нотіфаєр початковим значенням
-    _stopIdNotifier = ValueNotifier(
-      Provider.of<ThemeProvider>(context, listen: false).stopId
-    );
+    _stopIdController.text = Provider.of<ThemeProvider>(context, listen: false).stopId ?? '';
   }
 
   @override
   void dispose() {
-    _stopIdNotifier.dispose();
+    _stopIdController.dispose();
     super.dispose();
   }
 
@@ -150,42 +146,42 @@ class _AppearanceSettingsScreenState extends State<AppearanceSettingsScreen> {
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: 10),
-                      ValueListenableBuilder<String?>(
-                        valueListenable: _stopIdNotifier,
-                        builder: (context, stopId, _) {
-                          return TextFormField(
-                            initialValue: stopId,
-                            decoration: InputDecoration(
-                              labelText: 'ID зупинки',
-                              helperText: 'ID зупинки для відображення розкладу на головному екрані',
-                              border: const OutlineInputBorder(),
-                              suffixIcon: stopId != null ? IconButton(
-                                icon: const Icon(Icons.clear),
-                                onPressed: () {
-                                  _stopIdNotifier.value = null;
-                                  themeProvider.setStopId(null);
-                                },
-                              ) : null,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _stopIdController,
+                              decoration: const InputDecoration(
+                                labelText: 'ID зупинки',
+                                helperText: 'Введіть ID зупинки',
+                                border: OutlineInputBorder(),
+                              ),
+                              keyboardType: TextInputType.number,
                             ),
-                            keyboardType: TextInputType.number,
-                            validator: (value) {
-                              if (value != null && value.isNotEmpty && !RegExp(r'^\d+$').hasMatch(value)) {
-                                return 'ID має містити лише цифри';
-                              }
-                              return null;
-                            },
-                            onChanged: (value) {
-                              if (value.isEmpty) {
-                                _stopIdNotifier.value = null;
-                                themeProvider.setStopId(null);
-                              } else if (RegExp(r'^\d+$').hasMatch(value)) {
-                                _stopIdNotifier.value = value;
-                                themeProvider.setStopId(value);
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            onPressed: () {
+                              final id = _stopIdController.text;
+                              if (id.isNotEmpty && RegExp(r'^\d+$').hasMatch(id)) {
+                                themeProvider.addStopId(id);
+                                _stopIdController.clear();
                               }
                             },
-                          );
-                        },
+                            child: const Text('Додати'),
+                          ),
+                        ],
                       ),
+                      const SizedBox(height: 16),
+                      ...themeProvider.stopIds.map((stopId) => Card(
+                        child: ListTile(
+                          title: Text('Зупинка №$stopId'),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () => themeProvider.removeStopId(stopId),
+                          ),
+                        ),
+                      )).toList(),
                     ],
                   ),
                 ),

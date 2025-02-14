@@ -19,6 +19,7 @@ import '/pages/info/subject.dart';
 import '/providers/alert_provider.dart';
 import '/pages/transport/transport_schedule.dart';
 import '/providers/transport_provider.dart';
+import '/providers/theme_provider.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -962,211 +963,221 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                       textAlign: TextAlign.left,
                     ),
                   ),
-                  Consumer<TransportProvider>(
-                    builder: (context, transportProvider, child) {
-                      return Container(
-                        margin: const EdgeInsets.symmetric(vertical: 10),
-                        child: transportProvider.isLoading
-                            ? Container(
-                              decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.onSecondary,
-                              borderRadius: BorderRadius.circular(10.0),
-                              border: Border.all(
-                                color: Theme.of(context).colorScheme.primary,
-                                width: 2.0,
-                              ),
-                              ),
-                                child: Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 10.0),
-                                child: Column(
-                                  children: List.generate(5, (index) => ListTile(
-                                  contentPadding: const EdgeInsets.only(top: 6.0, bottom: 6.0, left: 20.0, right: 20.0),
-                                  leading: CardLoading(
-                                  height: 30,
-                                  width: 30,
-                                  borderRadius: BorderRadius.circular(5),
-                                  margin: const EdgeInsets.all(0),
-                                  animationDuration: const Duration(milliseconds: 1000),
-                                  cardLoadingTheme: CardLoadingTheme(
-                                  colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                                  colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                                  ),
-                                  ),
-                                  title: CardLoading(
-                                  height: 20,
-                                  borderRadius: BorderRadius.circular(5),
-                                  margin: const EdgeInsets.only(bottom: 5),
-                                  animationDuration: const Duration(milliseconds: 1000),
-                                  cardLoadingTheme: CardLoadingTheme(
-                                  colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                                  colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                                  ),
-                                  ),
-                                  subtitle: CardLoading(
-                                  height: 15,
-                                  borderRadius: BorderRadius.circular(5),
-                                  margin: const EdgeInsets.all(0),
-                                  animationDuration: const Duration(milliseconds: 1000),
-                                  cardLoadingTheme: CardLoadingTheme(
-                                  colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                                  colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                                  ),
-                                  ),
-                              )),
-                              ),),
-                            )
-                          : transportProvider.schedules == null
-                            ? Center(
-                              child: Container(
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.onSecondary,
-                                borderRadius: BorderRadius.circular(10.0),
-                                border: Border.all(
-                                  color: Theme.of(context).colorScheme.primary,
-                                  width: 2.0,
-                                ),
-                              ),
-                                child: Padding(
-                                padding: const EdgeInsets.all(10.0),
-                                child: Row(
-                                  children: [
-                                    SizedBox(
-                                      height: 50,
-                                      width: 50,
-                                      child: DecoratedBox(
+                  Consumer<ThemeProvider>(
+                    builder: (context, themeProvider, _) {
+                      return Consumer<TransportProvider>(
+                        builder: (context, transportProvider, _) {
+                          return Column(
+                            children: themeProvider.stopIds.map((stopId) {
+                              final schedules = transportProvider.schedulesByStop[stopId];
+                              final isLoading = transportProvider.loadingStates[stopId] ?? false;
+                              return Container(
+                                margin: const EdgeInsets.symmetric(vertical: 10),
+                                  child: isLoading
+                                      ? Container(
                                         decoration: BoxDecoration(
-                                          color: Theme.of(context).colorScheme.surfaceContainer,
-                                          borderRadius: BorderRadius.circular(5),
-                                        ),
-                                        child: Icon(
-                                          Icons.no_transfer_rounded,
-                                          size: 30.0,
+                                        color: Theme.of(context).colorScheme.onSecondary,
+                                        borderRadius: BorderRadius.circular(10.0),
+                                        border: Border.all(
                                           color: Theme.of(context).colorScheme.primary,
+                                          width: 2.0,
                                         ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10.0),
-                                    const Expanded(
-                                      child: Text(
-                                      'Немає даних про розклад, або не обрано зупинку.',
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 2,
-                                      ),
-                                    )
-                                  ]
-                                )
-                                ))
-                              )
-                            : GestureDetector(
-                              child: Ink(
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.onSecondary,
-                                borderRadius: BorderRadius.circular(10.0),
-                                border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
-                                ),
-                                child: InkWell(
-                                borderRadius: BorderRadius.circular(10.0),
-                                onTap: () {
-                                  Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => TransportScheduleScreen(
-                                    schedules: transportProvider.schedules!,
-                                    ),
-                                  ),
-                                  );
-                                },
-                                child: Column(
-                                  children: [
-                                  ...transportProvider.schedules!.take(5).map((schedule) {
-                                    return Column(
-                                    children: [
-                                      ListTile(
-                                      leading: switch (schedule.transportName) {
-                                        'Тролейбус' => SvgPicture.asset(
-                                        'assets/svg/transport/trolleybus.svg',
-                                        width: 20,
-                                        color: const Color(0xFFA2C9FE)
                                         ),
-                                        'Автобус' => SvgPicture.asset(
-                                        'assets/svg/transport/bus.svg',
-                                        width: 20, 
-                                        color: const Color(0xff9ed58b)
-                                        ),
-                                        'Маршрутка' => SvgPicture.asset(
-                                        'assets/svg/transport/route.svg',
-                                        width: 20,
-                                        color: const Color(0xfffeb49f)
-                                        ),
-                                        'Поїзд' => SvgPicture.asset(
-                                        'assets/svg/transport/train.svg',
-                                        width: 20,
-                                        color: const Color(0xFFC39FFE)
-                                        ),
-                                        'Електричка' => SvgPicture.asset(
-                                        'assets/svg/transport/regional.svg',
-                                        width: 20,
-                                        color: const Color(0xFF9FE3FE)
-                                        ),
-                                        'Міжміський' => SvgPicture.asset(
-                                        'assets/svg/transport/intercity.svg',
-                                        width: 20,
-                                        color: const Color(0xFFFEF89F)
-                                        ),
-                                        _ => SvgPicture.asset(
-                                        'assets/svg/transport/bus.svg',
-                                        width: 20,
-                                        color: const Color(0xFFFE9F9F)
-                                        ),
-                                      },
-                                      title: Text('№${schedule.routeName} • ${schedule.directionName}', overflow: TextOverflow.ellipsis, maxLines: 1, style: TextStyle(decoration: schedule.worksNow ? null : TextDecoration.lineThrough)),
-                                      subtitle: SizedBox(
-                                        width: double.infinity,
-                                        child: SingleChildScrollView(
-                                          scrollDirection: Axis.horizontal,
-                                          child: Row(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              if (schedule.times.isNotEmpty)
-                                                Row(
-                                                  children: [
-                                                    const Icon(Icons.transfer_within_a_station_rounded, size: 16),
-                                                    Text(' ${schedule.times.first.localTimeFormatted}'),
-                                                  ],
-                                                ),
-                                              if (schedule.times.isNotEmpty && schedule.interval.isNotEmpty)
-                                                const Text(' • '),
-                                              if (schedule.interval.isNotEmpty)
-                                                Row(
-                                                  children: [
-                                                    const Icon(Icons.timelapse_rounded, size: 16),
-                                                    Text(' ${schedule.interval} хв'),
-                                                  ],
-                                                ),
-                                              if (schedule.times.isNotEmpty || schedule.interval.isNotEmpty)
-                                                const Text(' • '),
-                                              if (!schedule.worksNow)
-                                                Row(
-                                                  children: [
-                                                    Icon(Icons.cancel_outlined, size: 16, color: Theme.of(context).colorScheme.error),
-                                                    Text(' Не функціонує', style: TextStyle(color: Theme.of(context).colorScheme.error)),
-                                                  ],
-                                                ),
-                                            ],
+                                          child: Padding(
+                                          padding: const EdgeInsets.symmetric(vertical: 10.0),
+                                          child: Column(
+                                            children: List.generate(5, (index) => ListTile(
+                                            contentPadding: const EdgeInsets.only(top: 6.0, bottom: 6.0, left: 20.0, right: 20.0),
+                                            leading: CardLoading(
+                                            height: 30,
+                                            width: 30,
+                                            borderRadius: BorderRadius.circular(5),
+                                            margin: const EdgeInsets.all(0),
+                                            animationDuration: const Duration(milliseconds: 1000),
+                                            cardLoadingTheme: CardLoadingTheme(
+                                            colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                            colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                            ),
+                                            ),
+                                            title: CardLoading(
+                                            height: 20,
+                                            borderRadius: BorderRadius.circular(5),
+                                            margin: const EdgeInsets.only(bottom: 5),
+                                            animationDuration: const Duration(milliseconds: 1000),
+                                            cardLoadingTheme: CardLoadingTheme(
+                                            colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                            colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                            ),
+                                            ),
+                                            subtitle: CardLoading(
+                                            height: 15,
+                                            borderRadius: BorderRadius.circular(5),
+                                            margin: const EdgeInsets.all(0),
+                                            animationDuration: const Duration(milliseconds: 1000),
+                                            cardLoadingTheme: CardLoadingTheme(
+                                            colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                            colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                            ),
+                                            ),
+                                        )),
+                                        ),),
+                                      )
+                                    : schedules == null
+                                      ? Center(
+                                        child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Theme.of(context).colorScheme.onSecondary,
+                                          borderRadius: BorderRadius.circular(10.0),
+                                          border: Border.all(
+                                            color: Theme.of(context).colorScheme.primary,
+                                            width: 2.0,
                                           ),
                                         ),
-                                      ),
-                                      ),
-                                    ],
-                                    );
-                                  }),
-                                  ],
-                                ),
-                                ),
-                              ),
-                              ),
+                                          child: Padding(
+                                          padding: const EdgeInsets.all(10.0),
+                                          child: Row(
+                                            children: [
+                                              SizedBox(
+                                                height: 50,
+                                                width: 50,
+                                                child: DecoratedBox(
+                                                  decoration: BoxDecoration(
+                                                    color: Theme.of(context).colorScheme.surfaceContainer,
+                                                    borderRadius: BorderRadius.circular(5),
+                                                  ),
+                                                  child: Icon(
+                                                    Icons.no_transfer_rounded,
+                                                    size: 30.0,
+                                                    color: Theme.of(context).colorScheme.primary,
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 10.0),
+                                              const Expanded(
+                                                child: Text(
+                                                'Немає даних про розклад, або не обрано зупинку.',
+                                                overflow: TextOverflow.ellipsis,
+                                                maxLines: 2,
+                                                ),
+                                              )
+                                            ]
+                                          )
+                                          ))
+                                        )
+                                      : GestureDetector(
+                                        child: Ink(
+                                          width: double.infinity,
+                                          decoration: BoxDecoration(
+                                          color: Theme.of(context).colorScheme.onSecondary,
+                                          borderRadius: BorderRadius.circular(10.0),
+                                          border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
+                                          ),
+                                          child: InkWell(
+                                          borderRadius: BorderRadius.circular(10.0),
+                                          onTap: () {
+                                            Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => TransportScheduleScreen(
+                                              schedules: schedules,
+                                              ),
+                                            ),
+                                            );
+                                          },
+                                          child: Column(
+                                            children: [
+                                            ...schedules.take(5).map((schedule) {
+                                              return Column(
+                                              children: [
+                                                ListTile(
+                                                leading: switch (schedule.transportName) {
+                                                  'Тролейбус' => SvgPicture.asset(
+                                                  'assets/svg/transport/trolleybus.svg',
+                                                  width: 20,
+                                                  color: const Color(0xFFA2C9FE)
+                                                  ),
+                                                  'Автобус' => SvgPicture.asset(
+                                                  'assets/svg/transport/bus.svg',
+                                                  width: 20, 
+                                                  color: const Color(0xff9ed58b)
+                                                  ),
+                                                  'Маршрутка' => SvgPicture.asset(
+                                                  'assets/svg/transport/route.svg',
+                                                  width: 20,
+                                                  color: const Color(0xfffeb49f)
+                                                  ),
+                                                  'Поїзд' => SvgPicture.asset(
+                                                  'assets/svg/transport/train.svg',
+                                                  width: 20,
+                                                  color: const Color(0xFFC39FFE)
+                                                  ),
+                                                  'Електричка' => SvgPicture.asset(
+                                                  'assets/svg/transport/regional.svg',
+                                                  width: 20,
+                                                  color: const Color(0xFF9FE3FE)
+                                                  ),
+                                                  'Міжміський' => SvgPicture.asset(
+                                                  'assets/svg/transport/intercity.svg',
+                                                  width: 20,
+                                                  color: const Color(0xFFFEF89F)
+                                                  ),
+                                                  _ => SvgPicture.asset(
+                                                  'assets/svg/transport/bus.svg',
+                                                  width: 20,
+                                                  color: const Color(0xFFFE9F9F)
+                                                  ),
+                                                },
+                                                title: Text('№${schedule.routeName} • ${schedule.directionName}', overflow: TextOverflow.ellipsis, maxLines: 1, style: TextStyle(decoration: schedule.worksNow ? null : TextDecoration.lineThrough)),
+                                                subtitle: SizedBox(
+                                                  width: double.infinity,
+                                                  child: SingleChildScrollView(
+                                                    scrollDirection: Axis.horizontal,
+                                                    child: Row(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      children: [
+                                                        if (schedule.times.isNotEmpty)
+                                                          Row(
+                                                            children: [
+                                                              const Icon(Icons.transfer_within_a_station_rounded, size: 16),
+                                                              Text(' ${schedule.times.first.localTimeFormatted}'),
+                                                            ],
+                                                          ),
+                                                        if (schedule.times.isNotEmpty & schedule.interval.isNotEmpty)
+                                                          const Text(' • '),
+                                                        if (schedule.interval.isNotEmpty)
+                                                          Row(
+                                                            children: [
+                                                              const Icon(Icons.timelapse_rounded, size: 16),
+                                                              Text(' ${schedule.interval} хв'),
+                                                            ],
+                                                          ),
+                                                        if (!schedule.worksNow & schedule.times.isNotEmpty | schedule.interval.isNotEmpty)
+                                                          const Text(' • '),
+                                                        if (!schedule.worksNow)
+                                                          Row(
+                                                            children: [
+                                                              Icon(Icons.cancel_outlined, size: 16, color: Theme.of(context).colorScheme.error),
+                                                              Text(' Не функціонує', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                                                            ],
+                                                          ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                                ),
+                                              ],
+                                              );
+                                            }),
+                                            ],
+                                          ),
+                                          ),
+                                        ),
+                                        ),
+                                        );
+                            }).toList(),
                           );
+                        },
+                      );
                     },
                   ),
                   const SizedBox(height: 10.0, width: double.infinity),
