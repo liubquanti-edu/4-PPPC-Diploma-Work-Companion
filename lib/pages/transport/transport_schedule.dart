@@ -31,7 +31,7 @@ class TransportScheduleScreen extends StatelessWidget {
                   return ListTile(
                     leading: _getTransportIcon(schedule.transportName),
                       title: Text(
-                        '№${schedule.routeName} • ${schedule.directionName}',
+                        '${schedule.routeName.isNotEmpty && RegExp(r'[0-9]').hasMatch(schedule.routeName[0]) ? '№' : ''}${schedule.routeName} • ${schedule.directionName}',
                         style: TextStyle(
                           decoration: schedule.worksNow ? null : TextDecoration.lineThrough,
                         ),
@@ -81,43 +81,43 @@ class TransportScheduleScreen extends StatelessWidget {
       case 'Тролейбус':
       return SvgPicture.asset(
         'assets/svg/transport/trolleybus.svg',
-        width: 20,
+        width: 24,
         color: const Color(0xFFA2C9FE),
       );
       case 'Автобус':
       return SvgPicture.asset(
         'assets/svg/transport/bus.svg',
-        width: 20,
+        width: 24,
         color: const Color(0xff9ed58b),
       );
       case 'Маршрутка':
       return SvgPicture.asset(
         'assets/svg/transport/route.svg',
-        width: 20,
+        width: 24,
         color: const Color(0xfffeb49f),
       );
       case 'Поїзд':
       return SvgPicture.asset(
         'assets/svg/transport/train.svg',
-        width: 20,
+        width: 24,
         color: const Color(0xFFC39FFE),
       );
       case 'Електричка':
       return SvgPicture.asset(
         'assets/svg/transport/regional.svg',
-        width: 20,
+        width: 24,
         color: const Color(0xFF9FE3FE),
       );
       case 'Міжміський':
       return SvgPicture.asset(
         'assets/svg/transport/intercity.svg',
-        width: 20,
+        width: 30,
         color: const Color(0xFFFEF89F),
       );
       default:
       return SvgPicture.asset(
         'assets/svg/transport/bus.svg',
-        width: 20,
+        width: 24,
         color: const Color(0xFFFE9F9F),
       );
     }

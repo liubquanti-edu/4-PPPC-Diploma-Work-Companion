@@ -1088,85 +1088,135 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                             children: [
                                             ...schedules.take(5).map((schedule) {
                                               return Column(
-                                              children: [
-                                                ListTile(
-                                                leading: switch (schedule.transportName) {
-                                                  'Тролейбус' => SvgPicture.asset(
-                                                  'assets/svg/transport/trolleybus.svg',
-                                                  width: 20,
-                                                  color: const Color(0xFFA2C9FE)
-                                                  ),
-                                                  'Автобус' => SvgPicture.asset(
-                                                  'assets/svg/transport/bus.svg',
-                                                  width: 20, 
-                                                  color: const Color(0xff9ed58b)
-                                                  ),
-                                                  'Маршрутка' => SvgPicture.asset(
-                                                  'assets/svg/transport/route.svg',
-                                                  width: 20,
-                                                  color: const Color(0xfffeb49f)
-                                                  ),
-                                                  'Поїзд' => SvgPicture.asset(
-                                                  'assets/svg/transport/train.svg',
-                                                  width: 20,
-                                                  color: const Color(0xFFC39FFE)
-                                                  ),
-                                                  'Електричка' => SvgPicture.asset(
-                                                  'assets/svg/transport/regional.svg',
-                                                  width: 20,
-                                                  color: const Color(0xFF9FE3FE)
-                                                  ),
-                                                  'Міжміський' => SvgPicture.asset(
-                                                  'assets/svg/transport/intercity.svg',
-                                                  width: 20,
-                                                  color: const Color(0xFFFEF89F)
-                                                  ),
-                                                  _ => SvgPicture.asset(
-                                                  'assets/svg/transport/bus.svg',
-                                                  width: 20,
-                                                  color: const Color(0xFFFE9F9F)
-                                                  ),
-                                                },
-                                                title: Text('№${schedule.routeName} • ${schedule.directionName}', overflow: TextOverflow.ellipsis, maxLines: 1, style: TextStyle(decoration: schedule.worksNow ? null : TextDecoration.lineThrough)),
-                                                subtitle: SizedBox(
-                                                  width: double.infinity,
-                                                  child: SingleChildScrollView(
-                                                    scrollDirection: Axis.horizontal,
+                                                children: [
+                                                  Container(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                                                     child: Row(
-                                                      crossAxisAlignment: CrossAxisAlignment.start,
                                                       children: [
-                                                        if (schedule.times.isNotEmpty)
-                                                          Row(
+                                                        SizedBox(
+                                                        height: 50,
+                                                        width: 50,
+                                                        child: DecoratedBox(
+                                                          decoration: BoxDecoration(
+                                                          color: Theme.of(context).colorScheme.surfaceContainer,
+                                                          borderRadius: BorderRadius.circular(5),
+                                                          ),
+                                                          child: Center(
+                                                          child: SizedBox(
+                                                            width: schedule.transportName == 'Міжміський' ? 28 : 22,
+                                                            child: switch (schedule.transportName) {
+                                                            'Тролейбус' => SvgPicture.asset(
+                                                              'assets/svg/transport/trolleybus.svg',
+                                                              color: const Color(0xFFA2C9FE),
+                                                              fit: BoxFit.contain,
+                                                            ),
+                                                            'Автобус' => SvgPicture.asset(
+                                                              'assets/svg/transport/bus.svg',
+                                                              color: const Color(0xff9ed58b),
+                                                              fit: BoxFit.contain,
+                                                            ),
+                                                            'Маршрутка' => SvgPicture.asset(
+                                                              'assets/svg/transport/route.svg',
+                                                              color: const Color(0xfffeb49f),
+                                                              fit: BoxFit.contain,
+                                                            ),
+                                                            'Поїзд' => SvgPicture.asset(
+                                                              'assets/svg/transport/train.svg',
+                                                              color: const Color(0xFFC39FFE),
+                                                              fit: BoxFit.contain,
+                                                            ),
+                                                            'Електричка' => SvgPicture.asset(
+                                                              'assets/svg/transport/regional.svg',
+                                                              color: const Color(0xFF9FE3FE),
+                                                              fit: BoxFit.contain,
+                                                            ),
+                                                            'Міжміський' => SvgPicture.asset(
+                                                              'assets/svg/transport/intercity.svg',
+                                                              color: const Color(0xFFFEF89F),
+                                                              fit: BoxFit.contain,
+                                                            ),
+                                                            _ => SvgPicture.asset(
+                                                              'assets/svg/transport/bus.svg',
+                                                              color: const Color(0xFFFE9F9F),
+                                                              fit: BoxFit.contain,
+                                                            ),
+                                                            },
+                                                          ),
+                                                          ),
+                                                        ),),
+                                                        const SizedBox(width: 12),
+                                                        // Інформація про маршрут
+                                                        Expanded(
+                                                          child: Column(
+                                                            crossAxisAlignment: CrossAxisAlignment.start,
                                                             children: [
-                                                              const Icon(Icons.transfer_within_a_station_rounded, size: 16),
-                                                              Text(' ${schedule.times.first.localTimeFormatted}'),
+                                                              // Номер маршруту і напрямок
+                                                              Text(
+                                                                '${schedule.routeName.startsWith(RegExp(r'[0-9]')) ? '№' : ''}${schedule.routeName} • ${schedule.directionName}',
+                                                                style: TextStyle(
+                                                                  fontSize: 16,
+                                                                  fontWeight: FontWeight.w500,
+                                                                  decoration: schedule.worksNow ? null : TextDecoration.lineThrough,
+                                                                ),
+                                                                overflow: TextOverflow.ellipsis,
+                                                                maxLines: 1,
+                                                              ),
+                                                              const SizedBox(height: 4),
+                                                              // Час прибуття та інтервал
+                                                              schedule.worksNow
+                                                                ? Row(
+                                                                    children: [
+                                                                      if (schedule.times.isNotEmpty) ...[
+                                                                        const Icon(
+                                                                          Icons.transfer_within_a_station_rounded,
+                                                                          size: 16,
+                                                                        ),
+                                                                        const SizedBox(width: 4),
+                                                                        Text(
+                                                                          schedule.times.first.localTimeFormatted,
+                                                                        ),
+                                                                      ],
+                                                                      if (schedule.times.isNotEmpty && schedule.interval.isNotEmpty) ...[
+                                                                        const SizedBox(width: 8),
+                                                                        const Text('•'),
+                                                                        const SizedBox(width: 8),
+                                                                      ],
+                                                                      if (schedule.interval.isNotEmpty) ...[
+                                                                        const Icon(
+                                                                          Icons.timelapse_rounded,
+                                                                          size: 16,
+                                                                        ),
+                                                                        const SizedBox(width: 4),
+                                                                        Text(
+                                                                          '${schedule.interval} хв',
+                                                                        ),
+                                                                      ],
+                                                                    ],
+                                                                  )
+                                                                : Row(
+                                                                    children: [
+                                                                      Icon(
+                                                                        Icons.cancel_outlined,
+                                                                        size: 16,
+                                                                        color: Theme.of(context).colorScheme.error,
+                                                                      ),
+                                                                      const SizedBox(width: 4),
+                                                                      Text(
+                                                                        'Не функціонує',
+                                                                        style: TextStyle(
+                                                                          color: Theme.of(context).colorScheme.error,
+                                                                          fontStyle: FontStyle.italic,
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  ),
                                                             ],
                                                           ),
-                                                        if (schedule.times.isNotEmpty & schedule.interval.isNotEmpty)
-                                                          const Text(' • '),
-                                                        if (schedule.interval.isNotEmpty)
-                                                          Row(
-                                                            children: [
-                                                              const Icon(Icons.timelapse_rounded, size: 16),
-                                                              Text(' ${schedule.interval} хв'),
-                                                            ],
-                                                          ),
-                                                        if (schedule.times.isNotEmpty | schedule.interval.isNotEmpty)
-                                                          if (!schedule.worksNow)
-                                                            const Text(' • '),
-                                                        if (!schedule.worksNow)
-                                                          Row(
-                                                            children: [
-                                                              Icon(Icons.cancel_outlined, size: 16, color: Theme.of(context).colorScheme.error),
-                                                              Text(' Не функціонує', style: TextStyle(color: Theme.of(context).colorScheme.error)),
-                                                            ],
-                                                          ),
+                                                        ),
                                                       ],
                                                     ),
                                                   ),
-                                                ),
-                                                ),
-                                              ],
+                                                ],
                                               );
                                             }),
                                             ],

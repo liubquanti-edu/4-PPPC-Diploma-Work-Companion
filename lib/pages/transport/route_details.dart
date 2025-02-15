@@ -101,7 +101,7 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.transportName} №${widget.routeName}'),
+        title: Text('${widget.transportName}${widget.routeName.startsWith(RegExp(r'[0-9]')) ? ' №' : ' '}${widget.routeName}'),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -121,13 +121,27 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Text(
-                                'Маршрут ${directionIndex + 1}',
-                                style: Theme.of(context).textTheme.titleLarge,
+                            const Divider(),
+                            Center(
+                              child: Column(
+                                children: [
+                                  Text(
+                                    '${direction.stops.first.stopName}',
+                                    style: Theme.of(context).textTheme.titleLarge,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Icon(Icons.arrow_downward),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    '${direction.stops.last.stopName}',
+                                    style: Theme.of(context).textTheme.titleLarge,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
                               ),
                             ),
+                            const Divider(),
                             ...direction.stops.asMap().entries.map((entry) {
                               final index = entry.key;
                               final stop = entry.value;
