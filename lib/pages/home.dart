@@ -1151,8 +1151,9 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                                               Text(' ${schedule.interval} хв'),
                                                             ],
                                                           ),
-                                                        if (!schedule.worksNow & schedule.times.isNotEmpty | schedule.interval.isNotEmpty)
-                                                          const Text(' • '),
+                                                        if (schedule.times.isNotEmpty | schedule.interval.isNotEmpty)
+                                                          if (!schedule.worksNow)
+                                                            const Text(' • '),
                                                         if (!schedule.worksNow)
                                                           Row(
                                                             children: [
