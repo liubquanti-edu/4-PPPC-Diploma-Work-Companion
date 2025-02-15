@@ -971,6 +971,7 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                             children: themeProvider.stopIds.map((stopId) {
                               final schedules = transportProvider.schedulesByStop[stopId];
                               final isLoading = transportProvider.loadingStates[stopId] ?? false;
+                              final stopName = transportProvider.stopNames[stopId];
                               return Container(
                                 margin: const EdgeInsets.symmetric(vertical: 10),
                                   child: isLoading
@@ -1086,6 +1087,24 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                           },
                                           child: Column(
                                             children: [
+                                            Container(
+                                              padding: const EdgeInsets.all(10),
+                                              child: Row(
+                                                children: [
+                                                  const Icon(Icons.location_on, size: 20),
+                                                  const SizedBox(width: 8),
+                                                  Expanded(
+                                                    child: Text(
+                                                      stopName ?? 'Зупинка №$stopId',
+                                                      style: const TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
                                             ...schedules.take(5).map((schedule) {
                                               return Column(
                                                 children: [
