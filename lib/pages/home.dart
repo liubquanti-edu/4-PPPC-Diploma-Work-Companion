@@ -987,11 +987,27 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                           child: Padding(
                                           padding: const EdgeInsets.symmetric(vertical: 10.0),
                                           child: Column(
+                                            children: [
+                                            Padding(
+                                              padding: const EdgeInsets.only(top: 10, left: 20, right: 20),
+                                              child: CardLoading(
+                                              height: 30,
+                                              width: double.infinity,
+                                              borderRadius: BorderRadius.circular(5),
+                                              margin: const EdgeInsets.all(0),
+                                              animationDuration: const Duration(milliseconds: 1000),
+                                                cardLoadingTheme: CardLoadingTheme(
+                                                  colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                                  colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                                ),
+                                              ),
+                                            ),
+                                            Column(
                                             children: List.generate(5, (index) => ListTile(
                                             contentPadding: const EdgeInsets.only(top: 6.0, bottom: 6.0, left: 20.0, right: 20.0),
                                             leading: CardLoading(
-                                            height: 30,
-                                            width: 30,
+                                            height: 50,
+                                            width: 50,
                                             borderRadius: BorderRadius.circular(5),
                                             margin: const EdgeInsets.all(0),
                                             animationDuration: const Duration(milliseconds: 1000),
@@ -1020,7 +1036,7 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                             colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                                             ),
                                             ),
-                                        )),
+                                        )),),],
                                         ),),
                                       )
                                     : schedules == null

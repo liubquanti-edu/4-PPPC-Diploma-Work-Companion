@@ -425,10 +425,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             child: TextField(
               controller: _commentController,
               decoration: const InputDecoration(
-                hintText: 'Написати коментар...',
-                border: OutlineInputBorder(),
+              hintText: 'Написати коментар...',
+              border: OutlineInputBorder(),
               ),
               maxLines: null,
+              maxLength: 400,
             ),
           ),
           const SizedBox(width: 8),
