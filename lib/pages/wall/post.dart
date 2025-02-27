@@ -409,12 +409,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   Widget _buildCommentInput() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.only(top: 10, bottom: 10, left: 16, right: 16),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         border: Border(
           top: BorderSide(
-            color: Theme.of(context).dividerColor
+            color: Theme.of(context).colorScheme.surfaceVariant,
           ),
         ),
       ),
@@ -425,13 +425,17 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               controller: _commentController,
               decoration: const InputDecoration(
               hintText: 'Написати коментар...',
-              border: OutlineInputBorder(),
+              border: OutlineInputBorder(
+                borderSide: BorderSide.none,
               ),
-              maxLines: null,
+              ),
+              buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
+              minLines: 1,
+              maxLines: 5,
               maxLength: 400,
             ),
           ),
-          const SizedBox(width: 8),
+          
           if (_isCommenting)
             const CircularProgressIndicator()
           else

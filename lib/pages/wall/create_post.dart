@@ -83,10 +83,15 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           controller: _postController,
           maxLength: 5000,
           maxLines: null,
+          autofocus: true,
           decoration: const InputDecoration(
             hintText: 'Що у вас нового?',
-            border: OutlineInputBorder(),
+            border: OutlineInputBorder(
+              borderSide: BorderSide.none,
+            ),
+            
           ),
+          buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
           textInputAction: TextInputAction.newline,
         ),
       ),
