@@ -285,7 +285,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         ),
         const SizedBox(height: 16),
         SelectableText(
-          widget.post['text'],
+          widget.post['text'].replaceAll(RegExp(r'\n{3,}'), '\n\n'),
           style: Theme.of(context).textTheme.bodyMedium,
           toolbarOptions: const ToolbarOptions(
             copy: true,

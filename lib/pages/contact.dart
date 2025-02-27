@@ -132,7 +132,7 @@ class __AllPostsTabState extends State<_AllPostsTab> with AutomaticKeepAliveClie
     final rating = (post['rating'] as int?) ?? 0;
     final isLiked = (post['likes'] as Map?)?.containsKey(userId) ?? false;
     final isDisliked = (post['dislikes'] as Map?)?.containsKey(userId) ?? false;
-    final text = post['text'] as String;
+    final text = post['text'].replaceAll(RegExp(r'\n{3,}'), '\n\n') as String;
     final isLongText = text.length > 250;
 
     return Padding(
