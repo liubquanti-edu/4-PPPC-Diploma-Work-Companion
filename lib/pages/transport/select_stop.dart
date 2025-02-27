@@ -29,6 +29,22 @@ class _StopSelectorScreenState extends State<StopSelectorScreen> {
     });
   }
 
+  Widget _darkModeTileBuilder(
+      BuildContext context,
+      Widget tileWidget,
+      TileImage tile,
+      ) {
+    return ColorFiltered(
+      colorFilter: const ColorFilter.matrix(<double>[
+        -0.2126, -0.7152, -0.0722, 0, 255, // Red channel
+        -0.2126, -0.7152, -0.0722, 0, 255, // Green channel
+        -0.2126, -0.7152, -0.0722, 0, 255, // Blue channel
+        0,       0,       0,       1, 0,   // Alpha channel
+      ]),
+      child: tileWidget,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,37 +62,39 @@ class _StopSelectorScreenState extends State<StopSelectorScreen> {
         children: [
           TileLayer(
             urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            tileBuilder: Theme.of(context).brightness == Brightness.dark ? _darkModeTileBuilder : null,
             userAgentPackageName: 'com.example.app',
           ),
           // Додаємо маркер коледжу
           MarkerLayer(
             markers: [
-              Marker(
+                Marker(
                 point: LatLng(49.58781059854736, 34.54295461180669),
                 width: 40,
                 height: 40,
+                rotate: true,
                 builder: (context) => Container(
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    shape: BoxShape.rectangle,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.primary,
-                      width: 2,
-                    ),
+                  color: Theme.of(context).colorScheme.surface,
+                  shape: BoxShape.rectangle,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.primary,
+                    width: 2,
+                  ),
                   ),
                   padding: const EdgeInsets.all(5),
                   child: Icon(
-                    Icons.school_rounded,
-                    color: Theme.of(context).colorScheme.primary,
-                    size: 24,
+                  Icons.school_rounded,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 24,
                   ),
                 ),
               ),
             ],
           ),
           // Кластеризовані маркери зупинок
-          MarkerClusterLayerWidget(
+            MarkerClusterLayerWidget(
             options: MarkerClusterLayerOptions(
               maxClusterRadius: 70,
               size: const Size(40, 40),
@@ -88,6 +106,7 @@ class _StopSelectorScreenState extends State<StopSelectorScreen> {
                 final name = stationData[2] as String;
                 
                 return Marker(
+                  rotate: true,
                   point: LatLng(lat, lng),
                   width: 30,
                   height: 30,
@@ -102,12 +121,16 @@ class _StopSelectorScreenState extends State<StopSelectorScreen> {
                           color: Theme.of(context).colorScheme.surface,
                           shape: BoxShape.rectangle,
                           borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.primary,
+                            width: 2,
+                          ),
                         ),
                         padding: const EdgeInsets.all(5),
                         child: Icon(
                           Icons.signpost_rounded,
                           color: Theme.of(context).colorScheme.primary,
-                          size: 20,
+                          size: 15,
                         ),
                       ),
                     ),
@@ -118,12 +141,12 @@ class _StopSelectorScreenState extends State<StopSelectorScreen> {
                 return Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
-                    color: Theme.of(context).colorScheme.primary,
+                    color: Theme.of(context).colorScheme.surface,
                   ),
                   child: Center(
                     child: Text(
                       markers.length.toString(),
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(color: Theme.of(context).colorScheme.primary),
                     ),
                   ),
                 );
