@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/services.dart';
+import 'dart:convert';
 import '../../providers/theme_provider.dart';
+import '../transport/select_stop.dart';
 
 class AppearanceSettingsScreen extends StatefulWidget {
   const AppearanceSettingsScreen({Key? key}) : super(key: key);
@@ -11,11 +14,20 @@ class AppearanceSettingsScreen extends StatefulWidget {
 
 class _AppearanceSettingsScreenState extends State<AppearanceSettingsScreen> {
   final TextEditingController _stopIdController = TextEditingController();
+  Map<String, dynamic> _stations = {};
 
   @override
   void initState() {
     super.initState();
     _stopIdController.text = Provider.of<ThemeProvider>(context, listen: false).stopId ?? '';
+    _loadStations();
+  }
+
+  Future<void> _loadStations() async {
+    final String response = await rootBundle.loadString('assets/json/stations.json');
+    setState(() {
+      _stations = json.decode(response);
+    });
   }
 
   @override
@@ -146,42 +158,42 @@ class _AppearanceSettingsScreenState extends State<AppearanceSettingsScreen> {
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: _stopIdController,
-                              decoration: const InputDecoration(
-                                labelText: 'ID зупинки',
-                                helperText: 'Введіть ID зупинки',
-                                border: OutlineInputBorder(),
-                              ),
-                              keyboardType: TextInputType.number,
+                      ...themeProvider.stopIds.map((stopId) {
+                        // Отримуємо назву зупинки з stations.json
+                        final stopName = _stations[stopId]?[2] ?? 'Зупинка №$stopId';
+                        return Container(
+                          child: ListTile(
+                            title: Text(stopName),
+                            subtitle: Text('ID: $stopId'),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () => themeProvider.removeStopId(stopId),
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          ElevatedButton(
-                            onPressed: () {
-                              final id = _stopIdController.text;
-                              if (id.isNotEmpty && RegExp(r'^\d+$').hasMatch(id)) {
-                                themeProvider.addStopId(id);
-                                _stopIdController.clear();
-                              }
-                            },
-                            child: const Text('Додати'),
+                        );
+                      }),
+                      const SizedBox(height: 10),
+                        Center(
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.onSecondary,
+                          foregroundColor: Theme.of(context).colorScheme.primary,
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      ...themeProvider.stopIds.map((stopId) => Card(
-                        child: ListTile(
-                          title: Text('Зупинка №$stopId'),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.delete),
-                            onPressed: () => themeProvider.removeStopId(stopId),
-                          ),
+                          onPressed: () async {
+                          final selectedStopId = await Navigator.push<String>(
+                            context,
+                            MaterialPageRoute(
+                            builder: (context) => StopSelectorScreen(),
+                            ),
+                          );
+                          if (selectedStopId != null) {
+                            themeProvider.addStopId(selectedStopId);
+                          }
+                          },
+                          icon: const Icon(Icons.add_location),
+                          label: const Text('Додати зупинку'),
                         ),
-                      )).toList(),
+                      ),
                     ],
                   ),
                 ),
