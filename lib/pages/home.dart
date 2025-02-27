@@ -988,9 +988,9 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                           child: Column(
                                             children: [
                                             Padding(
-                                              padding: const EdgeInsets.only(top: 10, left: 20, right: 20),
+                                              padding: const EdgeInsets.only( left: 10, right: 10, bottom: 5),
                                               child: CardLoading(
-                                              height: 30,
+                                              height: 20,
                                               width: double.infinity,
                                               borderRadius: BorderRadius.circular(5),
                                               margin: const EdgeInsets.all(0),
@@ -1003,7 +1003,7 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                             ),
                                             Column(
                                             children: List.generate(5, (index) => ListTile(
-                                            contentPadding: const EdgeInsets.only(top: 6.0, bottom: 6.0, left: 20.0, right: 20.0),
+                                            contentPadding: const EdgeInsets.only( top: 5, left: 10.0, right: 10.0),
                                             leading: CardLoading(
                                             height: 50,
                                             width: 50,
@@ -1071,7 +1071,7 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                               const SizedBox(width: 10.0),
                                               const Expanded(
                                                 child: Text(
-                                                'Немає даних про розклад, або не обрано зупинку.',
+                                                'Немає даних про розклад.',
                                                 overflow: TextOverflow.ellipsis,
                                                 maxLines: 2,
                                                 ),
@@ -1124,7 +1124,7 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                               return Column(
                                                 children: [
                                                   Container(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                                                    padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
                                                     child: Row(
                                                       children: [
                                                         SizedBox(
