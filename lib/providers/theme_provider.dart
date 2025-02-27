@@ -5,7 +5,7 @@ class ThemeProvider with ChangeNotifier {
   bool _useDynamicColors = true;
   ThemeMode _themeMode = ThemeMode.system;
   int _defaultContactTab = 0;
-  String? _stopId; // Changed to nullable
+  String? _stopId;
   final SharedPreferences _prefs;
   bool _isInitialized = false;
   List<String> _stopIds = [];
@@ -18,14 +18,14 @@ class ThemeProvider with ChangeNotifier {
   ThemeMode get themeMode => _themeMode;
   bool get isInitialized => _isInitialized;
   int get defaultContactTab => _defaultContactTab;
-  String? get stopId => _stopId; // Changed to nullable
+  String? get stopId => _stopId;
   List<String> get stopIds => _stopIds;
 
   Future<void> _loadPreferences() async {
     _useDynamicColors = _prefs.getBool('useDynamicColors') ?? true;
     _themeMode = ThemeMode.values[_prefs.getInt('themeMode') ?? 0];
     _defaultContactTab = _prefs.getInt('defaultContactTab') ?? 0;
-    _stopId = _prefs.getString('stopId'); // Removed default value
+    _stopId = _prefs.getString('stopId');
     _stopIds = _prefs.getStringList('stopIds') ?? [];
     _isInitialized = true;
     notifyListeners();
@@ -55,7 +55,7 @@ class ThemeProvider with ChangeNotifier {
     }
   }
 
-  Future<void> setStopId(String? id) async { // Changed to accept nullable
+  Future<void> setStopId(String? id) async {
     if (_stopId != id) {
       _stopId = id;
       if (id != null) {

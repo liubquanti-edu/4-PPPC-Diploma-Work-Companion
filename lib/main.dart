@@ -27,17 +27,14 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 String? currentOpenChatId;
 
-// Додайте змінну для відстеження ID сповіщень
 int _notificationId = 0;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   
-  // Get FCM token
   final fcmToken = await FirebaseMessaging.instance.getToken();
   
-  // Save token to Firestore
   if (fcmToken != null) {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -48,7 +45,6 @@ void main() async {
     }
   }
   
-  // Handle token refresh
   FirebaseMessaging.instance.onTokenRefresh.listen((token) {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -74,30 +70,24 @@ void main() async {
 
   await initializeDateFormatting('uk');
 
-  // Handle notification when app is in background
   FirebaseMessaging.onMessageOpenedApp.listen((message) {
     final chatRoomId = message.data['chatRoomId'];
     if (chatRoomId != null) {
-      // Get recipient info and navigate to chat
       _handleNotificationTap(chatRoomId);
     }
   });
 
   await _initNotifications();
 
-  // Handle foreground messages
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
     if (message.notification != null) {
-      // Check if the notification is from the currently open chat
       final notificationChatId = message.data['chatRoomId'];
       
-      // Show notification only if it's not from the current open chat
       if (notificationChatId != currentOpenChatId) {
-        // Збільшуємо ID для кожного нового сповіщення
         _notificationId++;
         
         FlutterLocalNotificationsPlugin().show(
-          _notificationId, // Використовуємо унікальний ID замість 0
+          _notificationId,
           message.notification!.title,
           message.notification!.body,
           NotificationDetails(
@@ -107,7 +97,6 @@ void main() async {
               importance: Importance.high,
               priority: Priority.high,
               icon: 'notification_icon',
-              // Додаємо налаштування для групування сповіщень
               groupKey: 'chat_messages',
               setAsGroupSummary: false,
               groupAlertBehavior: GroupAlertBehavior.all,
@@ -118,9 +107,8 @@ void main() async {
           payload: json.encode(message.data),
         );
 
-        // Показуємо групове сповіщення
         FlutterLocalNotificationsPlugin().show(
-          0, // ID для групового сповіщення завжди 0
+          0,
           'Нові повідомлення',
           'У вас є непрочитані повідомлення',
           NotificationDetails(
@@ -139,13 +127,10 @@ void main() async {
     }
   });
 
-  // Додайте в функцію main() після існуючої обробки сповіщень:
-
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
     if (message.notification != null) {
       final notificationType = message.data['type'];
       
-      // Показуємо сповіщення тільки якщо це коментар до поста
       if (notificationType == 'post_comment') {
         _notificationId++;
         
@@ -155,7 +140,7 @@ void main() async {
           message.notification!.body,
           NotificationDetails(
             android: AndroidNotificationDetails(
-              'post_comments_channel', // Новий канал для сповіщень коментарів
+              'post_comments_channel',
               'Post Comments Notifications',
               importance: Importance.high,
               priority: Priority.high,
@@ -170,16 +155,14 @@ void main() async {
     }
   });
 
-  // Handle notification tap
   FlutterLocalNotificationsPlugin().initialize(
     InitializationSettings(
-      android: AndroidInitializationSettings('notification_icon'), // Changed from ic_launcher
+      android: AndroidInitializationSettings('notification_icon'),
     ),
     onDidReceiveNotificationResponse: (details) async {
       if (details.payload != null) {
         final data = json.decode(details.payload!);
         if (data['type'] == 'chat_message') {
-          // Очікуємо ініціалізації Firebase і авторизації
           await Firebase.initializeApp();
           final auth = FirebaseAuth.instance;
           if (auth.currentUser == null) {
@@ -194,14 +177,12 @@ void main() async {
     },
   );
 
-  // Request notification permissions
   await FirebaseMessaging.instance.requestPermission(
     alert: true,
     badge: true,
     sound: true,
   );
 
-  // Configure notification settings
   await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
     alert: true,
     badge: true,
@@ -219,7 +200,7 @@ void main() async {
         ),
         ChangeNotifierProvider(create: (_) => AlertProvider()),
       ],
-      child: MyApp(navigatorKey: navigatorKey),  // Pass the key to MyApp
+      child: MyApp(navigatorKey: navigatorKey),
     ),
   );
 }
@@ -295,16 +276,14 @@ void _handleNotificationTap(String chatRoomId) async {
     if (recipientDoc.exists) {
       final data = recipientDoc.data()!;
       
-      // Перевіряємо чи є активний навігатор
       if (navigatorKey.currentState?.mounted ?? false) {
         navigatorKey.currentState!.pushAndRemoveUntil(
           MaterialPageRoute(
-            builder: (context) => MainScreen(), // Спочатку відкриваємо головний екран
+            builder: (context) => MainScreen(),
           ),
           (route) => false,
         );
         
-        // Потім відкриваємо чат
         navigatorKey.currentState?.push(
           MaterialPageRoute(
             builder: (context) => ChatScreen(
@@ -361,7 +340,7 @@ class MyApp extends StatelessWidget {
             }
 
             return MaterialApp(
-              navigatorKey: navigatorKey,  // Set the navigator key
+              navigatorKey: navigatorKey,
               title: 'Flutter Demo',
               theme: ThemeData(
                 colorScheme: lightColorScheme,

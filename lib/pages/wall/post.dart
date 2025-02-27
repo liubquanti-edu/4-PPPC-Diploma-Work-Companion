@@ -73,7 +73,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         'timestamp': ServerValue.timestamp,
       });
 
-      // Отримуємо токен автора поста
       final postAuthorId = widget.post['authorId'];
       if (postAuthorId != _auth.currentUser!.uid) {
         final authorDoc = await _firestore

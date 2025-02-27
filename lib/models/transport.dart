@@ -7,7 +7,7 @@ class TransportSchedule {
   final String directionName;
   final String interval;
   final List<ScheduleTime> times;
-  final bool worksNow; // Add new field
+  final bool worksNow;
 
   TransportSchedule({
     required this.routeId,
@@ -16,7 +16,7 @@ class TransportSchedule {
     required this.directionName,
     required this.interval,
     required this.times,
-    required this.worksNow, // Add to constructor
+    required this.worksNow,
   });
 
   factory TransportSchedule.fromJson(Map<String, dynamic> json) {
@@ -29,16 +29,14 @@ class TransportSchedule {
       times: (json['times'] as List)
           .map((time) => ScheduleTime.fromJson(time))
           .toList(),
-      worksNow: json['works_now'] == 1, // Convert to bool
+      worksNow: json['works_now'] == 1,
     );
   }
 
   DateTime get nextArrivalTime {
     if (times.isNotEmpty) {
-      // Use Unix timestamp directly
       return DateTime.fromMillisecondsSinceEpoch(times.first.arrivalTime * 1000);
     } else {
-      // If no exact time, use interval logic
       final now = DateTime.now();
       final intervalMinutes = int.tryParse(
         interval.replaceAll(RegExp(r'[^0-9]'), '')
@@ -56,11 +54,9 @@ class TransportSchedule {
   }
 
   static int compareByArrivalTime(TransportSchedule a, TransportSchedule b) {
-    // First compare by works_now status
     if (a.worksNow != b.worksNow) {
-      return a.worksNow ? -1 : 1; // Working transport goes first
+      return a.worksNow ? -1 : 1;
     }
-    // If both have same works_now status, compare by arrival time
     return a.nextArrivalTime.compareTo(b.nextArrivalTime);
   }
 }
@@ -76,7 +72,6 @@ class ScheduleTime {
     this.bortNumber,
   });
 
-  // Add method to get localized time
   String get localTimeFormatted {
     final ukraineTime = DateTime.fromMillisecondsSinceEpoch(arrivalTime * 1000);
     return DateFormat('HH:mm').format(ukraineTime.toLocal());

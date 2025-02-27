@@ -87,7 +87,6 @@ class UserService {
     final user = _auth.currentUser;
     if (user != null) {
       try {
-        // First get the current avatar URL
         final userDoc = await _firestore
             .collection('students')
             .doc(user.uid)
@@ -96,11 +95,9 @@ class UserService {
         final currentAvatar = userDoc.data()?['avatar'] as String?;
         
         if (currentAvatar != null && currentAvatar.isNotEmpty) {
-          // Delete from Storage
           await StorageService.deleteOldAvatar(currentAvatar);
         }
         
-        // Then remove from Firestore
         await _firestore
             .collection('students')
             .doc(user.uid)

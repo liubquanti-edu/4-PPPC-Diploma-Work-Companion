@@ -34,7 +34,6 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
     try {
       setState(() => _isLoading = true);
       
-      // Отримуємо деталі маршруту
       final routeResponse = await http.get(
         Uri.parse('https://gps.easyway.info/api/city/poltava/route/${widget.routeId}'),
       );
@@ -42,13 +41,11 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
       if (routeResponse.statusCode == 200) {
         final routeData = json.decode(routeResponse.body);
         if (routeData['status'] == 'ok') {
-          // Завантажуємо назви для кожної зупинки
           final directions = routeData['data']['directions'] as List;
           for (var direction in directions) {
             final stops = direction['stops'] as List;
             for (var stop in stops) {
               final stopId = stop['stop_id'];
-              // Отримуємо дані про конкретну зупинку
               final stopResponse = await http.get(
                 Uri.parse('https://gps.easyway.info/api/city/poltava/lang/ua/stop/$stopId'),
               );
@@ -79,7 +76,6 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
     }
   }
 
-  // Додамо новий метод для групування транспорту за першою зупинкою:
   Map<int, StopTime> _findFirstStopForEachTransport(RouteDirection direction) {
     Map<int, StopTime> firstStopForTransport = {};
     Map<String, int> vehicleFirstStop = {};

@@ -80,7 +80,6 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         _news = items.map((item) {
           final title = item.findElements('title').single.text;
-          // Store raw description without parsing
           final description = item.findElements('description').single.text;
           final link = item.findElements('link').single.text;
           final thumbnail = item.findElements('media:thumbnail').isEmpty 
@@ -88,7 +87,7 @@ class _MyHomePageState extends State<MyHomePage> {
               : item.findElements('media:thumbnail').single.getAttribute('url') ?? 'assets/img/news.jpg';
           return {
             'title': title,
-            'description': description,  // Raw HTML content
+            'description': description,
             'link': link,
             'thumbnail': thumbnail
           };
@@ -1180,12 +1179,10 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                                           ),
                                                         ),),
                                                         const SizedBox(width: 12),
-                                                        // Інформація про маршрут
                                                         Expanded(
                                                           child: Column(
                                                             crossAxisAlignment: CrossAxisAlignment.start,
                                                             children: [
-                                                              // Номер маршруту і напрямок
                                                               Text(
                                                                 '${schedule.routeName.startsWith(RegExp(r'[0-9]')) ? '№' : ''}${schedule.routeName} • ${schedule.directionName}',
                                                                 style: TextStyle(
@@ -1197,7 +1194,6 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                                                 maxLines: 1,
                                                               ),
                                                               const SizedBox(height: 4),
-                                                              // Час прибуття та інтервал
                                                               schedule.worksNow
                                                                 ? Row(
                                                                     children: [

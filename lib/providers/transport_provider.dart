@@ -8,13 +8,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 class TransportProvider with ChangeNotifier {
   Map<String, List<TransportSchedule>> _schedulesByStop = {};
   Map<String, bool> _loadingStates = {};
-  Map<String, String> _stopNames = {}; // Add stop names map
+  Map<String, String> _stopNames = {};
   Timer? _timer;
   final SharedPreferences _prefs;
   
   Map<String, List<TransportSchedule>> get schedulesByStop => _schedulesByStop;
   Map<String, bool> get loadingStates => _loadingStates;
-  Map<String, String> get stopNames => _stopNames; // Add getter
+  Map<String, String> get stopNames => _stopNames;
 
   TransportProvider(this._prefs) {
     _initScheduleUpdates();
@@ -44,7 +44,6 @@ class TransportProvider with ChangeNotifier {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['status'] == 'ok') {
-          // Store stop name
           _stopNames[stopId] = data['data']['name'] ?? 'Невідома зупинка';
           
           final routes = (data['data']['routes'] as List)

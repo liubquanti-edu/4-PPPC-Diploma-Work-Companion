@@ -7,18 +7,15 @@ class StorageService {
 
   static Future<String> uploadAvatar(File imageFile, String userId) async {
     try {
-      // Generate unique filename
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final fileName = '$timestamp.jpg';
       
-      // Create reference with nested path
       final Reference storageRef = _storage
           .ref()
           .child('avatars')
           .child(userId)
           .child(fileName);
       
-      // Set metadata
       final metadata = SettableMetadata(
         contentType: 'image/jpeg',
         customMetadata: {
@@ -27,7 +24,6 @@ class StorageService {
         },
       );
 
-      // Upload file
       final uploadTask = await storageRef.putFile(imageFile, metadata);
       final downloadUrl = await uploadTask.ref.getDownloadURL();
       
@@ -52,7 +48,6 @@ class StorageService {
       debugPrint('Avatar deleted successfully from Storage: $oldAvatarUrl');
     } on FirebaseException catch (e) {
       debugPrint('Firebase Storage Error: ${e.code} - ${e.message}');
-      // Ignore if file doesn't exist
       if (e.code != 'object-not-found') {
         throw Exception('Помилка видалення аватара зі сховища');
       }

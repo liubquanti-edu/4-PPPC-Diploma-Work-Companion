@@ -174,7 +174,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             builder: (context) => EditProfilePage(
                               currentNickname: userData?['nickname'] ?? '',
                               currentAvatar: userData?['avatar'] ?? '',
-                              userData: userData ?? {}, // Pass userData here
+                              userData: userData ?? {},
                             ),
                           ),
                         );

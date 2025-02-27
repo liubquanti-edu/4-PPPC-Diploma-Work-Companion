@@ -43,7 +43,6 @@ class _ChatScreenState extends State<ChatScreen> {
   Map<String, dynamic>? _replyTo;
   bool _isUploading = false;
 
-  // Додаємо нові змінні для управління прикріпленим фото
   File? _attachedImage;
   bool _isImageAttached = false;
 
@@ -56,17 +55,15 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    // Set current chat when opened
     currentOpenChatId = chatRoomId;
   }
 
-  // Модифікуємо метод вибору зображення
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(
       source: ImageSource.gallery,
-      maxWidth: 1024, // Обмежуємо розмір
-      imageQuality: 85 // Стискаємо якість
+      maxWidth: 1024,
+      imageQuality: 85
     );
     
     if (image != null) {
@@ -77,7 +74,6 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  // Метод для відкріплення фото
   void _detachImage() {
     setState(() {
       _attachedImage = null;
@@ -85,7 +81,6 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
-  // Модифікуємо метод відправки повідомлення
   Future<void> _sendMessage() async {
   final messageText = _messageController.text.trim();
   final hasText = messageText.isNotEmpty;
@@ -103,7 +98,6 @@ class _ChatScreenState extends State<ChatScreen> {
     final messageRef = _database.child('chats/$chatRoomId/messages').push();
     String? imageUrl;
 
-    // Завантажуємо зображення якщо воно є
     if (hasImage) {
       debugPrint('Завантаження зображення...');
       final timestamp = DateTime.now().millisecondsSinceEpoch;
@@ -115,7 +109,6 @@ class _ChatScreenState extends State<ChatScreen> {
           .child(chatRoomId)
           .child(fileName);
 
-      // Завантажуємо файл
       final uploadTask = await storageRef.putFile(
         _attachedImage!,
         SettableMetadata(
@@ -128,12 +121,10 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
       );
 
-      // Отримуємо URL завантаженого файлу
       imageUrl = await uploadTask.ref.getDownloadURL();
       debugPrint('URL завантаженого зображення: $imageUrl');
     }
 
-    // Створюємо повідомлення
     final message = {
       'senderId': _auth.currentUser!.uid,
       'timestamp': ServerValue.timestamp,
@@ -142,7 +133,6 @@ class _ChatScreenState extends State<ChatScreen> {
       if (hasImage && imageUrl != null) 'imageUrl': imageUrl,
     };
 
-    // Додаємо дані про відповідь якщо є
     if (_replyTo != null) {
       message['replyTo'] = {
         'messageId': _replyTo!['key'],
@@ -154,7 +144,6 @@ class _ChatScreenState extends State<ChatScreen> {
     debugPrint('Збереження повідомлення: $message');
     await messageRef.set(message);
 
-    // Отримуємо дані відправника
     final senderDoc = await FirebaseFirestore.instance
         .collection('students')
         .doc(_auth.currentUser!.uid)
@@ -162,7 +151,6 @@ class _ChatScreenState extends State<ChatScreen> {
     
     debugPrint('Дані відправника: ${senderDoc.data()}');
     
-    // Отримуємо дані отримувача
     final recipientDoc = await FirebaseFirestore.instance
         .collection('students')
         .doc(widget.recipientId)
@@ -176,7 +164,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
       debugPrint('FCM токен отримувача: $recipientToken');
       
-      // Відправляємо сповіщення якщо є токен
       if (recipientToken != null) {
         debugPrint('Відправка HTTP запиту на Cloud Function...');
         try {
@@ -275,7 +262,6 @@ class _ChatScreenState extends State<ChatScreen> {
 }
 
   Future<void> _deleteMessage(String messageKey) async {
-  // Отримуємо дані повідомлення перед видаленням
   final messageSnapshot = await _database
       .child('chats/$chatRoomId/messages/$messageKey')
       .get();
@@ -306,10 +292,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
   if (confirmed == true) {
     try {
-      // Якщо повідомлення містить зображення, видаляємо його з Storage
       if (messageData['type'] == 'image' && messageData['imageUrl'] != null) {
         try {
-          // Отримуємо посилання на зображення у Storage з URL
           final imageRef = FirebaseStorage.instance.refFromURL(messageData['imageUrl']);
           await imageRef.delete();
         } catch (e) {
@@ -317,7 +301,6 @@ class _ChatScreenState extends State<ChatScreen> {
         }
       }
 
-      // Видаляємо саме повідомлення з бази даних
       await _database.child('chats/$chatRoomId/messages/$messageKey').remove();
     } catch (e) {
       if (mounted) {
@@ -356,7 +339,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-  // Update current chat ID when screen is opened
   if (currentOpenChatId != chatRoomId) {
     debugPrint('Opening chat: $chatRoomId');
     currentOpenChatId = chatRoomId;
@@ -574,7 +556,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                               ),
                                             ),
                                             if (isMe) ...[
-                                              if (message['type'] != 'image') // Додаємо перевірку типу повідомлення
+                                              if (message['type'] != 'image')
                                                 SimpleDialogOption(
                                                   onPressed: () {
                                                     Navigator.pop(context);
@@ -700,18 +682,18 @@ class _ChatScreenState extends State<ChatScreen> {
                                                             backgroundColor: Colors.black,
                                                             iconTheme: const IconThemeData(color: Colors.white),
                                                           ),
-                                                          body: Container( // Додаємо Container для контролю розмірів
+                                                          body: Container(
                                                             width: double.infinity,
                                                             height: double.infinity,
                                                             child: InteractiveViewer(
                                                               minScale: 0.5,
                                                               maxScale: 4,
-                                                              child: Center( // Центруємо зображення
+                                                              child: Center(
                                                                 child: Hero(
                                                                   tag: message['imageUrl'] ?? message['key'],
                                                                   child: CachedNetworkImage(
                                                                     imageUrl: message['imageUrl'] ?? '',
-                                                                    fit: BoxFit.contain, // Змінюємо на contain
+                                                                    fit: BoxFit.contain,
                                                                     placeholder: (context, url) => const Center(
                                                                       child: CircularProgressIndicator(color: Colors.white),
                                                                     ),
@@ -994,7 +976,6 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void dispose() {
   debugPrint('Closing chat: $chatRoomId');
-  // Clear current chat ID when the screen is closed
   currentOpenChatId = null;
   _messageController.dispose();
   _scrollController.dispose();

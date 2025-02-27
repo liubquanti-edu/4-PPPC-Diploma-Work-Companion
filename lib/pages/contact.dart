@@ -422,7 +422,6 @@ class __FollowingPostsTabState extends State<_FollowingPostsTab> with AutomaticK
 
         final userData = userSnapshot.data!.data() as Map<String, dynamic>;
         final following = (userData['following'] as List?)?.cast<String>() ?? [];
-        // Add current user's ID to following list to show their posts too
         final followingWithSelf = [...following, _auth.currentUser!.uid];
 
         if (followingWithSelf.isEmpty) {

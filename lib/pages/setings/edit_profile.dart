@@ -84,24 +84,19 @@ class _EditProfilePageState extends State<EditProfilePage> {
       final userId = FirebaseAuth.instance.currentUser!.uid;
       String? newAvatarUrl;
 
-      // Prepare update data
       final Map<String, dynamic> updateData = {
         'nickname': _nicknameController.text.trim(),
         'contactnumber': _contactNumberController.text.trim(),
         'contactemail': _contactEmailController.text.trim(),
       };
 
-      // Upload new avatar if selected
       if (_imageFile != null) {
         try {
-          // Upload new avatar first
           newAvatarUrl = await StorageService.uploadAvatar(_imageFile!, userId);
           debugPrint('New avatar URL: $newAvatarUrl');
           
-          // Add new avatar URL to update data
           updateData['avatar'] = newAvatarUrl;
           
-          // Delete old avatar after successful upload and Firestore update
           if (widget.currentAvatar.isNotEmpty) {
             await StorageService.deleteOldAvatar(widget.currentAvatar);
           }
@@ -117,7 +112,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
         }
       }
 
-      // Update Firestore document
       await FirebaseFirestore.instance
           .collection('students')
           .doc(userId)
