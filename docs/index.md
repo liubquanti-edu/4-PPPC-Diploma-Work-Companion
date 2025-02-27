@@ -13,7 +13,7 @@
 - Adobe Photoshop
 - Adobe Illustrator
 - Figma
-- Mocrosoft Visual Studio Code
+- Microsoft Visual Studio Code
 - Dart
 - Flutter
 - Firebase Firestore
