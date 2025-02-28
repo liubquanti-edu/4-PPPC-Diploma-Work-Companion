@@ -9,6 +9,7 @@ class ThemeProvider with ChangeNotifier {
   final SharedPreferences _prefs;
   bool _isInitialized = false;
   List<String> _stopIds = [];
+  String _mapStyle = 'default'; // Add new field for map style
 
   ThemeProvider(this._prefs) {
     _loadPreferences();
@@ -20,6 +21,7 @@ class ThemeProvider with ChangeNotifier {
   int get defaultContactTab => _defaultContactTab;
   String? get stopId => _stopId;
   List<String> get stopIds => _stopIds;
+  String get mapStyle => _mapStyle;
 
   Future<void> _loadPreferences() async {
     _useDynamicColors = _prefs.getBool('useDynamicColors') ?? true;
@@ -27,6 +29,7 @@ class ThemeProvider with ChangeNotifier {
     _defaultContactTab = _prefs.getInt('defaultContactTab') ?? 0;
     _stopId = _prefs.getString('stopId');
     _stopIds = _prefs.getStringList('stopIds') ?? [];
+    _mapStyle = _prefs.getString('mapStyle') ?? 'default';
     _isInitialized = true;
     notifyListeners();
   }
@@ -78,6 +81,14 @@ class ThemeProvider with ChangeNotifier {
   Future<void> removeStopId(String id) async {
     if (_stopIds.remove(id)) {
       await _prefs.setStringList('stopIds', _stopIds);
+      notifyListeners();
+    }
+  }
+
+  Future<void> setMapStyle(String style) async {
+    if (_mapStyle != style) {
+      _mapStyle = style;
+      await _prefs.setString('mapStyle', style);
       notifyListeners();
     }
   }

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'dart:convert';
 import '../../providers/theme_provider.dart';
 import '../transport/select_stop.dart';
+import '../../config/map_config.dart';
 
 class AppearanceSettingsScreen extends StatefulWidget {
   const AppearanceSettingsScreen({Key? key}) : super(key: key);
@@ -34,6 +35,36 @@ class _AppearanceSettingsScreenState extends State<AppearanceSettingsScreen> {
   void dispose() {
     _stopIdController.dispose();
     super.dispose();
+  }
+
+  Widget _buildMapStyleSection(ThemeProvider themeProvider) {
+    return Container(
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Стиль мапи',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 10),
+            ...MapStyles.available.map((style) => 
+              RadioListTile(
+                title: Text(style.name),
+                value: style.id,
+                groupValue: themeProvider.mapStyle,
+                onChanged: (String? value) {
+                  if (value != null) {
+                    themeProvider.setMapStyle(value);
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -198,6 +229,7 @@ class _AppearanceSettingsScreenState extends State<AppearanceSettingsScreen> {
                   ),
                 ),
               ),
+              _buildMapStyleSection(themeProvider),
             ],
           );
         },

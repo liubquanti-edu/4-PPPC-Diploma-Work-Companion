@@ -6,6 +6,9 @@ import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
 import 'dart:convert';
 import 'dart:ui' as ui;
 import 'dart:typed_data';
+import 'package:provider/provider.dart';
+import '../../providers/theme_provider.dart';
+import '../../helpers/map_loading_helper.dart';
 
 class StopSelectorScreen extends StatefulWidget {
   const StopSelectorScreen({super.key});
@@ -32,6 +35,20 @@ class _StopSelectorScreenState extends State<StopSelectorScreen> {
     super.initState();
     _initializeMapRenderer();
     _loadResources();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_mapController != null) {
+      final brightness = MediaQuery.of(context).platformBrightness;
+      final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+      MapStyleHelper.loadMapStyle(themeProvider.mapStyle, brightness).then((style) {
+        if (style != null) {
+          _mapController?.setMapStyle(style);
+        }
+      });
+    }
   }
 
   // Update resource loading to include the new train icon
@@ -324,51 +341,16 @@ class _StopSelectorScreenState extends State<StopSelectorScreen> {
     setState(() {});
   }
 
-  Future<void> _setMapStyle(bool isDark) async {
-    if (_mapController == null) return;
-
-    // Базовий стиль для приховування зупинок транспорту
-    const String baseStyle = '''
-    [
-      {
-        "featureType": "transit.station",
-        "stylers": [{ "visibility": "off" }]
-      },
-      {
-        "featureType": "transit.station.bus",
-        "stylers": [{ "visibility": "off" }]
-      },
-      {
-        "featureType": "transit.station.rail",
-        "stylers": [{ "visibility": "off" }]
-      }
-    ]
-    ''';
-
-    if (isDark) {
-      // Завантажуємо темний стиль і комбінуємо з базовим
-      final String darkStyle = 
-          await rootBundle.loadString('assets/json/darkmap.json');
-      
-      // Конвертуємо у JSON, щоб об'єднати стилі
-      List<dynamic> darkStyleJson = json.decode(darkStyle);
-      List<dynamic> baseStyleJson = json.decode(baseStyle);
-      
-      // Об'єднуємо стилі
-      darkStyleJson.addAll(baseStyleJson);
-      
-      // Застосовуємо комбінований стиль
-      await _mapController!.setMapStyle(json.encode(darkStyleJson));
-    } else {
-      // Для світлої теми застосовуємо тільки базовий стиль
-      await _mapController!.setMapStyle(baseStyle);
-    }
-  }
-
-  void _onMapCreated(GoogleMapController controller) {
+  void _onMapCreated(GoogleMapController controller) async {
     _mapController = controller;
+    
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     final brightness = MediaQuery.of(context).platformBrightness;
-    _setMapStyle(brightness == Brightness.dark);
+    final mapStyle = await MapStyleHelper.loadMapStyle(themeProvider.mapStyle, brightness);
+    
+    if (mapStyle != null) {
+      await _mapController?.setMapStyle(mapStyle);
+    }
   }
 
   @override

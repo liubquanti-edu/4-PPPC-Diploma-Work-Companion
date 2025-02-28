@@ -9,6 +9,9 @@ import 'dart:typed_data';
 import '../../models/routedetails.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
+import 'package:provider/provider.dart';
+import '../../providers/theme_provider.dart';
+import '../../helpers/map_loading_helper.dart';
 
 class RouteDetailsScreen extends StatefulWidget {
   final int routeId;
@@ -38,17 +41,12 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
   // Видалити змінні для відслідковування прокрутки
   final ScrollController _scrollController = ScrollController();
 
-  // Додайте нове поле для зберігання стилю карти
-  String? _lightMapStyle;
-  String? _darkMapStyle;
-
   @override
   void initState() {
     super.initState();
     _initializeMapRenderer();
     _loadRouteDetails();
-    _loadMapStyles(); // Завантажуємо обидва стилі
-    _loadIcons(); // Новий метод для завантаження іконок
+    _loadIcons();
   }
 
   void _initializeMapRenderer() {
@@ -345,62 +343,32 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
   // Видалити метод _onScroll
 
   // Завантаження обох стилів карти
-  Future<void> _loadMapStyles() async {
-    final String darkMapStyle = await rootBundle.loadString('assets/json/darkmap.json');
-  
-    // Перетворюємо JSON у Map
-    final List<dynamic> darkStyles = json.decode(darkMapStyle);
-    
-    // Додаємо нові стилі для приховання стандартних маркерів зупинок
-    darkStyles.addAll([
-      {
-        "featureType": "transit.station",
-        "stylers": [{"visibility": "off"}]
-      },
-      {
-        "featureType": "transit.station.bus",
-        "stylers": [{"visibility": "off"}]
-      },
-      {
-        "featureType": "transit.station.rail", 
-        "stylers": [{"visibility": "off"}]
-      }
-    ]);
 
-    // Зберігаємо оновлені стилі
-    _darkMapStyle = json.encode(darkStyles);
-    _lightMapStyle = null; // або аналогічно для світлої теми
-  }
 
   // Оновлений метод _onMapCreated
-  void _onMapCreated(GoogleMapController controller) {
-    try {
-      setState(() {
-        _mapController = controller;
-      });
-      _setMapStyle();
-      if (_markers.isNotEmpty) {
-        _fitBounds();
-      }
-    } catch (e) {
-      debugPrint('Error creating map: $e');
+  void _onMapCreated(GoogleMapController controller) async {
+    _mapController = controller;
+  
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    final brightness = MediaQuery.of(context).platformBrightness;
+    final mapStyle = await MapStyleHelper.loadMapStyle(themeProvider.mapStyle, brightness);
+  
+    if (mapStyle != null) {
+      await _mapController?.setMapStyle(mapStyle);
     }
-  }
-
-  // Новий метод для встановлення стилю в залежності від теми
-  void _setMapStyle() {
-    if (_mapController == null) return;
-
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    _mapController!.setMapStyle(isDark ? _darkMapStyle : _lightMapStyle);
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Оновлюємо стиль карти при зміні теми
     if (_mapController != null) {
-      _setMapStyle();
+      final brightness = MediaQuery.of(context).platformBrightness;
+      final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+      MapStyleHelper.loadMapStyle(themeProvider.mapStyle, brightness).then((style) {
+        if (style != null) {
+          _mapController?.setMapStyle(style);
+        }
+      });
     }
   }
 
