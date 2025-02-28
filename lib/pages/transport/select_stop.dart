@@ -20,6 +20,7 @@ class _StopSelectorScreenState extends State<StopSelectorScreen> {
   final Set<Marker> _markers = {};
   BitmapDescriptor? _busStopIcon;
   BitmapDescriptor? _collegeIcon;
+  BitmapDescriptor? _trainStopIcon; // New icon for train stops
 
   static const CameraPosition _initialPosition = CameraPosition(
     target: LatLng(49.589633, 34.551417), // Полтава center
@@ -33,18 +34,19 @@ class _StopSelectorScreenState extends State<StopSelectorScreen> {
     _loadResources();
   }
 
-  // Синхронізуємо завантаження ресурсів
+  // Update resource loading to include the new train icon
   Future<void> _loadResources() async {
-    // Завантажуємо обидві іконки паралельно
+    // Load all icons in parallel
     await Future.wait([
       _createBusStopIcon(),
+      _createTrainStopIcon(), // Add this new method call
       _createCollegeIcon(),
     ]);
     
-    // Завантажуємо станції тільки після готовності іконок
+    // Load stations after icons are ready
     await _loadStations();
     
-    // Створюємо маркери
+    // Create markers
     _createMarkers();
   }
 
@@ -74,7 +76,7 @@ class _StopSelectorScreenState extends State<StopSelectorScreen> {
 
     // Малюємо рамку
     final borderPaint = Paint()
-      ..color = const Color(0xFFFFFFFF)
+      ..color = const Color(0xff9ed58b)
       ..strokeWidth = 3 // Зменшуємо товщину (було 4)
       ..style = PaintingStyle.stroke;
     
@@ -114,6 +116,72 @@ class _StopSelectorScreenState extends State<StopSelectorScreen> {
       final Uint8List uint8List = byteData.buffer.asUint8List();
       setState(() {
         _busStopIcon = BitmapDescriptor.fromBytes(uint8List);
+      });
+    }
+  }
+
+  // New method for train stop icon
+  Future<void> _createTrainStopIcon() async {
+    final recorder = ui.PictureRecorder();
+    const size = 75.0;
+    final canvas = Canvas(recorder, Rect.fromLTWH(0, 0, size, size));
+    
+    const padding = 15.0;
+    const squareSize = 45.0;
+    
+    // Background with different color for train stations
+    final bgPaint = Paint()
+      ..color = const Color.fromARGB(255, 61, 61, 61)
+      ..style = PaintingStyle.fill;
+    
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(padding, padding, squareSize, squareSize),
+        const Radius.circular(7),
+      ),
+      bgPaint,
+    );
+
+    // Orange border for train stops
+    final borderPaint = Paint()
+      ..color = const Color(0xFF9FE3FE)
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke;
+    
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(padding, padding, squareSize, squareSize),
+        const Radius.circular(10),
+      ),
+      borderPaint,
+    );
+    
+    // Train icon instead of bus
+    final textPainter = TextPainter(
+      textDirection: TextDirection.ltr,
+    );
+    
+    textPainter.text = TextSpan(
+      text: String.fromCharCode(Icons.train.codePoint),
+      style: TextStyle(
+        fontSize: 30,
+        color: const Color.fromARGB(255, 255, 255, 255),
+        fontFamily: Icons.train.fontFamily,
+      ),
+    );
+    
+    textPainter.layout();
+    final double iconX = padding + (squareSize - textPainter.width) / 2;
+    final double iconY = padding + (squareSize - textPainter.height) / 2;
+    textPainter.paint(canvas, Offset(iconX, iconY));
+    
+    final ui.Image image = await recorder.endRecording().toImage(size.toInt(), size.toInt());
+    final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    
+    if (byteData != null) {
+      final Uint8List uint8List = byteData.buffer.asUint8List();
+      setState(() {
+        _trainStopIcon = BitmapDescriptor.fromBytes(uint8List);
       });
     }
   }
@@ -204,16 +272,24 @@ class _StopSelectorScreenState extends State<StopSelectorScreen> {
     });
   }
 
+  // Update the marker creation logic to check for train data
   void _createMarkers() {
-    // Очищуємо існуючі маркери перед додаванням нових
+    // Clear existing markers before adding new ones
     _markers.clear();
     
-    // Markers зупинок з кастомною іконкою
+    // Markers for stops with custom icon
     _stations.forEach((key, value) {
       final stationData = value as List;
       final lat = stationData[0] / 1000000.0;
       final lng = stationData[1] / 1000000.0;
       final name = stationData[2] as String;
+      
+      // Check if this station has train data
+      bool hasTrainData = false;
+      if (stationData.length > 3 && stationData[3] is Map) {
+        final additionalData = stationData[3] as Map;
+        hasTrainData = additionalData.containsKey('train');
+      }
 
       _markers.add(
         Marker(
@@ -221,27 +297,30 @@ class _StopSelectorScreenState extends State<StopSelectorScreen> {
           position: LatLng(lat, lng),
           infoWindow: InfoWindow(
             title: name,
-            snippet: '(Натисніть, щоб обрати)',
+            snippet: hasTrainData 
+                ? 'Залізнична зупинка (Натисніть, щоб обрати)'
+                : '(Натисніть, щоб обрати)',
             onTap: () => Navigator.pop(context, key),
           ),
-          icon: _busStopIcon ?? BitmapDescriptor.defaultMarker,
-          zIndex: 1.0, // Звичайний z-index для зупинок
+          icon: hasTrainData 
+              ? (_trainStopIcon ?? BitmapDescriptor.defaultMarker) 
+              : (_busStopIcon ?? BitmapDescriptor.defaultMarker),
+          zIndex: 1.0,
         ),
       );
     });
     
-    // Marker коледжу з кастомною іконкою (додаємо в кінці, щоб гарантовано був зверху)
+    // College marker with custom icon (add at the end to ensure it's on top)
     _markers.add(
       Marker(
         markerId: const MarkerId('college'),
         position: const LatLng(49.58781059854736, 34.54295461180669),
         infoWindow: const InfoWindow(title: 'ПФКТ НТУ "ХПІ"'),
         icon: _collegeIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-        zIndex: 2.0, // Високий z-index, щоб завжди бути зверху
+        zIndex: 2.0,
       ),
     );
     
-    // Оновлюємо стан, щоб відобразити маркери
     setState(() {});
   }
 
@@ -249,15 +328,19 @@ class _StopSelectorScreenState extends State<StopSelectorScreen> {
     if (_mapController == null) return;
 
     // Базовий стиль для приховування зупинок транспорту
-    final String baseStyle = '''
+    const String baseStyle = '''
     [
       {
+        "featureType": "transit.station",
+        "stylers": [{ "visibility": "off" }]
+      },
+      {
         "featureType": "transit.station.bus",
-        "stylers": [
-          {
-            "visibility": "off"
-          }
-        ]
+        "stylers": [{ "visibility": "off" }]
+      },
+      {
+        "featureType": "transit.station.rail",
+        "stylers": [{ "visibility": "off" }]
       }
     ]
     ''';
@@ -300,16 +383,22 @@ class _StopSelectorScreenState extends State<StopSelectorScreen> {
       appBar: AppBar(
         title: const Text('Виберіть зупинку'),
       ),
-      body: GoogleMap(
+      body: Padding(
+        padding: const EdgeInsets.only(bottom: 16.0, left: 16.0, right: 16.0),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20.0),
+          child: GoogleMap(
         onMapCreated: _onMapCreated,
         initialCameraPosition: _initialPosition,
         markers: _markers,
         myLocationEnabled: true,
         myLocationButtonEnabled: true,
         mapType: MapType.normal,
-        zoomControlsEnabled: true,
-        compassEnabled: true,
+        zoomControlsEnabled: false,
+        compassEnabled: false,
         mapToolbarEnabled: false,
+          ),
+        ),
       ),
     );
   }
