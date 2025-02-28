@@ -22,6 +22,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:io';
 import 'dart:convert';
 import '/providers/transport_provider.dart';
+import 'package:pppc_companion/pages/transport/route_details.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -31,6 +32,7 @@ int _notificationId = 0;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await RouteDetails.loadStations();
   await Firebase.initializeApp();
   
   final fcmToken = await FirebaseMessaging.instance.getToken();

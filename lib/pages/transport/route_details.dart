@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import '../../models/routedetails.dart';
 
 class RouteDetailsScreen extends StatefulWidget {
@@ -41,23 +42,6 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
       if (routeResponse.statusCode == 200) {
         final routeData = json.decode(routeResponse.body);
         if (routeData['status'] == 'ok') {
-          final directions = routeData['data']['directions'] as List;
-          for (var direction in directions) {
-            final stops = direction['stops'] as List;
-            for (var stop in stops) {
-              final stopId = stop['stop_id'];
-              final stopResponse = await http.get(
-                Uri.parse('https://gps.easyway.info/api/city/poltava/lang/ua/stop/$stopId'),
-              );
-              
-              if (stopResponse.statusCode == 200) {
-                final stopData = json.decode(stopResponse.body);
-                if (stopData['status'] == 'ok') {
-                  stop['stop_name'] = stopData['data']['name'];
-                }
-              }
-            }
-          }
 
           setState(() {
             _routeDetails = RouteDetails.fromJson(routeData);
@@ -220,6 +204,79 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                     },
                   ),
                 ),
+    );
+  }
+}
+
+class RouteDetails {
+  final List<RouteDirection> directions;
+  static Map<String, dynamic>? _stations;
+
+  RouteDetails({required this.directions});
+
+  static Future<void> loadStations() async {
+    if (_stations != null) return;
+    
+    final String jsonString = await rootBundle.loadString('assets/json/stations.json');
+    _stations = json.decode(jsonString);
+  }
+
+  static String getStopName(String stopId) {
+    if (_stations == null) return 'Зупинка №$stopId';
+    
+    final stopData = _stations![stopId];
+    if (stopData == null || stopData.length < 3) return 'Зупинка №$stopId';
+    
+    return stopData[2] as String;
+  }
+
+  factory RouteDetails.fromJson(Map<String, dynamic> json) {
+    final directionsData = json['data']['directions'] as List;
+    return RouteDetails(
+      directions: directionsData.map((dir) => RouteDirection.fromJson(dir)).toList(),
+    );
+  }
+}
+
+class RouteDirection {
+  final int calendarTripId;
+  final int calendarId;
+  final int tripId;
+  final List<RouteStop> stops;
+
+  RouteDirection({
+    required this.calendarTripId,
+    required this.calendarId,
+    required this.tripId,
+    required this.stops,
+  });
+
+  factory RouteDirection.fromJson(Map<String, dynamic> json) {
+    return RouteDirection(
+      calendarTripId: json['calendar_trip_id'],
+      calendarId: json['calendar_id'], 
+      tripId: json['trip_id'],
+      stops: (json['stops'] as List).map((stop) => RouteStop.fromJson(stop)).toList(),
+    );
+  }
+}
+
+class RouteStop {
+  final int stopId;
+  final String stopName;
+  final List<StopTime> times;
+
+  RouteStop({
+    required this.stopId,
+    required this.stopName,
+    required this.times,
+  });
+
+  factory RouteStop.fromJson(Map<String, dynamic> json) {
+    return RouteStop(
+      stopId: json['stop_id'],
+      stopName: RouteDetails.getStopName(json['stop_id'].toString()),
+      times: (json['times'] as List).map((time) => StopTime.fromJson(time)).toList(),
     );
   }
 }
