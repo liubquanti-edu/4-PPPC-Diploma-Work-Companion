@@ -33,6 +33,7 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
   Set<Marker> _markers = {};
   Set<Polyline> _polylines = {};
   BitmapDescriptor? _busStopIcon;
+  BitmapDescriptor? _trainStopIcon;
 
   // Видалити змінні для відслідковування прокрутки
   final ScrollController _scrollController = ScrollController();
@@ -46,8 +47,8 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
     super.initState();
     _initializeMapRenderer();
     _loadRouteDetails();
-    _createBusStopIcon();
     _loadMapStyles(); // Завантажуємо обидва стилі
+    _loadIcons(); // Новий метод для завантаження іконок
   }
 
   void _initializeMapRenderer() {
@@ -55,6 +56,13 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
     if (mapsImplementation is GoogleMapsFlutterAndroid) {
       mapsImplementation.useAndroidViewSurface = true; 
     }
+  }
+
+  Future<void> _loadIcons() async {
+    await Future.wait([
+      _createBusStopIcon(),
+      _createTrainStopIcon(),
+    ]);
   }
 
   Future<void> _createBusStopIcon() async {
@@ -79,10 +87,18 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
 
     final borderPaint = Paint()
       ..color = widget.transportName == 'Тролейбус'
-          ? const Color(0xFFA2C9FE)
-          : widget.transportName == 'Автобус'
-              ? const Color(0xff9ed58b)
-              : const Color(0xfffeb49f)
+            ? const Color(0xFFA2C9FE)
+            : widget.transportName == 'Автобус'
+          ? const Color(0xff9ed58b)
+          : widget.transportName == 'Маршрутка'
+              ? const Color(0xfffeb49f)
+              : widget.transportName == 'Поїзд'
+            ? const Color(0xFFC39FFE)
+            : widget.transportName == 'Електричка'
+                ? const Color(0xFF9FE3FE)
+                : widget.transportName == 'Міжміський'
+              ? const Color(0xFFFEF89F)
+              : const Color(0xFFFE9F9F)
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke;
     
@@ -118,6 +134,69 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
     if (byteData != null) {
       setState(() {
         _busStopIcon = BitmapDescriptor.fromBytes(byteData.buffer.asUint8List());
+      });
+    }
+  }
+
+  Future<void> _createTrainStopIcon() async {
+    final recorder = ui.PictureRecorder();
+    const size = 75.0;
+    final canvas = Canvas(recorder, Rect.fromLTWH(0, 0, size, size));
+    
+    const padding = 15.0;
+    const squareSize = 45.0;
+    
+    final bgPaint = Paint()
+      ..color = const Color.fromARGB(255, 61, 61, 61)
+      ..style = PaintingStyle.fill;
+    
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(padding, padding, squareSize, squareSize),
+        const Radius.circular(7),
+      ),
+      bgPaint,
+    );
+
+    final borderPaint = Paint()
+      ..color = widget.transportName == 'Поїзд'
+        ? const Color(0xFFC39FFE)
+        : const Color(0xFF9FE3FE)
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke;
+    
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(padding, padding, squareSize, squareSize),
+        const Radius.circular(10),
+      ),
+      borderPaint,
+    );
+    
+    final textPainter = TextPainter(
+      textDirection: TextDirection.ltr,
+    );
+    
+    textPainter.text = TextSpan(
+      text: String.fromCharCode(Icons.train.codePoint),
+      style: TextStyle(
+        fontSize: 30,
+        color: const Color.fromARGB(255, 255, 255, 255),
+        fontFamily: Icons.train.fontFamily,
+      ),
+    );
+    
+    textPainter.layout();
+    final double iconX = padding + (squareSize - textPainter.width) / 2;
+    final double iconY = padding + (squareSize - textPainter.height) / 2;
+    textPainter.paint(canvas, Offset(iconX, iconY));
+    
+    final image = await recorder.endRecording().toImage(size.toInt(), size.toInt());
+    final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    
+    if (byteData != null) {
+      setState(() {
+        _trainStopIcon = BitmapDescriptor.fromBytes(byteData.buffer.asUint8List());
       });
     }
   }
@@ -173,13 +252,23 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
           
           polylinePoints.add(position);
           
-          // Додаємо маркер тільки якщо його ще немає
+          // Перевіряємо чи це залізнична станція
+          bool isTrainStation = stopData.length > 3 && 
+              stopData[3] is Map && 
+              (stopData[3] as Map).containsKey('train');
+
           if (!_markers.any((m) => m.markerId.value == 'stop_${stop.stopId}')) {
             _markers.add(Marker(
               markerId: MarkerId('stop_${stop.stopId}'),
               position: position,
-              icon: _busStopIcon ?? BitmapDescriptor.defaultMarker,
-              infoWindow: InfoWindow(title: stop.stopName),
+              icon: isTrainStation 
+                  ? (_trainStopIcon ?? BitmapDescriptor.defaultMarker)
+                  : (_busStopIcon ?? BitmapDescriptor.defaultMarker),
+              anchor: const Offset(0.5, 0.5), // Додати цей параметр
+              infoWindow: InfoWindow(
+                title: stop.stopName,
+                snippet: isTrainStation ? 'Залізнична зупинка' : null,
+              ),
             ));
           }
         }
@@ -191,8 +280,16 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
         color: widget.transportName == 'Тролейбус'
             ? const Color(0xFFA2C9FE)
             : widget.transportName == 'Автобус'
-                ? const Color(0xff9ed58b)
-                : const Color(0xfffeb49f),
+          ? const Color(0xff9ed58b)
+          : widget.transportName == 'Маршрутка'
+              ? const Color(0xfffeb49f)
+              : widget.transportName == 'Поїзд'
+            ? const Color(0xFFC39FFE)
+            : widget.transportName == 'Електричка'
+                ? const Color(0xFF9FE3FE)
+                : widget.transportName == 'Міжміський'
+              ? const Color(0xFFFEF89F)
+              : const Color(0xFFFE9F9F),
         width: 3,
       ));
     }
@@ -249,10 +346,30 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
 
   // Завантаження обох стилів карти
   Future<void> _loadMapStyles() async {
-    _darkMapStyle = await rootBundle.loadString('assets/json/darkmap.json');
-    // Можна залишити стандартний стиль для світлої теми
-    // або створити окремий файл lightmap.json
-    _lightMapStyle = null; 
+    final String darkMapStyle = await rootBundle.loadString('assets/json/darkmap.json');
+  
+    // Перетворюємо JSON у Map
+    final List<dynamic> darkStyles = json.decode(darkMapStyle);
+    
+    // Додаємо нові стилі для приховання стандартних маркерів зупинок
+    darkStyles.addAll([
+      {
+        "featureType": "transit.station",
+        "stylers": [{"visibility": "off"}]
+      },
+      {
+        "featureType": "transit.station.bus",
+        "stylers": [{"visibility": "off"}]
+      },
+      {
+        "featureType": "transit.station.rail", 
+        "stylers": [{"visibility": "off"}]
+      }
+    ]);
+
+    // Зберігаємо оновлені стилі
+    _darkMapStyle = json.encode(darkStyles);
+    _lightMapStyle = null; // або аналогічно для світлої теми
   }
 
   // Оновлений метод _onMapCreated
@@ -337,22 +454,26 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                               children: [
                                 const Divider(),
                                 Center(
-                                  child: Column(
-                                    children: [
-                                      Text(
-                                        '${direction.stops.first.stopName}',
-                                        style: Theme.of(context).textTheme.titleLarge,
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Icon(Icons.arrow_downward),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        '${direction.stops.last.stopName}',
-                                        style: Theme.of(context).textTheme.titleLarge,
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ],
+                                  child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          direction.stops.first.stopName,
+                                          style: Theme.of(context).textTheme.titleMedium,
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        const Icon(Icons.arrow_forward_rounded),
+                                        const SizedBox(width: 8), 
+                                        Text(
+                                          direction.stops.last.stopName,
+                                          style: Theme.of(context).textTheme.titleMedium,
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                                 const Divider(),
@@ -369,23 +490,48 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                           child: Row(
                                             children: [
-                                              SvgPicture.asset(
-                                                widget.transportName == 'Тролейбус'
-                                                    ? 'assets/svg/transport/trolleybus.svg'
-                                                    : widget.transportName == 'Автобус'
-                                                        ? 'assets/svg/transport/bus.svg'
-                                                        : widget.transportName == 'Маршрутка'
-                                                            ? 'assets/svg/transport/route.svg'
-                                                            : 'assets/svg/transport/bus.svg',
-                                                width: 24,
-                                                color: widget.transportName == 'Тролейбус'
-                                                    ? const Color(0xFFA2C9FE)
-                                                    : widget.transportName == 'Автобус'
-                                                        ? const Color(0xff9ed58b)
-                                                        : widget.transportName == 'Маршрутка'
-                                                            ? const Color(0xfffeb49f)
-                                                            : const Color(0xFFFE9F9F),
-                                              ),
+                                                if (widget.transportName == 'Тролейбус')
+                                                  SvgPicture.asset(
+                                                    'assets/svg/transport/trolleybus.svg',
+                                                    width: 24,
+                                                    color: const Color(0xFFA2C9FE),
+                                                  )
+                                                else if (widget.transportName == 'Автобус')
+                                                  SvgPicture.asset(
+                                                    'assets/svg/transport/bus.svg',
+                                                    width: 24,
+                                                    color: const Color(0xff9ed58b),
+                                                  )
+                                                else if (widget.transportName == 'Маршрутка')
+                                                  SvgPicture.asset(
+                                                    'assets/svg/transport/route.svg',
+                                                    width: 24,
+                                                    color: const Color(0xfffeb49f),
+                                                  )
+                                                else if (widget.transportName == 'Поїзд')
+                                                  SvgPicture.asset(
+                                                    'assets/svg/transport/train.svg',
+                                                    width: 24,
+                                                    color: const Color(0xFFC39FFE),
+                                                  )
+                                                else if (widget.transportName == 'Електричка')
+                                                  SvgPicture.asset(
+                                                    'assets/svg/transport/regional.svg',
+                                                    width: 24,
+                                                    color: const Color(0xFF9FE3FE),
+                                                  )
+                                                else if (widget.transportName == 'Міжміський')
+                                                  SvgPicture.asset(
+                                                    'assets/svg/transport/intercity.svg',
+                                                    width: 30,
+                                                    color: const Color(0xFFFEF89F),
+                                                  )
+                                                else
+                                                  SvgPicture.asset(
+                                                    'assets/svg/transport/bus.svg',
+                                                    width: 24,
+                                                    color: const Color(0xFFFE9F9F),
+                                                  ),
                                               const SizedBox(width: 8),
                                               Expanded(
                                                 child: Text(
