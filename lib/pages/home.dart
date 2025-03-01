@@ -677,7 +677,11 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                       ),
                       child: InkWell(
                         borderRadius: BorderRadius.circular(10.0),
-                    onTap: () => _launchUrl('https://openweathermap.org/city/696643'),
+                    onTap: () async {
+                      await Future.delayed(const Duration(milliseconds: 300));
+                      if (!mounted) return;
+                      _launchUrl('https://openweathermap.org/city/696643');
+                    },
                     child: Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: SizedBox(
@@ -851,7 +855,11 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                           ),
                           child: InkWell(
                             borderRadius: BorderRadius.circular(10.0),
-                            onTap: () => _launchUrl('https://alerts.in.ua'),
+                            onTap: () async {
+                              await Future.delayed(const Duration(milliseconds: 300));
+                              if (!mounted) return;
+                              _launchUrl('https://alerts.in.ua');
+                            },
                             child: Padding(
                               padding: const EdgeInsets.all(10.0),
                               child: alertProvider.isLoading
@@ -1090,7 +1098,9 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                           ),
                                           child: InkWell(
                                           borderRadius: BorderRadius.circular(10.0),
-                                          onTap: () {
+                                            onTap: () async {
+                                            await Future.delayed(const Duration(milliseconds: 300));
+                                            if (!mounted) return;
                                             Navigator.push(
                                             context,
                                             MaterialPageRoute(
@@ -1339,12 +1349,16 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                 customBorder: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                onTap: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => NewsDetailScreen(newsItem: newsItem),
-                                  ),
-                                ),
+                                onTap: () async {
+                                  await Future.delayed(const Duration(milliseconds: 300));  
+                                  if (!mounted) return;
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => NewsDetailScreen(newsItem: newsItem),
+                                    ),
+                                  );
+                                },
                                 child: Ink(
                                   padding: const EdgeInsets.all(10.0),
                                   decoration: BoxDecoration(

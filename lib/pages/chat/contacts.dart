@@ -220,7 +220,8 @@ class _ChatsPageState extends State<ChatsPage> {
       padding: const EdgeInsets.only(bottom: 5),
       child: InkWell(
         borderRadius: BorderRadius.circular(100),
-        onTap: () {
+        onTap: () async {
+          await Future.delayed(const Duration(milliseconds: 300));
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -374,15 +375,16 @@ class UserSearchDelegate extends SearchDelegate<String> {
               leading: UserAvatar(userId: users[index].id),
               title: Text('${userData['surname']} ${userData['name']}'),
               subtitle: Text('@${userData['nickname']}'),
-              onTap: () {
+                onTap: () async {
+                await Future.delayed(const Duration(milliseconds: 300));
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ChatScreen(
-                      recipientId: users[index].id,
-                      recipientName: '${userData['surname']} ${userData['name']}',
-                      recipientAvatar: userData['avatar'] ?? '',
-                    ),
+                  builder: (context) => ChatScreen(
+                    recipientId: users[index].id,
+                    recipientName: '${userData['surname']} ${userData['name']}',
+                    recipientAvatar: userData['avatar'] ?? '',
+                  ),
                   ),
                 );
               },

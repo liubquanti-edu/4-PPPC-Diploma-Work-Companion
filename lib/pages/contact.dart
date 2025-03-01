@@ -44,10 +44,13 @@ class _ContactPageState extends State<ContactPage> with SingleTickerProviderStat
         actions: [
           IconButton(
             icon: const Icon(Icons.chat),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const ChatsPage()),
-            ),
+            onPressed: () async {
+              await Future.delayed(const Duration(milliseconds: 300));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ChatsPage()),
+              );
+            },
           ),
         ],
         bottom: TabBar(
@@ -59,10 +62,13 @@ class _ContactPageState extends State<ContactPage> with SingleTickerProviderStat
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const CreatePostScreen()),
-        ),
+        onPressed: () async {
+          await Future.delayed(const Duration(milliseconds: 300));
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const CreatePostScreen()),
+          );
+        },
         child: const Icon(Icons.add),
       ),
       body: TabBarView(
@@ -141,7 +147,8 @@ class __AllPostsTabState extends State<_AllPostsTab> with AutomaticKeepAliveClie
         customBorder: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
-        onTap: () {
+        onTap: () async {
+          await Future.delayed(const Duration(milliseconds: 300));
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -171,14 +178,17 @@ class __AllPostsTabState extends State<_AllPostsTab> with AutomaticKeepAliveClie
                     customBorder: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(60),
                     ),
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => UserProfilePage(
-                          userId: post['authorId'],
+                    onTap: () async {
+                      await Future.delayed(const Duration(milliseconds: 300));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => UserProfilePage(
+                            userId: post['authorId'],
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                     child: Row(
                       children: [
                         UserAvatar(
@@ -488,7 +498,8 @@ class __FollowingPostsTabState extends State<_FollowingPostsTab> with AutomaticK
         customBorder: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
-        onTap: () {
+        onTap: () async {
+          await Future.delayed(const Duration(milliseconds: 300));
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -518,14 +529,17 @@ class __FollowingPostsTabState extends State<_FollowingPostsTab> with AutomaticK
                     customBorder: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(60),
                     ),
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => UserProfilePage(
-                          userId: post['authorId'],
+                    onTap: () async {
+                      await Future.delayed(const Duration(milliseconds: 300));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => UserProfilePage(
+                            userId: post['authorId'],
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                     child: Row(
                       children: [
                         UserAvatar(

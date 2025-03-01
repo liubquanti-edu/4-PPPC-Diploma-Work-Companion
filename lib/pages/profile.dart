@@ -168,6 +168,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       onTap: () async {
+                        await Future.delayed(const Duration(milliseconds: 300));
                         await Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -235,7 +236,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       customBorder: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      onTap: () {
+                        onTap: () async {
+                        await Future.delayed(const Duration(milliseconds: 300));
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -296,7 +298,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       customBorder: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      onTap: () {
+                        onTap: () async {
+                        await Future.delayed(const Duration(milliseconds: 300));
                         Navigator.push(
                           context, 
                           MaterialPageRoute(
@@ -357,7 +360,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       customBorder: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      onTap: () {
+                        onTap: () async {
+                        await Future.delayed(const Duration(milliseconds: 300));
                       
                       },
                       child: Ink(
@@ -413,7 +417,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       customBorder: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                       ),
-                      onTap: () async {
+                        onTap: () async {
+                        await Future.delayed(const Duration(milliseconds: 300));
                       final Uri url = Uri.parse('https://t.me/pppccsbot');
                       if (!await launchUrl(url)) {
                         if (context.mounted) {
@@ -479,7 +484,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       customBorder: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      onTap: () {
+                        onTap: () async {
+                        await Future.delayed(const Duration(milliseconds: 300));
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => const AboutPage()),
@@ -538,7 +544,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       customBorder: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      onTap: () async {
+                        onTap: () async {
+                        await Future.delayed(const Duration(milliseconds: 300));
                         bool confirmSignOut = await showDialog(
                           context: context,
                           builder: (BuildContext context) {
