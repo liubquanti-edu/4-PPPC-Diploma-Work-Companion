@@ -26,7 +26,7 @@ class _StopSelectorScreenState extends State<StopSelectorScreen> {
   BitmapDescriptor? _trainStopIcon; // New icon for train stops
 
   static const CameraPosition _initialPosition = CameraPosition(
-    target: LatLng(49.589633, 34.551417), // Полтава center
+    target: LatLng(49.58781059854736, 34.54295461180669),
     zoom: 13,
   );
 
@@ -319,6 +319,7 @@ class _StopSelectorScreenState extends State<StopSelectorScreen> {
                 : '(Натисніть, щоб обрати)',
             onTap: () => Navigator.pop(context, key),
           ),
+          anchor: const Offset(0.5, 0.5),
           icon: hasTrainData 
               ? (_trainStopIcon ?? BitmapDescriptor.defaultMarker) 
               : (_busStopIcon ?? BitmapDescriptor.defaultMarker),
@@ -335,6 +336,7 @@ class _StopSelectorScreenState extends State<StopSelectorScreen> {
         infoWindow: const InfoWindow(title: 'ПФКТ НТУ "ХПІ"'),
         icon: _collegeIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
         zIndex: 2.0,
+        anchor: const Offset(0.5, 0.5),
       ),
     );
     

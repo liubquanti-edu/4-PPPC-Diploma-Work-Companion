@@ -396,7 +396,7 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                           onMapCreated: _onMapCreated,
                           initialCameraPosition: const CameraPosition(
                             target: LatLng(49.589633, 34.551417),
-                            zoom: 12,
+                            zoom: 11,
                           ),
                           markers: _markers,
                           polylines: _polylines,
