@@ -2,7 +2,6 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/window_buttons.dart';
 import 'home.dart';
 
@@ -17,22 +16,10 @@ class _LoginScreenState extends State<LoginScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   bool isLoading = false;
-  static const String _emailKey = 'last_email';
 
   @override
   void initState() {
     super.initState();
-    _loadSavedEmail();
-  }
-
-  Future<void> _loadSavedEmail() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedEmail = prefs.getString(_emailKey);
-    if (savedEmail != null && mounted) {
-      setState(() {
-        emailController.text = savedEmail;
-      });
-    }
   }
 
   Future<void> _handleLogin() async {
