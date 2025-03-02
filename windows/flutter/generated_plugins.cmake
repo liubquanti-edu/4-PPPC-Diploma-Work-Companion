@@ -8,6 +8,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   firebase_auth
   firebase_core
   screen_retriever
+  system_theme
   window_manager
 )
 
