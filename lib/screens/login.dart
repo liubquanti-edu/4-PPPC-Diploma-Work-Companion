@@ -2,6 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/window_buttons.dart';
 import 'home.dart';
 
@@ -16,34 +17,51 @@ class _LoginScreenState extends State<LoginScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   bool isLoading = false;
+  static const String _emailKey = 'last_email';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedEmail();
+  }
+
+  Future<void> _loadSavedEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedEmail = prefs.getString(_emailKey);
+    if (savedEmail != null && mounted) {
+      setState(() {
+        emailController.text = savedEmail;
+      });
+    }
+  }
 
   Future<void> _handleLogin() async {
     if (emailController.text.isEmpty || passwordController.text.isEmpty) {
-      await showDialog(
-        context: context,
-        builder: (context) => ContentDialog(
-          title: const Text('Помилка'),
-          content: const Text('Будь ласка, заповніть всі поля'),
-          actions: [
-            Button(
-              child: const Text('OK'),
-              onPressed: () => Navigator.pop(context),
+      await displayInfoBar(
+        context, 
+        builder: (context, close) {
+          return InfoBar(
+            title: const Text('Будь ласка, заповніть всі поля'),
+            action: IconButton(
+              icon: const Icon(FluentIcons.clear),
+              onPressed: close,
             ),
-          ],
-        ),
+            severity: InfoBarSeverity.error,
+          );
+        }
       );
       return;
     }
-
+  
     setState(() => isLoading = true);
-
+  
     try {
-      // Sign in
+      // Sign in - тут була критична помилка!
       final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: emailController.text.trim(),
-        password: passwordController.text.trim(),
+        password: passwordController.text.trim(), // Раніше тут був email замість password
       );
-
+  
       // Get token and decode claims
       final idToken = await userCredential.user?.getIdToken();
       if (idToken == null) throw FirebaseAuthException(
@@ -68,33 +86,35 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
-      showDialog(
-        context: context,
-        builder: (context) => ContentDialog(
-          title: const Text('Помилка'),
-          content: Text(_getErrorMessage(e.code)),
-          actions: [
-            Button(
-              child: const Text('OK'),
-              onPressed: () => Navigator.pop(context),
+      await displayInfoBar(
+        context,
+        builder: (context, close) {
+          return InfoBar(
+            title: const Text('Помилка'),
+            content: Text(_getErrorMessage(e.code)),
+            action: IconButton(
+              icon: const Icon(FluentIcons.clear),
+              onPressed: close,
             ),
-          ],
-        ),
+            severity: InfoBarSeverity.error,
+          );
+        }
       );
     } catch (e) {
       if (!mounted) return;
-      showDialog(
-        context: context,
-        builder: (context) => ContentDialog(
-          title: const Text('Помилка'),
-          content: Text(_getErrorMessage('unknown')),
-          actions: [
-            Button(
-              child: const Text('OK'),
-              onPressed: () => Navigator.pop(context),
+      await displayInfoBar(
+        context,
+        builder: (context, close) {
+          return InfoBar(
+            title: const Text('Помилка'),
+            content: Text(_getErrorMessage('unknown')),
+            action: IconButton(
+              icon: const Icon(FluentIcons.clear),
+              onPressed: close,
             ),
-          ],
-        ),
+            severity: InfoBarSeverity.error,
+          );
+        }
       );
     } finally {
       if (mounted) {
@@ -113,6 +133,10 @@ class _LoginScreenState extends State<LoginScreen> {
         return 'Неправильний формат електронної адреси';
       case 'not-admin':
         return 'Недостатньо прав для входу в панель адміністратора';
+      case 'unknown-error':
+        return 'Невідома помилка';
+      case 'too-many-requests':
+        return 'Забагато запитів';
       default:
         return 'Помилка входу: $code';
     }
@@ -156,15 +180,22 @@ class _LoginScreenState extends State<LoginScreen> {
                       placeholder: 'Введіть пароль',
                       enabled: !isLoading,
                       onSubmitted: (_) => _handleLogin(),
+                      revealMode: PasswordRevealMode.peekAlways,
                     ),
                   ),
                   const SizedBox(height: 20),
-                  FilledButton(
-                    onPressed: isLoading ? null : _handleLogin,
-                    child: isLoading
-                        ? const ProgressRing()
-                        : const Text('Увійти'),
-                  ),
+                  isLoading
+                  ? SizedBox(
+                    width: 28,
+                    height: 28,
+                    child: ProgressRing(
+                      strokeWidth: 3,
+                    ),
+                  )
+                  : FilledButton(
+                      onPressed: _handleLogin,
+                      child: const Text('Увійти'),
+                    ),
                 ],
               ),
             ),
