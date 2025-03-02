@@ -6,6 +6,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import '../widgets/window_buttons.dart';
 import 'login.dart';
+import 'education.dart';
+import 'students.dart';
+import 'teachers.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -289,7 +292,10 @@ class _HomePageState extends State<HomePage> {
                     style: ButtonStyle(
                       padding: WidgetStateProperty.all(const EdgeInsets.all(50)),
                     ),
-                    onPressed: () => _showEmergencyDialog(context),
+                    onPressed: () => Navigator.push(
+                      context,
+                      FluentPageRoute(builder: (context) => const EducationScreen()),
+                    ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: const [
@@ -312,7 +318,10 @@ class _HomePageState extends State<HomePage> {
                     style: ButtonStyle(
                       padding: WidgetStateProperty.all(const EdgeInsets.all(50)),
                     ),
-                    onPressed: () => _showEmergencyDialog(context),
+                    onPressed: () => Navigator.push(
+                      context,
+                      FluentPageRoute(builder: (context) => const StudentsScreen()),
+                    ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: const [
@@ -335,7 +344,10 @@ class _HomePageState extends State<HomePage> {
                     style: ButtonStyle(
                       padding: WidgetStateProperty.all(const EdgeInsets.all(50)),
                     ),
-                    onPressed: () => _showEmergencyDialog(context),
+                    onPressed: () => Navigator.push(
+                      context,
+                      FluentPageRoute(builder: (context) => const TeachersScreen()),
+                    ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min, 
                       children: const [
