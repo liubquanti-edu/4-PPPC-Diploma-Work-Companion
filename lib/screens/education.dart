@@ -239,9 +239,21 @@ class _EducationScreenState extends State<EducationScreen> {
                           style: FluentTheme.of(context).typography.subtitle,
                         ),
                         const Spacer(),
-                        FilledButton(
-                          child: const Text('Редагувати'),
-                          onPressed: () => _showEditSpecialisationDialog(context, doc),
+                        Row(
+                          children: [
+                            FilledButton(
+                              child: const Text('Редагувати'),
+                              onPressed: () => _showEditSpecialisationDialog(context, doc),
+                            ),
+                            const SizedBox(width: 8),
+                            FilledButton(
+                              style: ButtonStyle(
+                                backgroundColor: ButtonState.all(Colors.red.light),
+                              ),
+                              child: const Text('Видалити'),
+                              onPressed: () => _deleteSpecialisation(context, doc),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -479,6 +491,778 @@ class _EducationScreenState extends State<EducationScreen> {
     descriptionController.dispose();
   }
 
+  Widget _buildCycleCommissionsView() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('cyclecommission')
+          .orderBy('name')
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(
+            child: Text('Помилка: ${snapshot.error}'),
+          );
+        }
+
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: ProgressRing(),
+          );
+        }
+
+        final docs = snapshot.data!.docs;
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Wrap(
+            spacing: 16,
+            runSpacing: 16,
+            alignment: WrapAlignment.start,
+            children: [
+              ...docs.map((doc) {
+                final data = doc.data() as Map<String, dynamic>;
+                return SizedBox(
+                  width: 300,
+                  height: 200,
+                  child: Card(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                        children: [
+                        Text(
+                          data['name'] ?? '',
+                          style: FluentTheme.of(context).typography.subtitle,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          data['description'] ?? '',
+                          style: FluentTheme.of(context).typography.body,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const Spacer(),
+                        Row(
+                          children: [
+                            FilledButton(
+                              child: const Text('Редагувати'),
+                              onPressed: () => _showEditCycleCommissionDialog(context, doc),
+                            ),
+                            const SizedBox(width: 8),
+                            FilledButton(
+                              style: ButtonStyle(
+                                backgroundColor: ButtonState.all(Colors.red.light),
+                              ),
+                              child: const Text('Видалити'),
+                              onPressed: () => _deleteCycleCommission(context, doc),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+                }).toList(),
+                GestureDetector(
+                onTap: () => _showCreateCycleCommissionDialog(context),
+                child: SizedBox(
+                  width: 300,
+                  height: 200,
+                  child: Card(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                    Icon(
+                      FluentIcons.add,
+                      size: 48,
+                    ),
+                    SizedBox(height: 8),
+                    Text('Нова циклова комісія'),
+                    ],
+                  ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _showCreateCycleCommissionDialog(BuildContext context) async {
+    final nameController = TextEditingController();
+    final descriptionController = TextEditingController();
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => ContentDialog(
+        title: const Text('Створення циклової комісії'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            InfoLabel(
+              label: 'Назва',
+              child: TextBox(
+                controller: nameController,
+                placeholder: 'Введіть назву циклової комісії',
+              ),
+            ),
+            const SizedBox(height: 8),
+            InfoLabel(
+              label: 'Опис',
+              child: TextBox(
+                controller: descriptionController,
+                placeholder: 'Введіть опис циклової комісії',
+                maxLines: 3,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          Button(
+            child: const Text('Скасувати'),
+            onPressed: () => Navigator.pop(context, false),
+          ),
+          FilledButton(
+            child: const Text('Створити'),
+            onPressed: () => Navigator.pop(context, true),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      try {
+        await FirebaseFirestore.instance.collection('cyclecommission').add({
+          'name': nameController.text,
+          'description': descriptionController.text,
+        });
+
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Успіх'),
+              content: const Text('Циклову комісію створено'),
+              severity: InfoBarSeverity.success,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      } catch (e) {
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Помилка'),
+              content: Text(e.toString()),
+              severity: InfoBarSeverity.error,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      }
+    }
+
+    nameController.dispose();
+    descriptionController.dispose();
+  }
+
+  Future<void> _showEditCycleCommissionDialog(BuildContext context, DocumentSnapshot doc) async {
+    final data = doc.data() as Map<String, dynamic>;
+    final nameController = TextEditingController(text: data['name'] ?? '');
+    final descriptionController = TextEditingController(text: data['description'] ?? '');
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => ContentDialog(
+        title: const Text('Редагування циклової комісії'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            InfoLabel(
+              label: 'Назва',
+              child: TextBox(
+                controller: nameController,
+                placeholder: 'Введіть назву циклової комісії',
+              ),
+            ),
+            const SizedBox(height: 8),
+            InfoLabel(
+              label: 'Опис',
+              child: TextBox(
+                controller: descriptionController,
+                placeholder: 'Введіть опис циклової комісії',
+                maxLines: 3,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          Button(
+            child: const Text('Скасувати'),
+            onPressed: () => Navigator.pop(context, false),
+          ),
+          FilledButton(
+            child: const Text('Зберегти'),
+            onPressed: () => Navigator.pop(context, true),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      try {
+        await doc.reference.update({
+          'name': nameController.text,
+          'description': descriptionController.text,
+        });
+
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Успіх'),
+              content: const Text('Циклову комісію оновлено'),
+              severity: InfoBarSeverity.success,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      } catch (e) {
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Помилка'),
+              content: Text(e.toString()),
+              severity: InfoBarSeverity.error,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      }
+    }
+
+    nameController.dispose();
+    descriptionController.dispose();
+  }
+
+  Widget _buildDisciplinesView() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('cyclecommission')
+          .orderBy('name')
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(
+            child: Text('Помилка: ${snapshot.error}'),
+          );
+        }
+
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: ProgressRing(),
+          );
+        }
+
+        final commissions = snapshot.data!.docs;
+
+        return ListView.builder(
+          itemCount: commissions.length,
+          itemBuilder: (context, index) {
+            final commission = commissions[index];
+            final commissionData = commission.data() as Map<String, dynamic>;
+
+            return Expander(
+              leading: const Icon(FluentIcons.education),
+              header: Text(
+                commissionData['name'] ?? '',
+                style: FluentTheme.of(context).typography.subtitle,
+              ),
+              content: StreamBuilder<QuerySnapshot>(
+                stream: commission.reference
+                    .collection('subjects')
+                    .orderBy('name')
+                    .snapshots(),
+                builder: (context, subjectsSnapshot) {
+                  if (subjectsSnapshot.hasError) {
+                    return Text('Помилка: ${subjectsSnapshot.error}');
+                  }
+
+                  if (subjectsSnapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: ProgressRing());
+                  }
+
+                  final subjects = subjectsSnapshot.data!.docs;
+
+                  return Wrap(
+                    spacing: 16,
+                    runSpacing: 16,
+                    children: [
+                      ...subjects.map((subject) {
+                        final subjectData = subject.data() as Map<String, dynamic>;
+                        return SizedBox(
+                          width: 300,
+                          height: 200,
+                          child: Card(
+                            padding: const EdgeInsets.all(24),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                                children: [
+                                Text(
+                                  subjectData['name'] ?? '',
+                                  style: FluentTheme.of(context).typography.subtitle,
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  subjectData['description'] ?? '',
+                                  style: FluentTheme.of(context).typography.body,
+                                  maxLines: 3,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const Spacer(),
+                                Row(
+                                  children: [
+                                    FilledButton(
+                                      child: const Text('Редагувати'),
+                                      onPressed: () => _showEditSubjectDialog(
+                                        context, 
+                                        commission.reference,
+                                        subject,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    FilledButton(
+                                      style: ButtonStyle(
+                                        backgroundColor: ButtonState.all(Colors.red.light),
+                                      ),
+                                      child: const Text('Видалити'),
+                                      onPressed: () => _deleteSubject(context, commission.reference, subject),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                      GestureDetector(
+                        onTap: () => _showCreateSubjectDialog(context, commission.reference),
+                        child: SizedBox(
+                          width: 300,
+                          height: 200,
+                          child: Card(
+                            padding: const EdgeInsets.all(24),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                Icon(
+                                  FluentIcons.add,
+                                  size: 48,
+                                ),
+                                SizedBox(height: 8),
+                                Text('Нова дисципліна'),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _showCreateSubjectDialog(BuildContext context, DocumentReference commissionRef) async {
+    final nameController = TextEditingController();
+    final descriptionController = TextEditingController();
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => ContentDialog(
+        title: const Text('Створення дисципліни'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            InfoLabel(
+              label: 'Назва',
+              child: TextBox(
+                controller: nameController,
+                placeholder: 'Введіть назву дисципліни',
+              ),
+            ),
+            const SizedBox(height: 8),
+            InfoLabel(
+              label: 'Опис',
+              child: TextBox(
+                controller: descriptionController,
+                placeholder: 'Введіть опис дисципліни',
+                maxLines: 3,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          Button(
+            child: const Text('Скасувати'),
+            onPressed: () => Navigator.pop(context, false),
+          ),
+          FilledButton(
+            child: const Text('Створити'),
+            onPressed: () => Navigator.pop(context, true),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      try {
+        await commissionRef.collection('subjects').add({
+          'name': nameController.text,
+          'description': descriptionController.text,
+        });
+
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Успіх'),
+              content: const Text('Дисципліну створено'),
+              severity: InfoBarSeverity.success,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      } catch (e) {
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Помилка'),
+              content: Text(e.toString()),
+              severity: InfoBarSeverity.error,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      }
+    }
+
+    nameController.dispose();
+    descriptionController.dispose();
+  }
+
+  Future<void> _showEditSubjectDialog(
+    BuildContext context, 
+    DocumentReference commissionRef,
+    DocumentSnapshot subject,
+  ) async {
+    final data = subject.data() as Map<String, dynamic>;
+    final nameController = TextEditingController(text: data['name'] ?? '');
+    final descriptionController = TextEditingController(text: data['description'] ?? '');
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => ContentDialog(
+        title: const Text('Редагування дисципліни'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            InfoLabel(
+              label: 'Назва',
+              child: TextBox(
+                controller: nameController,
+                placeholder: 'Введіть назву дисципліни',
+              ),
+            ),
+            const SizedBox(height: 8),
+            InfoLabel(
+              label: 'Опис',
+              child: TextBox(
+                controller: descriptionController,
+                placeholder: 'Введіть опис дисципліни',
+                maxLines: 3,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          Button(
+            child: const Text('Скасувати'),
+            onPressed: () => Navigator.pop(context, false),
+          ),
+          FilledButton(
+            child: const Text('Зберегти'),
+            onPressed: () => Navigator.pop(context, true),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      try {
+        await subject.reference.update({
+          'name': nameController.text,
+          'description': descriptionController.text,
+        });
+
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Успіх'),
+              content: const Text('Дисципліну оновлено'),
+              severity: InfoBarSeverity.success,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      } catch (e) {
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Помилка'),
+              content: Text(e.toString()),
+              severity: InfoBarSeverity.error,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      }
+    }
+
+    nameController.dispose();
+    descriptionController.dispose();
+  }
+
+  // Add this method to handle specialty deletion
+  Future<void> _deleteSpecialisation(BuildContext context, DocumentSnapshot doc) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => ContentDialog(
+        title: const Text('Видалення спеціальності'),
+        content: const Text('Ви впевнені, що хочете видалити цю спеціальність?'),
+        actions: [
+          Button(
+            child: const Text('Скасувати'),
+            onPressed: () => Navigator.pop(context, false),
+          ),
+          FilledButton(
+            style: ButtonStyle(
+              backgroundColor: ButtonState.all(Colors.red.light),
+            ),
+            child: const Text('Видалити'),
+            onPressed: () => Navigator.pop(context, true),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true && mounted) {
+      try {
+        await doc.reference.delete();
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Успіх'),
+              content: const Text('Спеціальність видалено'),
+              severity: InfoBarSeverity.success,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      } catch (e) {
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Помилка'),
+              content: Text(e.toString()),
+              severity: InfoBarSeverity.error,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      }
+    }
+  }
+
+  // Add this method to handle cycle commission deletion
+  Future<void> _deleteCycleCommission(BuildContext context, DocumentSnapshot doc) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => ContentDialog(
+        title: const Text('Видалення циклової комісії'),
+        content: const Text('Ви впевнені, що хочете видалити цю циклову комісію? Всі дисципліни також будуть видалені.'),
+        actions: [
+          Button(
+            child: const Text('Скасувати'),
+            onPressed: () => Navigator.pop(context, false),
+          ),
+          FilledButton(
+            style: ButtonStyle(
+              backgroundColor: ButtonState.all(Colors.red.light),
+            ),
+            child: const Text('Видалити'),
+            onPressed: () => Navigator.pop(context, true),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true && mounted) {
+      try {
+        await doc.reference.delete();
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Успіх'),
+              content: const Text('Циклову комісію видалено'),
+              severity: InfoBarSeverity.success,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      } catch (e) {
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Помилка'),
+              content: Text(e.toString()),
+              severity: InfoBarSeverity.error,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      }
+    }
+  }
+
+  // Add this method to handle subject deletion
+  Future<void> _deleteSubject(BuildContext context, DocumentReference commissionRef, DocumentSnapshot subject) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => ContentDialog(
+        title: const Text('Видалення дисципліни'),
+        content: const Text('Ви впевнені, що хочете видалити цю дисципліну?'),
+        actions: [
+          Button(
+            child: const Text('Скасувати'),
+            onPressed: () => Navigator.pop(context, false),
+          ),
+          FilledButton(
+            style: ButtonStyle(
+              backgroundColor: ButtonState.all(Colors.red.light),
+            ),
+            child: const Text('Видалити'),
+            onPressed: () => Navigator.pop(context, true),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true && mounted) {
+      try {
+        await subject.reference.delete();
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Успіх'),
+              content: const Text('Дисципліну видалено'),
+              severity: InfoBarSeverity.success,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      } catch (e) {
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Помилка'),
+              content: Text(e.toString()),
+              severity: InfoBarSeverity.error,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return NavigationView(
@@ -515,6 +1299,16 @@ class _EducationScreenState extends State<EducationScreen> {
                 style: TextStyle(fontSize: 24),
               ),
             ),
+          ),
+          PaneItem(
+            icon: const Icon(FluentIcons.college_hoops),
+            title: const Text('Дисципліни'),
+            body: _buildDisciplinesView(),
+          ),
+          PaneItem(
+            icon: const Icon(FluentIcons.c_r_m_report),
+            title: const Text('Циклові комісії'),
+            body: _buildCycleCommissionsView(),
           ),
           PaneItem(
             icon: const Icon(FluentIcons.developer_tools),
