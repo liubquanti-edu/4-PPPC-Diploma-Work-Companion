@@ -1,4 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:intl/intl.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -248,7 +249,7 @@ class _EducationScreenState extends State<EducationScreen> {
                             const SizedBox(width: 8),
                             FilledButton(
                               style: ButtonStyle(
-                                backgroundColor: ButtonState.all(Colors.red.light),
+                                backgroundColor: WidgetStateProperty.all(Colors.red.light),
                               ),
                               child: const Text('Видалити'),
                               onPressed: () => _deleteSpecialisation(context, doc),
@@ -551,7 +552,7 @@ class _EducationScreenState extends State<EducationScreen> {
                             const SizedBox(width: 8),
                             FilledButton(
                               style: ButtonStyle(
-                                backgroundColor: ButtonState.all(Colors.red.light),
+                                backgroundColor: WidgetStateProperty.all(Colors.red.light),
                               ),
                               child: const Text('Видалити'),
                               onPressed: () => _deleteCycleCommission(context, doc),
@@ -856,7 +857,7 @@ class _EducationScreenState extends State<EducationScreen> {
                                     const SizedBox(width: 8),
                                     FilledButton(
                                       style: ButtonStyle(
-                                        backgroundColor: ButtonState.all(Colors.red.light),
+                                        backgroundColor: WidgetStateProperty.all(Colors.red.light),
                                       ),
                                       child: const Text('Видалити'),
                                       onPressed: () => _deleteSubject(context, commission.reference, subject),
@@ -1094,7 +1095,7 @@ class _EducationScreenState extends State<EducationScreen> {
           ),
           FilledButton(
             style: ButtonStyle(
-              backgroundColor: ButtonState.all(Colors.red.light),
+              backgroundColor: WidgetStateProperty.all(Colors.red.light),
             ),
             child: const Text('Видалити'),
             onPressed: () => Navigator.pop(context, true),
@@ -1155,7 +1156,7 @@ class _EducationScreenState extends State<EducationScreen> {
           ),
           FilledButton(
             style: ButtonStyle(
-              backgroundColor: ButtonState.all(Colors.red.light),
+              backgroundColor: WidgetStateProperty.all(Colors.red.light),
             ),
             child: const Text('Видалити'),
             onPressed: () => Navigator.pop(context, true),
@@ -1216,7 +1217,7 @@ class _EducationScreenState extends State<EducationScreen> {
           ),
           FilledButton(
             style: ButtonStyle(
-              backgroundColor: ButtonState.all(Colors.red.light),
+              backgroundColor: WidgetStateProperty.all(Colors.red.light),
             ),
             child: const Text('Видалити'),
             onPressed: () => Navigator.pop(context, true),
@@ -1263,6 +1264,624 @@ class _EducationScreenState extends State<EducationScreen> {
     }
   }
 
+  Widget _buildCoursesView() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('courses')
+          .orderBy('end', descending: true)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(
+            child: Text('Помилка: ${snapshot.error}'),
+          );
+        }
+
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: ProgressRing(),
+          );
+        }
+
+        final docs = snapshot.data!.docs;
+        final now = DateTime.now();
+        
+        // Розділяємо курси на активні та архівні
+        final activeCourses = docs.where((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          return (data['end'] as Timestamp).toDate().isAfter(now);
+        }).toList();
+        
+        final archivedCourses = docs.where((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          return (data['end'] as Timestamp).toDate().isBefore(now);
+        }).toList();
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    'Активні курси',
+                    style: FluentTheme.of(context).typography.title,
+                  ),
+                  const SizedBox(width: 16),
+                  FilledButton(
+                    child: const Text('Створити курс'),
+                    onPressed: () => _showCreateCourseDialog(context),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 16,
+                runSpacing: 16,
+                children: activeCourses.map((doc) {
+                  final data = doc.data() as Map<String, dynamic>;
+                  return _buildCourseCard(context, doc, data);
+                }).toList(),
+              ),
+              if (archivedCourses.isNotEmpty) ...[
+                const SizedBox(height: 32),
+                Text(
+                  'Архів курсів',
+                  style: FluentTheme.of(context).typography.title,
+                ),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 16,
+                  runSpacing: 16,
+                  children: archivedCourses.map((doc) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    return _buildCourseCard(context, doc, data);
+                  }).toList(),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCourseCard(BuildContext context, DocumentSnapshot doc, Map<String, dynamic> data) {
+    return SizedBox(
+      width: 300,
+      child: Card(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              data['name'] ?? '',
+              style: FluentTheme.of(context).typography.subtitle,
+            ),
+            const SizedBox(height: 8),
+            Text('Семестр: ${data['semester']}'),
+            const SizedBox(height: 8),
+            Text(
+              'Початок: ${DateFormat('dd.MM.yyyy').format((data['start'] as Timestamp).toDate())}',
+            ),
+            Text(
+              'Кінець: ${DateFormat('dd.MM.yyyy').format((data['end'] as Timestamp).toDate())}',
+            ),
+            const SizedBox(height: 8),
+            Text('Групи: ${(data['groups'] as List<dynamic>).join(", ")}'),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                FilledButton(
+                  child: const Text('Редагувати'),
+                  onPressed: () => _showEditCourseDialog(context, doc),
+                ),
+                const SizedBox(width: 8),
+                FilledButton(
+                  style: ButtonStyle(
+                    backgroundColor: WidgetStateProperty.all(Colors.red.light),
+                  ),
+                  child: const Text('Видалити'),
+                  onPressed: () => _deleteCourse(context, doc),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showCreateCourseDialog(BuildContext context) async {
+    final nameController = TextEditingController();
+    final groupsController = TextEditingController();
+    DateTime? startDate = DateTime.now();
+    DateTime? endDate = DateTime.now().add(const Duration(days: 120));
+    int selectedSemester = 1;
+    List<String> specialties = [];
+
+    // Отримуємо список спеціальностей
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('specialisations')
+          .orderBy('number')
+          .get();
+      specialties = snapshot.docs
+          .map((doc) => (doc.data()['name'] as String))
+          .toList();
+    } catch (e) {
+      debugPrint('Error loading specialties: $e');
+    }
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => ContentDialog(
+        title: const Text('Створення курсу'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+            children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: InfoLabel(
+              label: 'Спеціальність', 
+              child: SizedBox(
+              width: 300,
+              child: StatefulBuilder(
+                builder: (context, setState) {
+                String? selectedSpecialty = nameController.text;
+                return ComboBox<String>(
+                isExpanded: true,
+                value: selectedSpecialty,
+                items: specialties.map<ComboBoxItem<String>>((name) {
+                return ComboBoxItem<String>(
+                  value: name,
+                  child: Text(
+                  name,
+                  overflow: TextOverflow.ellipsis,
+                  ),
+                );
+                }).toList(),
+                onChanged: (value) {
+                if (value != null) {
+                  setState(() {
+                  selectedSpecialty = value;
+                  nameController.text = value;
+                  });
+                }
+                },
+                placeholder: const Text('Оберіть спеціальність'),
+                );
+                }
+              ),
+              ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: InfoLabel(
+              label: 'Семестр',
+              child: StatefulBuilder(
+                builder: (context, setState) {
+                  return ComboBox<int>(
+                    value: selectedSemester,
+                    items: [1, 2, 3, 4, 5, 6, 7, 8].map((semester) {
+                      return ComboBoxItem<int>(
+                        value: semester,
+                        child: Text('$semester семестр'),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          selectedSemester = value;
+                        });
+                      }
+                    },
+                  );
+                }
+              ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: InfoLabel(
+              label: 'Початок',
+                child: StatefulBuilder(
+                builder: (context, setDateState) {
+                  return DatePicker(
+                  selected: startDate,
+                  onChanged: (date) {
+                    setDateState(() {
+                    startDate = date;
+                    });
+                  },
+                  );
+                }
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: InfoLabel(
+              label: 'Кінець',
+                child: StatefulBuilder(
+                builder: (context, setDateState) {
+                  return DatePicker(
+                  selected: endDate,
+                  onChanged: (date) {
+                    setDateState(() {
+                    endDate = date;
+                    });
+                  },
+                  );
+                }
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: InfoLabel(
+              label: 'Групи (через кому)',
+              child: TextBox(
+                controller: groupsController,
+                placeholder: 'Наприклад: 401, 402, 403',
+              ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          Button(
+            child: const Text('Скасувати'),
+            onPressed: () => Navigator.pop(context, false),
+          ),
+          FilledButton(
+            child: const Text('Створити'),
+            onPressed: () => Navigator.pop(context, true),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true && startDate != null && endDate != null) {
+      try {
+        final groups = groupsController.text
+            .split(',')
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
+            .map((e) => int.parse(e)) // Convert to integers
+            .toList();
+
+        await FirebaseFirestore.instance.collection('courses').add({
+          'name': nameController.text,
+          'semester': selectedSemester,
+          'start': Timestamp.fromDate(startDate!),
+          'end': Timestamp.fromDate(endDate!),
+          'groups': groups, // Now storing as List<int>
+        });
+
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Успіх'),
+              content: const Text('Курс створено'),
+              severity: InfoBarSeverity.success,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      } catch (e) {
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Помилка'),
+              content: Text(e is FormatException 
+                ? 'Номери груп мають бути числами' 
+                : e.toString()),
+              severity: InfoBarSeverity.error,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      }
+    }
+
+    nameController.dispose();
+    groupsController.dispose();
+  }
+
+  Future<void> _showEditCourseDialog(BuildContext context, DocumentSnapshot doc) async {
+    final data = doc.data() as Map<String, dynamic>;
+    final nameController = TextEditingController(text: data['name']);
+    final groupsController = TextEditingController(
+      text: (data['groups'] as List<dynamic>)
+          .map((e) => e.toString())
+          .join(', ')
+    );
+    DateTime startDate = (data['start'] as Timestamp).toDate();
+    DateTime endDate = (data['end'] as Timestamp).toDate();
+    int selectedSemester = data['semester'] ?? 1;
+    List<String> specialties = [];
+
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('specialisations')
+          .orderBy('number')
+          .get();
+      specialties = snapshot.docs
+          .map((doc) => (doc.data()['name'] as String))
+          .toList();
+    } catch (e) {
+      debugPrint('Error loading specialties: $e');
+    }
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => ContentDialog(
+        title: const Text('Редагування курсу'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+            children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: InfoLabel(
+              label: 'Спеціальність', 
+              child: SizedBox(
+              width: 300,
+              child: StatefulBuilder(
+                builder: (context, setState) {
+                String? selectedSpecialty = nameController.text;
+                return ComboBox<String>(
+                isExpanded: true,
+                value: selectedSpecialty,
+                items: specialties.map<ComboBoxItem<String>>((name) {
+                return ComboBoxItem<String>(
+                  value: name,
+                  child: Text(
+                  name,
+                  overflow: TextOverflow.ellipsis,
+                  ),
+                );
+                }).toList(),
+                onChanged: (value) {
+                if (value != null) {
+                  setState(() {
+                  selectedSpecialty = value;
+                  nameController.text = value;
+                  });
+                }
+                },
+                placeholder: const Text('Оберіть спеціальність'),
+                );
+                }
+              ),
+              ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: InfoLabel(
+              label: 'Семестр',
+              child: StatefulBuilder(
+                builder: (context, setState) {
+                  return ComboBox<int>(
+                    value: selectedSemester,
+                    items: [1, 2, 3, 4, 5, 6, 7, 8].map((semester) {
+                      return ComboBoxItem<int>(
+                        value: semester,
+                        child: Text('$semester семестр'),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          selectedSemester = value;
+                        });
+                      }
+                    },
+                  );
+                }
+              ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: InfoLabel(
+              label: 'Початок',
+              child: StatefulBuilder(
+                builder: (context, setDateState) {
+                  return DatePicker(
+                    selected: startDate,
+                    onChanged: (date) {
+                      setDateState(() {
+                        startDate = date;
+                      });
+                    },
+                  );
+                }
+              ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: InfoLabel(
+              label: 'Кінець',
+                child: StatefulBuilder(
+                builder: (context, setDateState) {
+                  return DatePicker(
+                  selected: endDate,
+                  onChanged: (date) {
+                    setDateState(() {
+                    endDate = date;
+                    });
+                  },
+                  );
+                }
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: InfoLabel(
+              label: 'Групи (через кому)',
+              child: TextBox(
+                controller: groupsController,
+                placeholder: 'Наприклад: 401, 402, 403',
+              ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          Button(
+            child: const Text('Скасувати'),
+            onPressed: () => Navigator.pop(context, false),
+          ),
+          FilledButton(
+            child: const Text('Зберегти'),
+            onPressed: () => Navigator.pop(context, true),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      try {
+        final groups = groupsController.text
+            .split(',')
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
+            .map((e) => int.parse(e)) // Convert to integers
+            .toList();
+
+        await doc.reference.update({
+          'name': nameController.text,
+          'semester': selectedSemester,
+          'start': Timestamp.fromDate(startDate),
+          'end': Timestamp.fromDate(endDate),
+          'groups': groups, // Now storing as List<int>
+        });
+
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Успіх'),
+              content: const Text('Курс оновлено'),
+              severity: InfoBarSeverity.success,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      } catch (e) {
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Помилка'),
+              content: Text(e is FormatException 
+                ? 'Номери груп мають бути числами' 
+                : e.toString()),
+              severity: InfoBarSeverity.error,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      }
+    }
+
+    nameController.dispose();
+    groupsController.dispose();
+  }
+
+  Future<void> _deleteCourse(BuildContext context, DocumentSnapshot doc) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => ContentDialog(
+        title: const Text('Видалення курсу'),
+        content: const Text('Ви впевнені, що хочете видалити цей курс?'),
+        actions: [
+          Button(
+            child: const Text('Скасувати'),
+            onPressed: () => Navigator.pop(context, false),
+          ),
+          FilledButton(
+            style: ButtonStyle(
+              backgroundColor: WidgetStateProperty.all(Colors.red),
+            ),
+            child: const Text('Видалити'),
+            onPressed: () => Navigator.pop(context, true),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true && mounted) {
+      try {
+        await doc.reference.delete();
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Успіх'),
+              content: const Text('Курс видалено'),
+              severity: InfoBarSeverity.success,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      } catch (e) {
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Помилка'),
+              content: Text(e.toString()),
+              severity: InfoBarSeverity.error,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return NavigationView(
@@ -1281,14 +1900,9 @@ class _EducationScreenState extends State<EducationScreen> {
         onChanged: (index) => setState(() => _selectedIndex = index),
         items: [
           PaneItem(
-            icon: const Icon(FluentIcons.book_answers),
+            icon: const Icon(FluentIcons.education),
             title: const Text('Курси'),
-            body: const Center(
-              child: Text(
-                'Налаштування дзвінків',
-                style: TextStyle(fontSize: 24),
-              ),
-            ),
+            body: _buildCoursesView(),
           ),
           PaneItem(
             icon: const Icon(FluentIcons.calendar),
