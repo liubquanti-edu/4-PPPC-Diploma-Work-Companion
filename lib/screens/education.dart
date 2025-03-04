@@ -1882,6 +1882,869 @@ class _EducationScreenState extends State<EducationScreen> {
     }
   }
 
+  Widget _buildEventsView() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('courses')
+          .orderBy('end', descending: true)
+          .snapshots(),
+      builder: (context, coursesSnapshot) {
+        if (coursesSnapshot.hasError) {
+          return Center(child: Text('Помилка: ${coursesSnapshot.error}'));
+        }
+
+        if (coursesSnapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: ProgressRing());
+        }
+
+        final courses = coursesSnapshot.data!.docs;
+        final now = DateTime.now();
+        
+        // Розділяємо курси на активні та архівні
+        final activeCourses = courses.where((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          return (data['end'] as Timestamp).toDate().isAfter(now);
+        }).toList();
+
+        return StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('events')
+              .snapshots(),
+          builder: (context, eventTypesSnapshot) {
+            if (eventTypesSnapshot.hasError) {
+              return Center(child: Text('Помилка: ${eventTypesSnapshot.error}'));
+            }
+
+            if (eventTypesSnapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: ProgressRing());
+            }
+
+            final eventTypes = eventTypesSnapshot.data!.docs;
+
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        'Події',
+                        style: FluentTheme.of(context).typography.title,
+                      ),
+                      const SizedBox(width: 16),
+                      FilledButton(
+                        child: const Text('Створити подію'),
+                        onPressed: () => _showCreateEventDialog(
+                          context, 
+                          activeCourses,
+                          eventTypes,
+                        ),
+                      ),
+                    ],
+                  ),
+                  ...activeCourses.map((course) {
+                    final courseData = course.data() as Map<String, dynamic>;
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${courseData['name']} (${courseData['groups'].join(", ")})',
+                          style: FluentTheme.of(context).typography.subtitle,
+                        ),
+                        const SizedBox(height: 8),
+                        StreamBuilder<QuerySnapshot>(
+                          stream: course.reference
+                              .collection('events')
+                              .orderBy('start')
+                              .snapshots(),
+                          builder: (context, eventsSnapshot) {
+                            if (eventsSnapshot.hasError) {
+                              return Text('Помилка: ${eventsSnapshot.error}');
+                            }
+
+                            if (eventsSnapshot.connectionState == ConnectionState.waiting) {
+                              return const ProgressRing();
+                            }
+
+                            final events = eventsSnapshot.data!.docs;
+                            
+                            if (events.isEmpty) {
+                              return const Padding(
+                                padding: EdgeInsets.only(bottom: 16),
+                                child: Text('Немає подій'),
+                              );
+                            }
+
+                            return Wrap(
+                              spacing: 16,
+                              runSpacing: 16,
+                              children: events.map((event) {
+                                final eventData = event.data() as Map<String, dynamic>;
+                                final eventType = eventTypes
+                                    .where((t) => t.id == eventData['type'])
+                                    .firstOrNull;
+                                final typeData = eventType?.data() as Map<String, dynamic>? ?? {'name': 'Невідомий тип'};
+                                
+                                return SizedBox(
+                                  width: 300,
+                                  child: Card(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          eventData['name'] ?? '',
+                                          style: FluentTheme.of(context).typography.subtitle,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          typeData['name'] ?? '',
+                                          style: FluentTheme.of(context).typography.body,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          eventData['description'] ?? '',
+                                          style: FluentTheme.of(context).typography.body,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          'Початок: ${DateFormat('dd.MM.yyyy').format((eventData['start'] as Timestamp).toDate())}',
+                                        ),
+                                        Text(
+                                          'Кінець: ${DateFormat('dd.MM.yyyy').format((eventData['end'] as Timestamp).toDate())}',
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Row(
+                                          children: [
+                                            FilledButton(
+                                              child: const Text('Редагувати'),
+                                              onPressed: () => _showEditEventDialog(
+                                                context,
+                                                course.reference,
+                                                event,
+                                                eventTypes,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            FilledButton(
+                                              style: ButtonStyle(
+                                                backgroundColor: WidgetStateProperty.all(
+                                                  Colors.red.light,
+                                                ),
+                                              ),
+                                              child: const Text('Видалити'),
+                                              onPressed: () => _deleteEvent(
+                                                context,
+                                                course.reference,
+                                                event,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                    );
+                  }).toList(),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Типи подій',
+                    style: FluentTheme.of(context).typography.subtitle,
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 16,
+                    runSpacing: 16,
+                    children: [
+                      ...eventTypes.map((type) {
+                        final data = type.data() as Map<String, dynamic>;
+                        return SizedBox(
+                          width: 300,
+                          height: 150,
+                          child: Card(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                Text(
+                                  data['name'] ?? '',
+                                  style: FluentTheme.of(context).typography.subtitle,
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  data['description'] ?? '',
+                                  style: FluentTheme.of(context).typography.body,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const Spacer(),
+                                Row(
+                                  children: [
+                                  FilledButton(
+                                    child: const Text('Редагувати'),
+                                    onPressed: () => _showEditEventTypeDialog(
+                                    context, 
+                                    type,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  FilledButton(
+                                    style: ButtonStyle(
+                                    backgroundColor: WidgetStateProperty.all(
+                                      Colors.red.light,
+                                    ),
+                                    ),
+                                    child: const Text('Видалити'),
+                                    onPressed: () => _deleteEventType(
+                                    context, 
+                                    type,
+                                    ),
+                                  ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                      GestureDetector(
+                        onTap: () => _showCreateEventTypeDialog(context),
+                        child: SizedBox(
+                          width: 300,
+                          height: 150,
+                          child: Card(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                Icon(
+                                  FluentIcons.add,
+                                  size: 48,
+                                ),
+                                SizedBox(height: 8),
+                                Text('Новий тип подій'),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // Event Type Management Methods
+  Future<void> _showCreateEventTypeDialog(BuildContext context) async {
+    final nameController = TextEditingController();
+    final descriptionController = TextEditingController();
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => ContentDialog(
+        title: const Text('Створення типу подій'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            InfoLabel(
+              label: 'Назва',
+              child: TextBox(
+                controller: nameController,
+                placeholder: 'Введіть назву типу',
+              ),
+            ),
+            const SizedBox(height: 8),
+            InfoLabel(
+              label: 'Опис',
+              child: TextBox(
+                controller: descriptionController,
+                placeholder: 'Введіть опис типу',
+                maxLines: 3,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          Button(
+            child: const Text('Скасувати'),
+            onPressed: () => Navigator.pop(context, false),
+          ),
+          FilledButton(
+            child: const Text('Створити'),
+            onPressed: () => Navigator.pop(context, true),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      try {
+        await FirebaseFirestore.instance.collection('events').add({
+          'name': nameController.text,
+          'description': descriptionController.text,
+        });
+
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Успіх'),
+              content: const Text('Тип подій створено'),
+              severity: InfoBarSeverity.success,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      } catch (e) {
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Помилка'),
+              content: Text(e.toString()),
+              severity: InfoBarSeverity.error,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      }
+    }
+
+    nameController.dispose();
+    descriptionController.dispose();
+  }
+
+  Future<void> _showEditEventTypeDialog(BuildContext context, DocumentSnapshot type) async {
+    final data = type.data() as Map<String, dynamic>;
+    final nameController = TextEditingController(text: data['name']);
+    final descriptionController = TextEditingController(text: data['description']);
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => ContentDialog(
+        title: const Text('Редагування типу подій'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            InfoLabel(
+              label: 'Назва',
+              child: TextBox(
+                controller: nameController,
+                placeholder: 'Введіть назву типу',
+              ),
+            ),
+            const SizedBox(height: 8),
+            InfoLabel(
+              label: 'Опис',
+              child: TextBox(
+                controller: descriptionController,
+                placeholder: 'Введіть опис типу',
+                maxLines: 3,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          Button(
+            child: const Text('Скасувати'),
+            onPressed: () => Navigator.pop(context, false),
+          ),
+          FilledButton(
+            child: const Text('Зберегти'),
+            onPressed: () => Navigator.pop(context, true),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      try {
+        await type.reference.update({
+          'name': nameController.text,
+          'description': descriptionController.text,
+        });
+
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Успіх'),
+              content: const Text('Тип подій оновлено'),
+              severity: InfoBarSeverity.success,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      } catch (e) {
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Помилка'),
+              content: Text(e.toString()),
+              severity: InfoBarSeverity.error,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      }
+    }
+
+    nameController.dispose();
+    descriptionController.dispose();
+  }
+
+  Future<void> _deleteEventType(BuildContext context, DocumentSnapshot type) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => ContentDialog(
+        title: const Text('Видалення типу подій'),
+        content: const Text('Ви впевнені, що хочете видалити цей тип подій?'),
+        actions: [
+          Button(
+            child: const Text('Скасувати'),
+            onPressed: () => Navigator.pop(context, false),
+          ),
+          FilledButton(
+            style: ButtonStyle(
+              backgroundColor: WidgetStateProperty.all(Colors.red),
+            ),
+            child: const Text('Видалити'),
+            onPressed: () => Navigator.pop(context, true),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true && mounted) {
+      try {
+        await type.reference.delete();
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Успіх'),
+              content: const Text('Тип подій видалено'),
+              severity: InfoBarSeverity.success,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      } catch (e) {
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Помилка'),
+              content: Text(e.toString()),
+              severity: InfoBarSeverity.error,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      }
+    }
+  }
+
+  // Event Management Methods
+  Future<void> _showCreateEventDialog(
+    BuildContext context,
+    List<DocumentSnapshot> courses,
+    List<DocumentSnapshot> eventTypes,
+  ) async {
+    final nameController = TextEditingController();
+    final descriptionController = TextEditingController();
+    String? selectedTypeId = eventTypes.isNotEmpty ? eventTypes.first.id : null;
+    DateTime startDate = DateTime.now();
+    DateTime endDate = DateTime.now().add(const Duration(days: 7));
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => ContentDialog(
+        title: const Text('Створення події'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            InfoLabel(
+              label: 'Назва',
+              child: TextBox(
+                controller: nameController,
+                placeholder: 'Введіть назву події',
+              ),
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: InfoLabel(
+              label: 'Тип події',
+              child: StatefulBuilder(
+                builder: (context, setState) => ComboBox<String>(
+                value: selectedTypeId,
+                items: eventTypes.map((type) {
+                  final typeData = type.data() as Map<String, dynamic>;
+                  return ComboBoxItem<String>(
+                  value: type.id,
+                  child: Text(typeData['name'] ?? ''),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() => selectedTypeId = value);
+                },
+                ),
+              ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            InfoLabel(
+              label: 'Опис',
+              child: TextBox(
+                controller: descriptionController,
+                placeholder: 'Введіть опис події',
+                maxLines: 3,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: InfoLabel(
+              label: 'Початок',
+              child: StatefulBuilder(
+                builder: (context, setDateState) => DatePicker(
+                selected: startDate,
+                onChanged: (date) => setDateState(() => startDate = date),
+                ),
+              ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: InfoLabel(
+              label: 'Кінець',
+              child: StatefulBuilder(
+                builder: (context, setDateState) => DatePicker(
+                selected: endDate,
+                onChanged: (date) => setDateState(() => endDate = date),
+                ),
+              ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          Button(
+            child: const Text('Скасувати'),
+            onPressed: () => Navigator.pop(context, false),
+          ),
+          FilledButton(
+            child: const Text('Створити'),
+            onPressed: () => Navigator.pop(context, true),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true && selectedTypeId != null) {
+      try {
+        for (final course in courses) {
+          await course.reference.collection('events').add({
+            'name': nameController.text,
+            'type': selectedTypeId,
+            'description': descriptionController.text,
+            'start': Timestamp.fromDate(startDate),
+            'end': Timestamp.fromDate(endDate),
+          });
+        }
+
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Успіх'),
+              content: const Text('Подію створено'),
+              severity: InfoBarSeverity.success,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      } catch (e) {
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Помилка'),
+              content: Text(e.toString()),
+              severity: InfoBarSeverity.error,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      }
+    }
+
+    nameController.dispose();
+    descriptionController.dispose();
+  }
+
+  Future<void> _showEditEventDialog(
+    BuildContext context,
+    DocumentReference courseRef,
+    DocumentSnapshot event,
+    List<DocumentSnapshot> eventTypes,
+  ) async {
+    final data = event.data() as Map<String, dynamic>;
+    final nameController = TextEditingController(text: data['name']);
+    final descriptionController = TextEditingController(text: data['description']);
+    String? selectedTypeId = data['type'];
+    DateTime startDate = (data['start'] as Timestamp).toDate();
+    DateTime endDate = (data['end'] as Timestamp).toDate();
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => ContentDialog(
+        title: const Text('Редагування події'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            InfoLabel(
+              label: 'Назва',
+              child: TextBox(
+                controller: nameController,
+                placeholder: 'Введіть назву події',
+              ),
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: InfoLabel(
+              label: 'Тип події',
+              child: StatefulBuilder(
+                builder: (context, setState) => ComboBox<String>(
+                value: selectedTypeId,
+                items: eventTypes.map((type) {
+                  final typeData = type.data() as Map<String, dynamic>;
+                  return ComboBoxItem<String>(
+                  value: type.id,
+                  child: Text(typeData['name'] ?? ''),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() => selectedTypeId = value);
+                },
+                ),
+              ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            InfoLabel(
+              label: 'Опис',
+              child: TextBox(
+                controller: descriptionController,
+                placeholder: 'Введіть опис події',
+                maxLines: 3,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: InfoLabel(
+              label: 'Початок',
+              child: StatefulBuilder(
+                builder: (context, setDateState) => DatePicker(
+                selected: startDate,
+                onChanged: (date) => setDateState(() => startDate = date),
+                ),
+              ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: InfoLabel(
+              label: 'Кінець',
+              child: StatefulBuilder(
+                builder: (context, setDateState) => DatePicker(
+                selected: endDate,
+                onChanged: (date) => setDateState(() => endDate = date),
+                ),
+              ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          Button(
+            child: const Text('Скасувати'),
+            onPressed: () => Navigator.pop(context, false),
+          ),
+          FilledButton(
+            child: const Text('Зберегти'),
+            onPressed: () => Navigator.pop(context, true),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true && selectedTypeId != null) {
+      try {
+        await event.reference.update({
+          'name': nameController.text,
+          'type': selectedTypeId,
+          'description': descriptionController.text,
+          'start': Timestamp.fromDate(startDate),
+          'end': Timestamp.fromDate(endDate),
+        });
+
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Успіх'),
+              content: const Text('Подію оновлено'),
+              severity: InfoBarSeverity.success,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      } catch (e) {
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Помилка'),
+              content: Text(e.toString()),
+              severity: InfoBarSeverity.error,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      }
+    }
+
+    nameController.dispose();
+    descriptionController.dispose();
+  }
+
+  Future<void> _deleteEvent(
+    BuildContext context,
+    DocumentReference courseRef,
+    DocumentSnapshot event,
+  ) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => ContentDialog(
+        title: const Text('Видалення події'),
+        content: const Text('Ви впевнені, що хочете видалити цю подію?'),
+        actions: [
+          Button(
+            child: const Text('Скасувати'),
+            onPressed: () => Navigator.pop(context, false),
+          ),
+          FilledButton(
+            style: ButtonStyle(
+              backgroundColor: WidgetStateProperty.all(Colors.red),
+            ),
+            child: const Text('Видалити'),
+            onPressed: () => Navigator.pop(context, true),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true && mounted) {
+      try {
+        await event.reference.delete();
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Успіх'),
+              content: const Text('Подію видалено'),
+              severity: InfoBarSeverity.success,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      } catch (e) {
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Помилка'),
+              content: Text(e.toString()),
+              severity: InfoBarSeverity.error,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return NavigationView(
@@ -1907,12 +2770,7 @@ class _EducationScreenState extends State<EducationScreen> {
           PaneItem(
             icon: const Icon(FluentIcons.calendar),
             title: const Text('Події'),
-            body: const Center(
-              child: Text(
-                'Налаштування дзвінків',
-                style: TextStyle(fontSize: 24),
-              ),
-            ),
+            body: _buildEventsView(),
           ),
           PaneItem(
             icon: const Icon(FluentIcons.college_hoops),
