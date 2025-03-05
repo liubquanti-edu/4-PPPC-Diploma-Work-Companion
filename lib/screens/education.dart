@@ -125,8 +125,6 @@ class _EducationScreenState extends State<EducationScreen> {
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 16.0),
               child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
                 child: Row(
                     children: [
                       Text(
@@ -179,7 +177,6 @@ class _EducationScreenState extends State<EducationScreen> {
                       ),
                     ],
                   ),
-                ),
               ),
             );
           },
@@ -222,7 +219,6 @@ class _EducationScreenState extends State<EducationScreen> {
                   width: 300,
                   height: 350,
                   child: Card(
-                    padding: const EdgeInsets.all(24),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
@@ -267,7 +263,6 @@ class _EducationScreenState extends State<EducationScreen> {
                   width: 300,
                   height: 350,
                   child: Card(
-                  padding: const EdgeInsets.all(24),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -526,7 +521,6 @@ class _EducationScreenState extends State<EducationScreen> {
                   width: 300,
                   height: 200,
                   child: Card(
-                    padding: const EdgeInsets.all(24),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
@@ -570,7 +564,6 @@ class _EducationScreenState extends State<EducationScreen> {
                   width: 300,
                   height: 200,
                   child: Card(
-                  padding: const EdgeInsets.all(24),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -827,7 +820,6 @@ class _EducationScreenState extends State<EducationScreen> {
                           width: 300,
                           height: 200,
                           child: Card(
-                            padding: const EdgeInsets.all(24),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
@@ -875,7 +867,6 @@ class _EducationScreenState extends State<EducationScreen> {
                           width: 300,
                           height: 200,
                           child: Card(
-                            padding: const EdgeInsets.all(24),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -1351,7 +1342,6 @@ class _EducationScreenState extends State<EducationScreen> {
     return SizedBox(
       width: 300,
       child: Card(
-        padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -1989,7 +1979,6 @@ class _EducationScreenState extends State<EducationScreen> {
                                 return SizedBox(
                                   width: 300,
                                   child: Card(
-                                    padding: const EdgeInsets.all(16),
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
@@ -2072,7 +2061,6 @@ class _EducationScreenState extends State<EducationScreen> {
                           width: 300,
                           height: 150,
                           child: Card(
-                            padding: const EdgeInsets.all(16),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -2123,7 +2111,6 @@ class _EducationScreenState extends State<EducationScreen> {
                           width: 300,
                           height: 150,
                           child: Card(
-                            padding: const EdgeInsets.all(16),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -2745,6 +2732,226 @@ class _EducationScreenState extends State<EducationScreen> {
     }
   }
 
+  Widget _buildScheduleView() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('courses')
+          .orderBy('end', descending: true)
+          .where('end', isGreaterThan: Timestamp.fromDate(DateTime.now()))
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(child: Text('Помилка: ${snapshot.error}'));
+        }
+
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: ProgressRing());
+        }
+
+        final courses = snapshot.data!.docs;
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Wrap(
+            spacing: 16,
+            runSpacing: 16,
+            children: courses.expand((course) {
+              final courseData = course.data() as Map<String, dynamic>;
+              final groups = (courseData['groups'] as List<dynamic>).cast<int>();
+              
+              return groups.map((group) {
+                return SizedBox(
+                  width: 200,
+                  height: 120,
+                  child: Card(
+                    child: GestureDetector(
+                      onTap: () => _showScheduleEditor(context, course.reference, group),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Група $group',
+                              style: FluentTheme.of(context).typography.subtitle,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              courseData['name'],
+                              style: FluentTheme.of(context).typography.body,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              });
+            }).toList(),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _showScheduleEditor(BuildContext context, DocumentReference courseRef, int group) async {
+  final schedule = await courseRef
+      .collection('schedule')
+      .doc(group.toString())
+      .get();
+
+  final scheduleData = schedule.data() ?? {};
+  
+  // Get all subjects for dropdown with their IDs
+  final subjects = <String, Map<String, dynamic>>{};
+  final querySnapshot = await FirebaseFirestore.instance
+      .collection('cyclecommission')
+      .get();
+      
+  for (var commission in querySnapshot.docs) {
+    final subjectsSnapshot = await commission.reference
+        .collection('subjects')
+        .get();
+    
+    for (var doc in subjectsSnapshot.docs) {
+      subjects[doc.id] = {
+        'name': doc.data()['name'] as String,
+        'ref': doc.reference,
+      };
+    }
+  }
+
+  final days = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', "П'ятниця"];
+  final lessons = ['1', '2', '3', '4'];
+  
+  final selectedSubjects = <String, Map<String, String?>>{};
+  for (var day in days) {
+    selectedSubjects[day] = {};
+    for (var lesson in lessons) {
+      selectedSubjects[day]![lesson] = scheduleData[day]?[lesson];
+    }
+  }
+
+  final result = await showDialog<bool>(
+    context: context,
+    builder: (context) => ContentDialog(
+      constraints: const BoxConstraints(maxWidth: 1000),
+      title: Text('Розклад для групи $group'),
+      content: SingleChildScrollView(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: days.map((day) {
+            return Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      day,
+                      style: FluentTheme.of(context).typography.subtitle,
+                    ),
+                    const SizedBox(height: 8),
+                    ...lessons.map((lesson) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('$lesson пара'),
+                            const SizedBox(height: 4),
+                            StatefulBuilder(
+                              builder: (context, setState) {
+                                final selectedId = selectedSubjects[day]![lesson];
+                                return ComboBox<String?>(
+                                  placeholder: const Text('-'),
+                                  value: selectedId,
+                                  items: [
+                                    const ComboBoxItem<String?>(
+                                      value: null,
+                                      child: Text('Немає пари'),
+                                    ),
+                                    ...subjects.entries.map(
+                                      (entry) => ComboBoxItem<String>(
+                                        value: entry.key,
+                                        child: Text(entry.value['name']),
+                                      ),
+                                    ),
+                                  ],
+                                  onChanged: (value) {
+                                    setState(() {
+                                      selectedSubjects[day]![lesson] = value;
+                                    });
+                                  },
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+      actions: [
+        Button(
+          child: const Text('Скасувати'),
+          onPressed: () => Navigator.pop(context, false),
+        ),
+        FilledButton(
+          child: const Text('Зберегти'),
+          onPressed: () => Navigator.pop(context, true),
+        ),
+      ],
+    ),
+  );
+
+  if (result == true) {
+    try {
+      await courseRef
+          .collection('schedule')
+          .doc(group.toString())
+          .set(selectedSubjects);
+
+      if (!mounted) return;
+      await displayInfoBar(
+        context,
+        builder: (context, close) {
+          return InfoBar(
+            title: const Text('Успіх'),
+            content: const Text('Розклад збережено'),
+            severity: InfoBarSeverity.success,
+            action: IconButton(
+              icon: const Icon(FluentIcons.clear),
+              onPressed: close,
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      if (!mounted) return;
+      await displayInfoBar(
+        context,
+        builder: (context, close) {
+          return InfoBar(
+            title: const Text('Помилка'),
+            content: Text(e.toString()),
+            severity: InfoBarSeverity.error,
+            action: IconButton(
+              icon: const Icon(FluentIcons.clear),
+              onPressed: close,
+            ),
+          );
+        },
+      );
+    }
+  }
+}
+
   @override
   Widget build(BuildContext context) {
     return NavigationView(
@@ -2766,6 +2973,11 @@ class _EducationScreenState extends State<EducationScreen> {
             icon: const Icon(FluentIcons.education),
             title: const Text('Курси'),
             body: _buildCoursesView(),
+          ),
+          PaneItem(
+            icon: const Icon(FluentIcons.table),
+            title: const Text('Розклад'),
+            body: _buildScheduleView(),
           ),
           PaneItem(
             icon: const Icon(FluentIcons.calendar),
