@@ -1825,7 +1825,7 @@ class _EducationScreenState extends State<EducationScreen> {
           ),
           FilledButton(
             style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.all(Colors.red),
+              backgroundColor: WidgetStateProperty.all(Colors.red.light),
             ),
             child: const Text('Видалити'),
             onPressed: () => Navigator.pop(context, true),
@@ -2326,7 +2326,7 @@ class _EducationScreenState extends State<EducationScreen> {
           ),
           FilledButton(
             style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.all(Colors.red),
+              backgroundColor: WidgetStateProperty.all(Colors.red.light),
             ),
             child: const Text('Видалити'),
             onPressed: () => Navigator.pop(context, true),
@@ -2685,7 +2685,7 @@ class _EducationScreenState extends State<EducationScreen> {
           ),
           FilledButton(
             style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.all(Colors.red),
+              backgroundColor: WidgetStateProperty.all(Colors.red.light),
             ),
             child: const Text('Видалити'),
             onPressed: () => Navigator.pop(context, true),
@@ -2761,18 +2761,19 @@ class _EducationScreenState extends State<EducationScreen> {
               
               return groups.map((group) {
                 return SizedBox(
-                  width: 200,
-                  height: 120,
+                  width: 300,
+                  height: 200,
                   child: Card(
-                    child: GestureDetector(
-                      onTap: () => _showScheduleEditor(context, course.reference, group),
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               'Група $group',
-                              style: FluentTheme.of(context).typography.subtitle,
+                              style: FluentTheme.of(context).typography.title,
                             ),
                             const SizedBox(height: 8),
                             Text(
@@ -2781,7 +2782,31 @@ class _EducationScreenState extends State<EducationScreen> {
                             ),
                           ],
                         ),
-                      ),
+                        Row(
+                          children: [
+                            FilledButton(
+                              child: const Text('Редагувати'),
+                              onPressed: () => _showScheduleEditor(
+                                context, 
+                                course.reference, 
+                                group,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            FilledButton(
+                              style: ButtonStyle(
+                                backgroundColor: WidgetStateProperty.all(Colors.red.light),
+                              ),
+                              child: const Text('Очистити'),
+                              onPressed: () => _clearSchedule(
+                                context, 
+                                course.reference, 
+                                group,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 );
@@ -2791,6 +2816,74 @@ class _EducationScreenState extends State<EducationScreen> {
         );
       },
     );
+  }
+
+  Future<void> _clearSchedule(
+    BuildContext context, 
+    DocumentReference courseRef, 
+    int group,
+  ) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => ContentDialog(
+        title: Text('Очистити розклад групи $group'),
+        content: const Text('Ви впевнені, що хочете видалити весь розклад для цієї групи?'),
+        actions: [
+          Button(
+            child: const Text('Скасувати'),
+            onPressed: () => Navigator.pop(context, false),
+          ),
+          FilledButton(
+            style: ButtonStyle(
+              backgroundColor: WidgetStateProperty.all(Colors.red.light),
+            ),
+            child: const Text('Очистити'),
+            onPressed: () => Navigator.pop(context, true),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      try {
+        await courseRef
+            .collection('schedule')
+            .doc(group.toString())
+            .delete();
+
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Успіх'),
+              content: const Text('Розклад очищено'),
+              severity: InfoBarSeverity.success,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      } catch (e) {
+        if (!mounted) return;
+        await displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Помилка'),
+              content: Text(e.toString()),
+              severity: InfoBarSeverity.error,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      }
+    }
   }
 
   Future<void> _showScheduleEditor(BuildContext context, DocumentReference courseRef, int group) async {
