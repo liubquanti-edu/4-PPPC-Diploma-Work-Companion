@@ -2894,13 +2894,16 @@ class _EducationScreenState extends State<EducationScreen> {
 
   final scheduleData = schedule.data() ?? {};
   
-  // Get all subjects for dropdown with their IDs
+  // Get all subjects and teachers
   final subjects = <String, Map<String, dynamic>>{};
-  final querySnapshot = await FirebaseFirestore.instance
+  final teachers = <String, Map<String, dynamic>>{};
+
+  // Load subjects
+  final commissionsSnapshot = await FirebaseFirestore.instance
       .collection('cyclecommission')
       .get();
       
-  for (var commission in querySnapshot.docs) {
+  for (var commission in commissionsSnapshot.docs) {
     final subjectsSnapshot = await commission.reference
         .collection('subjects')
         .get();
@@ -2913,26 +2916,42 @@ class _EducationScreenState extends State<EducationScreen> {
     }
   }
 
+  // Load teachers
+  final teachersSnapshot = await FirebaseFirestore.instance
+      .collection('teachers')
+      .get();
+  
+  for (var doc in teachersSnapshot.docs) {
+    teachers[doc.id] = {
+      'name': '${doc.data()['name']} ${doc.data()['surname']}',
+      'ref': doc.reference,
+    };
+  }
+
   final days = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', "П'ятниця"];
   final lessons = ['1', '2', '3', '4'];
   
-  final selectedSubjects = <String, Map<String, String?>>{};
+  final selectedLessons = <String, Map<String, Map<String, dynamic>>>{};
   for (var day in days) {
-    selectedSubjects[day] = {};
+    selectedLessons[day] = {};
     for (var lesson in lessons) {
-      selectedSubjects[day]![lesson] = scheduleData[day]?[lesson];
+      final lessonData = scheduleData[day]?[lesson] ?? {};
+      selectedLessons[day]![lesson] = {
+        'subjectId': lessonData['subjectId'],
+        'teacherId': lessonData['teacherId'],
+        'room': lessonData['room'],
+      };
     }
   }
 
   final result = await showDialog<bool>(
     context: context,
     builder: (context) => ContentDialog(
-      constraints: const BoxConstraints(maxWidth: 1000),
+      constraints: const BoxConstraints(maxWidth: 1300),
       title: Text('Розклад для групи $group'),
       content: SingleChildScrollView(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: days.map((day) {
             return Expanded(
               child: Padding(
@@ -2946,8 +2965,12 @@ class _EducationScreenState extends State<EducationScreen> {
                     ),
                     const SizedBox(height: 8),
                     ...lessons.map((lesson) {
+                      final lessonData = selectedLessons[day]![lesson]!;
+                      final roomController = TextEditingController(
+                        text: lessonData['room']?.toString() ?? '',
+                      );
                       return Padding(
-                        padding: const EdgeInsets.only(bottom: 8.0),
+                        padding: const EdgeInsets.only(bottom: 16.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -2955,27 +2978,80 @@ class _EducationScreenState extends State<EducationScreen> {
                             const SizedBox(height: 4),
                             StatefulBuilder(
                               builder: (context, setState) {
-                                final selectedId = selectedSubjects[day]![lesson];
-                                return ComboBox<String?>(
-                                  placeholder: const Text('-'),
-                                  value: selectedId,
-                                  items: [
-                                    const ComboBoxItem<String?>(
-                                      value: null,
-                                      child: Text('Немає пари'),
-                                    ),
-                                    ...subjects.entries.map(
-                                      (entry) => ComboBoxItem<String>(
+                                return Column(
+                                  children: [
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: ComboBox<String?>(
+                                      isExpanded: true,
+                                      placeholder: const Text('-'),
+                                      value: lessonData['subjectId'],
+                                      items: [
+                                        const ComboBoxItem<String?>(
+                                        value: null,
+                                        child: Text('Немає пари'),
+                                        ),
+                                        ...subjects.entries.map(
+                                        (entry) => ComboBoxItem<String>(
                                         value: entry.key,
                                         child: Text(entry.value['name']),
+                                        ),
+                                        ),
+                                      ],
+                                      onChanged: (value) {
+                                        setState(() {
+                                        lessonData['subjectId'] = value;
+                                        });
+                                      },
                                       ),
                                     ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        Flexible(
+                                          flex: 3,
+                                          child: ComboBox<String?>(
+                                            isExpanded: true,
+                                            placeholder: const Text('-'),
+                                            value: lessonData['teacherId'],
+                                            items: [
+                                              const ComboBoxItem<String?>(
+                                                value: null,
+                                                child: Text('Не призначено'),
+                                              ),
+                                              ...teachers.entries.map(
+                                                (entry) => ComboBoxItem<String>(
+                                                  value: entry.key,
+                                                  child: Text(
+                                                    entry.value['name'],
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                            onChanged: (value) {
+                                              setState(() {
+                                                lessonData['teacherId'] = value;
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Flexible(
+                                          flex: 1,
+                                          child: SizedBox(
+                                            child: TextBox(
+                                              controller: roomController,
+                                              placeholder: 'Ауд.',
+                                              onChanged: (value) {
+                                                lessonData['room'] = value;
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ],
-                                  onChanged: (value) {
-                                    setState(() {
-                                      selectedSubjects[day]![lesson] = value;
-                                    });
-                                  },
                                 );
                               },
                             ),
@@ -3008,7 +3084,7 @@ class _EducationScreenState extends State<EducationScreen> {
       await courseRef
           .collection('schedule')
           .doc(group.toString())
-          .set(selectedSubjects);
+          .set(selectedLessons);
 
       if (!mounted) return;
       await displayInfoBar(
