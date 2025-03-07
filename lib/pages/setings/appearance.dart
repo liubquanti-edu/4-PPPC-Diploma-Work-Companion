@@ -43,25 +43,23 @@ class _AppearanceSettingsScreenState extends State<AppearanceSettingsScreen> {
         padding: const EdgeInsets.all(10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+            children: [
             Text(
               'Стиль мапи',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 10),
             ...MapStyles.available.map((style) => 
-              ListTile(
-              leading: Radio<String>(
-                value: style.id,
-                groupValue: themeProvider.mapStyle,
-                onChanged: (String? value) {
+              RadioListTile<String>(
+              value: style.id,
+              groupValue: themeProvider.mapStyle,
+              onChanged: (String? value) {
                 if (value != null) {
-                  themeProvider.setMapStyle(value);
+                themeProvider.setMapStyle(value);
                 }
-                },
-              ),
+              },
               title: Text(style.name),
-              trailing: ClipRRect(
+              secondary: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Image.asset(
                 'assets/img/map-styles/${style.id}.png',
