@@ -55,18 +55,21 @@ class TransportScheduleScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                      onTap: () {
-                        Navigator.push(
+                        onTap: () async {
+                        await Future.delayed(const Duration(milliseconds: 300));
+                        if (context.mounted) {
+                          Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => RouteDetailsScreen(
-                              routeId: schedule.routeId,
-                              routeName: schedule.routeName,
-                              transportName: schedule.transportName,
+                            routeId: schedule.routeId,
+                            routeName: schedule.routeName,
+                            transportName: schedule.transportName,
                             ),
                           ),
-                        );
-                      },
+                          );
+                        }
+                        },
                   );
                 },
               ),
