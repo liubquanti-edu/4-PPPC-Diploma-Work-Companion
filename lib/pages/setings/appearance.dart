@@ -50,15 +50,26 @@ class _AppearanceSettingsScreenState extends State<AppearanceSettingsScreen> {
             ),
             const SizedBox(height: 10),
             ...MapStyles.available.map((style) => 
-              RadioListTile(
-                title: Text(style.name),
+              ListTile(
+              leading: Radio<String>(
                 value: style.id,
                 groupValue: themeProvider.mapStyle,
                 onChanged: (String? value) {
-                  if (value != null) {
-                    themeProvider.setMapStyle(value);
-                  }
+                if (value != null) {
+                  themeProvider.setMapStyle(value);
+                }
                 },
+              ),
+              title: Text(style.name),
+              trailing: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.asset(
+                'assets/img/map-styles/${style.id}.png',
+                width: 40,
+                height: 40,
+                fit: BoxFit.cover,
+                ),
+              ),
               ),
             ),
           ],

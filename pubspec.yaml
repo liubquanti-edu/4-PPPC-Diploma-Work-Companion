@@ -68,6 +68,13 @@ flutter:
     - assets/json/map/nightmap.json
     - assets/json/map/retromap.json
     - assets/json/map/silvermap.json
+
+    - assets/img/map-styles/default.png
+    - assets/img/map-styles/aubergine.png
+    - assets/img/map-styles/dark.png
+    - assets/img/map-styles/night.png
+    - assets/img/map-styles/retro.png
+    - assets/img/map-styles/silver.png
   
   
     - assets/badges/square-terminal.svg

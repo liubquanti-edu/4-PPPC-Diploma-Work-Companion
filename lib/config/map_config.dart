@@ -15,18 +15,18 @@ class MapStyle {
 class MapStyles {
   static const List<MapStyle> available = [
     MapStyle(
-      name: 'За замовчуванням',
+      name: 'Стандарт',
       assetPath: '',
       darkAssetPath: 'assets/json/map/auberginemap.json',
       id: 'default'
     ),
     MapStyle(
-      name: 'Білий монохром',
+      name: 'Монохром',
       assetPath: 'assets/json/map/silvermap.json',
       id: 'silver'
     ),
     MapStyle(
-      name: 'Чорний монохром',
+      name: 'Дедінсайд',
       assetPath: 'assets/json/map/darkmap.json',
       id: 'dark'
     ),
