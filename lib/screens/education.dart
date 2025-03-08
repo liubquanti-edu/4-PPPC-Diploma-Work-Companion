@@ -2760,56 +2760,7 @@ class _EducationScreenState extends State<EducationScreen> {
               final groups = (courseData['groups'] as List<dynamic>).cast<int>();
               
               return groups.map((group) {
-                return SizedBox(
-                  width: 300,
-                  height: 200,
-                  child: Card(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Група $group',
-                              style: FluentTheme.of(context).typography.title,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              courseData['name'],
-                              style: FluentTheme.of(context).typography.body,
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            FilledButton(
-                              child: const Text('Редагувати'),
-                              onPressed: () => _showScheduleEditor(
-                                context, 
-                                course.reference, 
-                                group,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            FilledButton(
-                              style: ButtonStyle(
-                                backgroundColor: WidgetStateProperty.all(Colors.red.light),
-                              ),
-                              child: const Text('Очистити'),
-                              onPressed: () => _clearSchedule(
-                                context, 
-                                course.reference, 
-                                group,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                );
+                return _buildScheduleCard(context, course, group);
               });
             }).toList(),
           ),
@@ -2886,13 +2837,14 @@ class _EducationScreenState extends State<EducationScreen> {
     }
   }
 
-  Future<void> _showScheduleEditor(BuildContext context, DocumentReference courseRef, int group) async {
+  Future<void> _showScheduleEditor(BuildContext context, DocumentReference courseRef, int group, bool isNumerator) async {
   final schedule = await courseRef
       .collection('schedule')
       .doc(group.toString())
       .get();
 
   final scheduleData = schedule.data() ?? {};
+  final weekType = isNumerator ? 'numerator' : 'denominator';
   
   // Get all subjects and teachers
   final subjects = <String, Map<String, dynamic>>{};
@@ -2935,7 +2887,7 @@ class _EducationScreenState extends State<EducationScreen> {
   for (var day in days) {
     selectedLessons[day] = {};
     for (var lesson in lessons) {
-      final lessonData = scheduleData[day]?[lesson] ?? {};
+      final lessonData = scheduleData[weekType]?[day]?[lesson] ?? {};
       selectedLessons[day]![lesson] = {
         'subjectId': lessonData['subjectId'],
         'teacherId': lessonData['teacherId'],
@@ -2946,146 +2898,181 @@ class _EducationScreenState extends State<EducationScreen> {
 
   final result = await showDialog<bool>(
     context: context,
-    builder: (context) => ContentDialog(
-      constraints: const BoxConstraints(maxWidth: 1300),
-      title: Text('Розклад для групи $group'),
-      content: SingleChildScrollView(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: days.map((day) {
-            return Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      day,
-                      style: FluentTheme.of(context).typography.subtitle,
-                    ),
-                    const SizedBox(height: 8),
-                    ...lessons.map((lesson) {
-                      final lessonData = selectedLessons[day]![lesson]!;
-                      final roomController = TextEditingController(
-                        text: lessonData['room']?.toString() ?? '',
-                      );
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('$lesson пара'),
-                            const SizedBox(height: 4),
-                            StatefulBuilder(
-                              builder: (context, setState) {
-                                
-                                return Column(
-                                  children: [
-                                    SizedBox(
-                                      width: double.infinity,
-                                      child: ComboBox<String?>(
-                                      isExpanded: true,
-                                      placeholder: const Text('-'),
-                                      value: lessonData['subjectId'],
-                                      items: [
-                                        const ComboBoxItem<String?>(
-                                        value: null,
-                                        child: Text('Немає пари'),
-                                        ),
-                                        ...subjects.entries.map(
-                                        (entry) => ComboBoxItem<String>(
-                                        value: entry.key,
-                                        child: Text(entry.value['name']),
-                                        ),
-                                        ),
-                                      ],
-                                      onChanged: (value) {
-                                        setState(() {
-                                        lessonData['subjectId'] = value;
-                                        });
-                                      },
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      children: [
-                                        Flexible(
-                                          flex: 3,
-                                          child: ComboBox<String?>(
+    builder: (context) => StatefulBuilder( // Add StatefulBuilder here
+      builder: (context, dialogSetState) => ContentDialog(
+        constraints: const BoxConstraints(maxWidth: 1300),
+        title: Text('Розклад для групи $group (${isNumerator ? "Чисельник" : "Знаменник"})'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (!isNumerator) // Show copy button only for denominator
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: FilledButton(
+                  child: const Text('Копіювати з чисельника'),
+                  onPressed: () {
+                    final numeratorData = scheduleData['numerator'] ?? {};
+                    dialogSetState(() { // Use dialogSetState here
+                      for (var day in days) {
+                        for (var lesson in lessons) {
+                          final lessonData = numeratorData[day]?[lesson] ?? {};
+                          selectedLessons[day]![lesson] = {
+                            'subjectId': lessonData['subjectId'],
+                            'teacherId': lessonData['teacherId'],
+                            'room': lessonData['room'],
+                          };
+                        }
+                      }
+                    });
+                  },
+                ),
+              ),
+            // ... rest of the dialog content ...
+            Expanded(
+            child: SingleChildScrollView(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: days.map((day) {
+                  return Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            day,
+                            style: FluentTheme.of(context).typography.subtitle,
+                          ),
+                          const SizedBox(height: 8),
+                          ...lessons.map((lesson) {
+                            final lessonData = selectedLessons[day]![lesson]!;
+                            final roomController = TextEditingController(
+                              text: lessonData['room']?.toString() ?? '',
+                            );
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('$lesson пара'),
+                                  const SizedBox(height: 4),
+                                  StatefulBuilder(
+                                    builder: (context, setState) {
+                                      
+                                      return Column(
+                                        children: [
+                                          SizedBox(
+                                            width: double.infinity,
+                                            child: ComboBox<String?>(
                                             isExpanded: true,
                                             placeholder: const Text('-'),
-                                            value: lessonData['teacherId'],
+                                            value: lessonData['subjectId'],
                                             items: [
                                               const ComboBoxItem<String?>(
-                                                value: null,
-                                                child: Text('Не призначено'),
+                                              value: null,
+                                              child: Text('Немає пари'),
                                               ),
-                                              ...teachers.entries.map(
-                                                (entry) => ComboBoxItem<String>(
-                                                  value: entry.key,
-                                                  child: Text(
-                                                    entry.value['name'],
-                                                    overflow: TextOverflow.ellipsis,
-                                                  ),
-                                                ),
+                                              ...subjects.entries.map(
+                                              (entry) => ComboBoxItem<String>(
+                                              value: entry.key,
+                                              child: Text(entry.value['name']),
+                                              ),
                                               ),
                                             ],
                                             onChanged: (value) {
                                               setState(() {
-                                                lessonData['teacherId'] = value;
+                                              lessonData['subjectId'] = value;
                                               });
                                             },
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Flexible(
-                                          flex: 1,
-                                          child: SizedBox(
-                                            child: TextBox(
-                                              controller: roomController,
-                                              placeholder: 'Ауд.',
-                                              onChanged: (value) {
-                                                lessonData['room'] = value;
-                                              },
                                             ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                      );
-                    }),
-                  ],
-                ),
+                                          const SizedBox(height: 8),
+                                          Row(
+                                            children: [
+                                              Flexible(
+                                                flex: 3,
+                                                child: ComboBox<String?>(
+                                                  isExpanded: true,
+                                                  placeholder: const Text('-'),
+                                                  value: lessonData['teacherId'],
+                                                  items: [
+                                                    const ComboBoxItem<String?>(
+                                                      value: null,
+                                                      child: Text('Не призначено'),
+                                                    ),
+                                                    ...teachers.entries.map(
+                                                      (entry) => ComboBoxItem<String>(
+                                                        value: entry.key,
+                                                        child: Text(
+                                                          entry.value['name'],
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                  onChanged: (value) {
+                                                    setState(() {
+                                                      lessonData['teacherId'] = value;
+                                                    });
+                                                  },
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Flexible(
+                                                flex: 1,
+                                                child: SizedBox(
+                                                  child: TextBox(
+                                                    controller: roomController,
+                                                    placeholder: 'Ауд.',
+                                                    onChanged: (value) {
+                                                      lessonData['room'] = value;
+                                                    },
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
               ),
-            );
-          }).toList(),
+            ),
+          ),
+          ],
         ),
+        actions: [
+          Button(
+            child: const Text('Скасувати'),
+            onPressed: () => Navigator.pop(context, false),
+          ),
+          FilledButton(
+            child: const Text('Зберегти'),
+            onPressed: () => Navigator.pop(context, true),
+          ),
+        ],
       ),
-      actions: [
-        Button(
-          child: const Text('Скасувати'),
-          onPressed: () => Navigator.pop(context, false),
-        ),
-        FilledButton(
-          child: const Text('Зберегти'),
-          onPressed: () => Navigator.pop(context, true),
-        ),
-      ],
     ),
   );
 
   if (result == true) {
     try {
+      final existingData = scheduleData;
+      existingData[weekType] = selectedLessons;
+
       await courseRef
           .collection('schedule')
           .doc(group.toString())
-          .set(selectedLessons);
+          .set(existingData, SetOptions(merge: true));
 
       if (!mounted) return;
       await displayInfoBar(
@@ -3093,7 +3080,7 @@ class _EducationScreenState extends State<EducationScreen> {
         builder: (context, close) {
           return InfoBar(
             title: const Text('Успіх'),
-            content: const Text('Розклад збережено'),
+            content: Text('Розклад (${isNumerator ? "чисельник" : "знаменник"}) збережено'),
             severity: InfoBarSeverity.success,
             action: IconButton(
               icon: const Icon(FluentIcons.clear),
@@ -3120,6 +3107,72 @@ class _EducationScreenState extends State<EducationScreen> {
       );
     }
   }
+}
+
+  Widget _buildScheduleCard(BuildContext context, DocumentSnapshot course, int group) {
+  return SizedBox(
+    width: 200,
+    height: 300,
+    child: Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              children: [
+                Text(
+                  'Група $group',
+                  style: FluentTheme.of(context).typography.subtitle,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  (course.data() as Map<String, dynamic>)['name'],
+                  style: FluentTheme.of(context).typography.body,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+            Column(
+              children: [
+                FilledButton(
+                  child: const Text('Чисельник'),
+                  onPressed: () => _showScheduleEditor(
+                    context, 
+                    course.reference, 
+                    group,
+                    true,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                FilledButton(
+                  child: const Text('Знаменник'),
+                  onPressed: () => _showScheduleEditor(
+                    context, 
+                    course.reference, 
+                    group,
+                    false,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                FilledButton(
+                  style: ButtonStyle(
+                    backgroundColor: WidgetStateProperty.all(Colors.red.light),
+                  ),
+                  child: const Text('Очистити'),
+                  onPressed: () => _clearSchedule(
+                    context, 
+                    course.reference, 
+                    group,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 }
 
   @override
