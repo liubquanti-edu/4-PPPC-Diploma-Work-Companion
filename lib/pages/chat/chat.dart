@@ -90,10 +90,26 @@ class _ChatScreenState extends State<ChatScreen> {
 
   setState(() {
     _isUploading = true;
-    _messageController.clear();
   });
 
   try {
+    if (_isEditing) {
+      await _database
+          .child('chats/$chatRoomId/messages/$_editingMessageKey')
+          .update({
+        'text': messageText,
+        'edited': true,
+      });
+      
+      setState(() {
+        _editingMessageKey = null;
+        _messageController.clear(); // Очищаємо поле введення
+        _isUploading = false;
+      });
+      return;
+    }
+
+    // Rest of the existing _sendMessage code for new messages
     debugPrint('Початок відправки повідомлення');
     final messageRef = _database.child('chats/$chatRoomId/messages').push();
     String? imageUrl;
@@ -200,6 +216,8 @@ class _ChatScreenState extends State<ChatScreen> {
       }
     }
 
+    _messageController.clear(); // Додаємо очищення поля введення
+    
     setState(() {
       _attachedImage = null;
       _isUploading = false;
@@ -875,7 +893,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           ),
                           IconButton(
                             icon: const Icon(Icons.close_rounded),
-                            onPressed: _cancelReply,
+                            onPressed: _isUploading ? null : _cancelReply,
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
                           ),
@@ -905,8 +923,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                       top: -8,
                                       right: -8,
                                       child: IconButton(
-                                        icon: const Icon(Icons.close, size: 16),
-                                        onPressed: _detachImage,
+                                        icon: const Icon(Icons.close_rounded, size: 16),
+                                        onPressed: _isUploading ? null : _detachImage,
                                         iconSize: 16,
                                         style: IconButton.styleFrom(
                                         backgroundColor: Colors.black54,
@@ -927,17 +945,18 @@ class _ChatScreenState extends State<ChatScreen> {
                     children: [
                       if (!_isEditing)
                         IconButton(
-                        icon: const Icon(Icons.image_rounded),
-                        onPressed: _pickImage,
+                          icon: const Icon(Icons.image_rounded),
+                          onPressed: _isUploading ? null : _pickImage,
                         ),
                       if (_isEditing)
                         IconButton(
                           icon: const Icon(Icons.close_rounded),
-                          onPressed: _cancelEdit,
+                          onPressed: _isUploading ? null : _cancelEdit,
                         ),
                       Expanded(
                         child: TextField(
                           controller: _messageController,
+                          enabled: !_isUploading,
                           textCapitalization: TextCapitalization.sentences,
                           decoration: InputDecoration(
                             hintText: _isEditing 
@@ -957,11 +976,11 @@ class _ChatScreenState extends State<ChatScreen> {
                           maxLength: 1000,
                           buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
                           textInputAction: TextInputAction.send,
-                          onSubmitted: (_) => _sendMessage(),
+                          onSubmitted: _isUploading ? null : (_) => _sendMessage(), // Disable when uploading
                         ),
                       ),
                       IconButton(
-                        onPressed: _sendMessage,
+                        onPressed: _isUploading ? null : _sendMessage, // Disable when uploading
                         icon: Icon(_isEditing ? Icons.check_rounded : Icons.send_rounded),
                       ),
                     ],
