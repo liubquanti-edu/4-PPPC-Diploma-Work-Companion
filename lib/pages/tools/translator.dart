@@ -90,6 +90,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
               child: Column(
                 children: [
                   TextField(
+                  autofocus: true,
                   controller: _textController,
                   decoration: const InputDecoration(
                     hintText: 'Текст...',
@@ -134,29 +135,38 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  DropdownButton<String>(
-                    value: _fromLanguage,
-                    items: _languages.entries.map((entry) {
-                      return DropdownMenuItem(
-                        value: entry.key,
-                        child: Text(entry.value),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        _fromLanguage = value!;
-                        _translatedText = '';
-                        if (_fromLanguage == _toLanguage) {
+                      Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.onSecondary,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: DropdownButton<String>(
+                        icon: const SizedBox.shrink(),
+                        alignment: Alignment.center,
+                        value: _fromLanguage,
+                        items: _languages.entries.map((entry) {
+                        return DropdownMenuItem(
+                          value: entry.key,
+                          child: Text(entry.value),
+                        );
+                        }).toList(),
+                        onChanged: (value) {
+                        setState(() {
+                          _fromLanguage = value!;
+                          _translatedText = '';
+                          if (_fromLanguage == _toLanguage) {
                           _toLanguage = _fromLanguage == 'uk' ? 'en' : 'uk';
-                        }
-                        // Викликаємо переклад якщо є текст
-                        if (_textController.text.isNotEmpty) {
+                          }
+                          // Викликаємо переклад якщо є текст
+                          if (_textController.text.isNotEmpty) {
                           _translateText();
-                        }
-                      });
-                    },
-                    underline: Container(),
-                  ),
+                          }
+                        });
+                        },
+                        underline: Container(),
+                      ),
+                      ),
                   IconButton(
                     icon: const Icon(Icons.swap_horiz),
                     onPressed: () {
@@ -172,7 +182,15 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                       });
                     },
                   ),
-                    DropdownButton<String>(
+                    Container(
+                      decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.onSecondary,
+                      borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: DropdownButton<String>(
+                      icon: const SizedBox.shrink(),
+                      alignment: Alignment.center,
                     value: _toLanguage,
                     items: _languages.entries.map((entry) {
                       return DropdownMenuItem(
@@ -194,6 +212,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                       });
                     },
                     underline: Container(),
+                  ),
                   ),
                 ],
               ),
