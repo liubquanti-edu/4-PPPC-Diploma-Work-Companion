@@ -13,9 +13,25 @@ class CalculatorScreen extends StatelessWidget {
       body: SizedBox(
         width: double.infinity,
         child: SimpleCalculator(
-          theme: CalculatorThemeData(
+            theme: CalculatorThemeData(
+              borderWidth: 0,
             displayColor: Colors.transparent,
-            displayStyle: const TextStyle(fontSize: 40),
+            displayStyle: const TextStyle(
+              fontSize: 40,
+              fontFamily: 'Comfortaa',
+            ),
+            operatorStyle: const TextStyle(
+              fontSize: 40,
+              fontFamily: 'Comfortaa',
+            ),
+            commandStyle: const TextStyle(
+              fontSize: 30,
+              fontFamily: 'Comfortaa',
+            ),
+            numStyle: const TextStyle(
+              fontSize: 30,
+              fontFamily: 'Comfortaa',
+            ),
             operatorColor: Theme.of(context).colorScheme.onPrimary,
             commandColor: Theme.of(context).colorScheme.onSecondary,
           ),

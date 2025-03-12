@@ -19,21 +19,27 @@ class ToolsScreen extends StatelessWidget {
         children: [
           _buildToolButton(
             context,
-            icon: Icons.vibration,
+            icon: Icons.vibration_rounded,
             label: 'Перевірка вібрації',
-            onTap: () => Navigator.push(
-              context,
+            onTap: () async {
+              await Future.delayed(const Duration(milliseconds: 300));
+              Navigator.push(
+              context, 
               MaterialPageRoute(builder: (context) => const VibrationTestScreen()),
-            ),
+              );
+            },
           ),
           _buildToolButton(
             context,
-            icon: Icons.calculate,
+            icon: Icons.calculate_rounded,
             label: 'Калькулятор',
-            onTap: () => Navigator.push(
+            onTap: () async {
+              await Future.delayed(const Duration(milliseconds: 300));
+              Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const CalculatorScreen()),
-            ),
+              );
+            },
           ),
         ],
       ),
@@ -47,7 +53,7 @@ class ToolsScreen extends StatelessWidget {
     required VoidCallback onTap,
   }) {
     return Material(
-      color: Theme.of(context).colorScheme.primaryContainer,
+      color: Theme.of(context).colorScheme.onSecondary,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
@@ -60,14 +66,12 @@ class ToolsScreen extends StatelessWidget {
               Icon(
                 icon,
                 size: 48,
-                color: Theme.of(context).colorScheme.onPrimaryContainer,
               ),
               const SizedBox(height: 8),
               Text(
                 label,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Theme.of(context).colorScheme.onPrimaryContainer,
                 ),
               ),
             ],
