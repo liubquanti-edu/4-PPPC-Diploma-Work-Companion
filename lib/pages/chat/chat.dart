@@ -13,6 +13,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:vibration/vibration.dart';
 
 class ChatScreen extends StatefulWidget {
   final String recipientId;
@@ -543,6 +544,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               onDismissed: null,
                               confirmDismiss: (direction) async {
                                 _startReply(message);
+                                await Vibration.vibrate(duration: 50); // Додаємо коротку вібрацію
                                 return false;
                               },
                               background: Container(
