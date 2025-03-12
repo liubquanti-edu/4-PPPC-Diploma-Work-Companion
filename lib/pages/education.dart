@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import '/models/course.dart';
 import 'package:card_loading/card_loading.dart';
+import './tools/tools.dart';
 
 class EducationPage extends StatefulWidget {
   const EducationPage({Key? key}) : super(key: key);
@@ -349,6 +350,18 @@ class _EducationPageState extends State<EducationPage> {
             ],
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ToolsScreen(),
+            ),
+          );
+        },
+        child: const Icon(Icons.build),
+        tooltip: 'Інструменти',
       ),
     );
   }
