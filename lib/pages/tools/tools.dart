@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'vibration.dart';
 import 'calculator.dart';
+import 'translator.dart';
 
 class ToolsScreen extends StatelessWidget {
   const ToolsScreen({super.key});
@@ -38,6 +39,18 @@ class ToolsScreen extends StatelessWidget {
               Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const CalculatorScreen()),
+              );
+            },
+          ),
+          _buildToolButton(
+            context,
+            icon: Icons.translate_rounded,
+            label: 'Перекладач',
+            onTap: () async {
+              await Future.delayed(const Duration(milliseconds: 300));
+              Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const TranslatorScreen()),
               );
             },
           ),
