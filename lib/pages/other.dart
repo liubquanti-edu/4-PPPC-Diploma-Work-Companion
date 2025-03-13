@@ -19,112 +19,197 @@ class OtherPage extends StatelessWidget {
       appBar: AppBar(
         toolbarHeight: 20,
       ),
-      body: Column(
-        children: [
-          StreamBuilder<DocumentSnapshot>(
-            stream: _firestore
-                .collection('students')
-                .doc(_auth.currentUser!.uid)
-                .snapshots(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return const SizedBox(height: 100);
-              }
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
+              StreamBuilder<DocumentSnapshot>(
+                stream: _firestore
+                    .collection('students')
+                    .doc(_auth.currentUser!.uid)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const SizedBox(height: 100);
+                  }
 
-              final userData = snapshot.data!.data() as Map<String, dynamic>?;
+                  final userData = snapshot.data!.data() as Map<String, dynamic>?;
 
-              return Material(
-                child: InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ProfilePage(),
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 10.0),
+                    child: InkWell(
+                      customBorder: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                    );
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        CachedAvatar(
-                          imageUrl: userData?['avatar'],
-                          radius: 30,
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${userData?['surname'] ?? ''} ${userData?['name'] ?? ''}',
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                              Text(
-                                '@${userData?['nickname'] ?? ''}',
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
-                            ],
+                      onTap: () async {
+                        await Future.delayed(const Duration(milliseconds: 300));
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                          builder: (context) => const ProfilePage(),
+                          ),
+                        );
+                      },
+                      child: Ink(
+                        padding: const EdgeInsets.all(10.0),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.onSecondary,
+                          borderRadius: BorderRadius.circular(10.0),
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.primary,
+                            width: 2.0,
                           ),
                         ),
-                        const Icon(Icons.arrow_forward),
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              height: 50,
+                              width: 50,
+                              child: CachedAvatar(
+                                imageUrl: userData?['avatar'],
+                                radius: 25,
+                              ),
+                            ),
+                            const SizedBox(width: 10.0),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${userData?['surname'] ?? ''} ${userData?['name'] ?? ''}',
+                                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16.0),
+                                ),
+                                Text(
+                                  '@${userData?['nickname'] ?? ''}',
+                                  style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(width: 10.0),
+                            Expanded(
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: Icon(
+                                  Icons.arrow_forward,
+                                  size: 30.0,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10.0),
+                child: InkWell(
+                  customBorder: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                    onTap: () async {
+                    await Future.delayed(const Duration(milliseconds: 300));
+                  },
+                  child: Ink(
+                    padding: const EdgeInsets.all(10.0),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.onSecondary,
+                      borderRadius: BorderRadius.circular(10.0),
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.primary,
+                        width: 2.0,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          height: 50,
+                          width: 50,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.surfaceContainer,
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: Icon(
+                              Icons.settings_rounded,
+                              size: 30.0,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10.0),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Налаштування', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16.0)),
+                            Text('Налаштування програми', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),
+                          ],
+                        ),
+                        const SizedBox(width: 10.0),
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: Icon(Icons.arrow_forward, size: 30.0, color: Theme.of(context).colorScheme.primary),
+                          ),
+                        ),
                       ],
                     ),
                   ),
                 ),
-              );
-            },
+              ),
+              GridView.count(
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                crossAxisCount: 3,
+                mainAxisSpacing: 10,
+                crossAxisSpacing: 10,
+                children: [
+                  _buildToolButton(
+                    context,
+                    icon: Icons.vibration_rounded,
+                    label: 'Перевірка вібрації',
+                    onTap: () async {
+                      await Future.delayed(const Duration(milliseconds: 300));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const VibrationTestScreen()),
+                      );
+                    },
+                  ),
+                  _buildToolButton(
+                    context,
+                    icon: Icons.calculate_rounded,
+                    label: 'Калькулятор',
+                    onTap: () async {
+                      await Future.delayed(const Duration(milliseconds: 300));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const CalculatorScreen()),
+                      );
+                    },
+                  ),
+                  _buildToolButton(
+                    context,
+                    icon: Icons.translate_rounded,
+                    label: 'Перекладач',
+                    onTap: () async {
+                      await Future.delayed(const Duration(milliseconds: 300));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const TranslatorScreen()),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ],
           ),
-          Expanded(
-            child: GridView.count(
-              padding: const EdgeInsets.all(16),
-              crossAxisCount: 3,
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 16,
-              children: [
-                _buildToolButton(
-                  context,
-                  icon: Icons.vibration_rounded,
-                  label: 'Перевірка вібрації',
-                  onTap: () async {
-                    await Future.delayed(const Duration(milliseconds: 300));
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const VibrationTestScreen()),
-                    );
-                  },
-                ),
-                _buildToolButton(
-                  context,
-                  icon: Icons.calculate_rounded,
-                  label: 'Калькулятор',
-                  onTap: () async {
-                    await Future.delayed(const Duration(milliseconds: 300));
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const CalculatorScreen()),
-                    );
-                  },
-                ),
-                _buildToolButton(
-                  context,
-                  icon: Icons.translate_rounded,
-                  label: 'Перекладач',
-                  onTap: () async {
-                    await Future.delayed(const Duration(milliseconds: 300));
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const TranslatorScreen()),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
