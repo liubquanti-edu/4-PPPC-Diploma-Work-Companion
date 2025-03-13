@@ -505,9 +505,9 @@ class UserProfilePage extends StatelessWidget {
                                                     textAlign: TextAlign.center,
                                                     style: TextStyle(
                                                     color: rating > 0 
-                                                      ? Colors.green
+                                                      ? Color(0xff9ed58b)
                                                       : rating < 0 
-                                                        ? Colors.red 
+                                                        ? Color(0xFFFE9F9F)
                                                         : null,
                                                     ),
                                                   ),

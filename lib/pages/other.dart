@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'vibration.dart';
-import 'calculator.dart';
-import 'translator.dart';
+import './tools/vibration.dart';
+import './tools/calculator.dart';
+import './tools/translator.dart';
 
-class ToolsScreen extends StatelessWidget {
-  const ToolsScreen({super.key});
+class OtherPage extends StatelessWidget {
+  const OtherPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +14,7 @@ class ToolsScreen extends StatelessWidget {
       ),
       body: GridView.count(
         padding: const EdgeInsets.all(16),
-        crossAxisCount: 2,
+        crossAxisCount: 3,
         mainAxisSpacing: 16,
         crossAxisSpacing: 16,
         children: [
@@ -78,7 +78,7 @@ class ToolsScreen extends StatelessWidget {
             children: [
               Icon(
                 icon,
-                size: 48,
+                size: 30,
               ),
               const SizedBox(height: 8),
               Text(

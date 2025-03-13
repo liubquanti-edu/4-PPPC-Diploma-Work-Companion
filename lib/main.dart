@@ -5,7 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
 import 'firebase_options.dart';
 import 'package:pppc_companion/pages/contact.dart';
-import 'package:pppc_companion/pages/profile.dart';
+import 'package:pppc_companion/pages/other.dart';
 import 'pages/home.dart';
 import 'pages/education.dart';
 import 'pages/auth/email_screen.dart';
@@ -397,7 +397,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           ),
           const EducationPage(),
           const ContactPage(),
-          const ProfilePage(),
+          const OtherPage(),
         ];
 
         final bool isTablet = MediaQuery.of(context).size.width >= 600;
@@ -430,9 +430,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                       label: Text('Зв\'язок'),
                     ),
                     NavigationRailDestination(
-                      icon: Icon(Icons.person_outlined),
-                      selectedIcon: Icon(Icons.person_rounded),
-                      label: Text('Профіль'),
+                      icon: Icon(Icons.more_horiz_outlined),
+                      selectedIcon: Icon(Icons.more_horiz_rounded),
+                      label: Text('Інше'),
                     ),
                   ],
                 ),
@@ -456,22 +456,22 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
               NavigationDestination(
                 icon: Icon(Icons.home_outlined),
                 selectedIcon: Icon(Icons.home_rounded),
-                label: 'Головна',
+                label: 'Домівка',
               ),
               NavigationDestination(
                 icon: Icon(Icons.school_outlined),
                 selectedIcon: Icon(Icons.school_rounded),
-                label: 'Освіта',
+                label: 'Навчання',
               ),
               NavigationDestination(
-                icon: Icon(Icons.message_outlined),
-                selectedIcon: Icon(Icons.message_rounded),
-                label: 'Зв\'язок',
+                icon: Icon(Icons.people_outlined),
+                selectedIcon: Icon(Icons.people_rounded),
+                label: 'Спільнота',
               ),
               NavigationDestination(
-                icon: Icon(Icons.person_outlined),
-                selectedIcon: Icon(Icons.person_rounded),
-                label: 'Профіль',
+                icon: Icon(Icons.more_horiz_outlined),
+                selectedIcon: Icon(Icons.more_horiz_rounded),
+                label: 'Інше',
               ),
             ],
           ),
