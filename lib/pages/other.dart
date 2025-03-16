@@ -4,8 +4,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import './tools/vibration.dart';
 import './tools/calculator.dart';
 import './tools/translator.dart';
-import './other/profile.dart';
+import './settings/settings.dart'; 
 import '/models/avatars.dart';
+import 'package:pppc_companion/pages/users/user.dart';
 
 class OtherPage extends StatelessWidget {
   const OtherPage({super.key});
@@ -42,12 +43,14 @@ class OtherPage extends StatelessWidget {
                       customBorder: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      onTap: () async {
-                        await Future.delayed(const Duration(milliseconds: 300));
+                      onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                          builder: (context) => const ProfilePage(),
+                            builder: (context) => UserProfilePage(
+                              userId: _auth.currentUser!.uid,
+                              isCurrentUser: true,
+                            ),
                           ),
                         );
                       },
@@ -108,9 +111,15 @@ class OtherPage extends StatelessWidget {
                 child: InkWell(
                   customBorder: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
-                  ),
+                    ),
                     onTap: () async {
                     await Future.delayed(const Duration(milliseconds: 300));
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                      builder: (context) => const SettingsPage(),
+                      ),
+                    );
                   },
                   child: Ink(
                     padding: const EdgeInsets.all(10.0),

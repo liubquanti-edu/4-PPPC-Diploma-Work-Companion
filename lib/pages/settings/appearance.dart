@@ -26,9 +26,11 @@ class _AppearanceSettingsScreenState extends State<AppearanceSettingsScreen> {
 
   Future<void> _loadStations() async {
     final String response = await rootBundle.loadString('assets/json/stations.json');
-    setState(() {
-      _stations = json.decode(response);
-    });
+    if (mounted) {
+      setState(() {
+        _stations = json.decode(response);
+      });
+    }
   }
 
   @override
