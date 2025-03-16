@@ -470,7 +470,7 @@ class __FollowingPostsTabState extends State<_FollowingPostsTab> with AutomaticK
 
             return ListView.builder(
               key: const PageStorageKey('followingPostsList'),
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
               itemCount: posts.length,
               itemBuilder: (context, index) {
                 final post = posts[index];
