@@ -417,17 +417,17 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     NavigationRailDestination(
                       icon: Icon(Icons.home_outlined),
                       selectedIcon: Icon(Icons.home_rounded),
-                      label: Text('Головна'),
+                      label: Text('Домівка'),
                     ),
                     NavigationRailDestination(
                       icon: Icon(Icons.school_outlined),
                       selectedIcon: Icon(Icons.school_rounded),
-                      label: Text('Освіта'),
+                      label: Text('Навчання'),
                     ),
                     NavigationRailDestination(
-                      icon: Icon(Icons.message_outlined),
-                      selectedIcon: Icon(Icons.message_rounded),
-                      label: Text('Зв\'язок'),
+                      icon: Icon(Icons.people_outlined),
+                      selectedIcon: Icon(Icons.people_rounded),
+                      label: Text('Спільнота'),
                     ),
                     NavigationRailDestination(
                       icon: Icon(Icons.more_horiz_outlined),

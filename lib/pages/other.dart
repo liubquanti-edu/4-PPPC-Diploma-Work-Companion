@@ -66,39 +66,37 @@ class OtherPage extends StatelessWidget {
                         ),
                         child: Row(
                           children: [
-                            SizedBox(
-                              height: 50,
-                              width: 50,
-                              child: CachedAvatar(
-                                imageUrl: userData?['avatar'],
-                                radius: 25,
+                          SizedBox(
+                            height: 50,
+                            width: 50,
+                            child: CachedAvatar(
+                            imageUrl: userData?['avatar'],
+                            radius: 25,
+                            ),
+                          ),
+                          const SizedBox(width: 10.0),
+                          Expanded(
+                            child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                              '${userData?['surname'] ?? ''} ${userData?['name'] ?? ''}',
+                              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16.0),
+                              overflow: TextOverflow.ellipsis,
                               ),
-                            ),
-                            const SizedBox(width: 10.0),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '${userData?['surname'] ?? ''} ${userData?['name'] ?? ''}',
-                                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16.0),
-                                ),
-                                Text(
-                                  '@${userData?['nickname'] ?? ''}',
-                                  style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(width: 10.0),
-                            Expanded(
-                              child: Align(
-                                alignment: Alignment.centerRight,
-                                child: Icon(
-                                  Icons.arrow_forward,
-                                  size: 30.0,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
+                              Text(
+                              '@${userData?['nickname'] ?? ''}',
+                              style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0),
+                              overflow: TextOverflow.ellipsis,
                               ),
+                            ],
                             ),
+                          ),
+                          Icon(
+                            Icons.arrow_forward,
+                            size: 30.0,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
                           ],
                         ),
                       ),
@@ -132,37 +130,43 @@ class OtherPage extends StatelessWidget {
                       ),
                     ),
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        SizedBox(
-                          height: 50,
-                          width: 50,
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surfaceContainer,
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            child: Icon(
-                              Icons.settings_rounded,
-                              size: 30.0,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
+                      SizedBox(
+                        height: 50,
+                        width: 50,
+                        child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surfaceContainer,
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Icon(
+                          Icons.settings_rounded,
+                          size: 30.0,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        ),
+                      ),
+                      const SizedBox(width: 10.0),
+                      Expanded(
+                        child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Налаштування', 
+                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16.0),
+                          overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                        const SizedBox(width: 10.0),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Налаштування', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16.0)),
-                            Text('Налаштування програми', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),
-                          ],
-                        ),
-                        const SizedBox(width: 10.0),
-                        Expanded(
-                          child: Align(
-                            alignment: Alignment.centerRight,
-                            child: Icon(Icons.arrow_forward, size: 30.0, color: Theme.of(context).colorScheme.primary),
+                          Text('Налаштування програми', 
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0),
+                          overflow: TextOverflow.ellipsis,
                           ),
+                        ],
                         ),
+                      ),
+                      Icon(Icons.arrow_forward, 
+                        size: 30.0, 
+                        color: Theme.of(context).colorScheme.primary
+                      ),
                       ],
                     ),
                   ),
@@ -247,11 +251,13 @@ class OtherPage extends StatelessWidget {
                 icon,
                 size: 30,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 8),  
               Text(
                 label,
                 textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
+                  fontSize: 12,
                 ),
               ),
             ],
