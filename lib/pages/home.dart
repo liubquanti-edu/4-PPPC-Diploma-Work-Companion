@@ -8,6 +8,7 @@ import 'package:card_loading/card_loading.dart';
 import 'package:weather/weather.dart';
 import 'package:parallax_rain/parallax_rain.dart';
 import 'dart:async';
+import 'dart:math';
 import 'config/api.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -1010,7 +1011,9 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                               ),
                                             ),
                                             Column(
-                                            children: List.generate(5, (index) => ListTile(
+                                            children: List.generate(
+                                            min(schedules?.length ?? 5, 5), 
+                                            (index) => ListTile(
                                             contentPadding: const EdgeInsets.only( top: 5, left: 10.0, right: 10.0),
                                             leading: CardLoading(
                                             height: 50,
