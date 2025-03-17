@@ -50,3 +50,4 @@ example.json
 /.firebaserc
 /functions
 /lib/answer.json
+/android/local.properties
