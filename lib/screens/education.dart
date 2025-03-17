@@ -2846,11 +2846,8 @@ class _EducationScreenState extends State<EducationScreen> {
   final scheduleData = schedule.data() ?? {};
   final weekType = isNumerator ? 'numerator' : 'denominator';
   
-  // Get all subjects and teachers
+  // Get all subjects with their commission IDs
   final subjects = <String, Map<String, dynamic>>{};
-  final teachers = <String, Map<String, dynamic>>{};
-
-  // Load subjects
   final commissionsSnapshot = await FirebaseFirestore.instance
       .collection('cyclecommission')
       .get();
@@ -2864,11 +2861,14 @@ class _EducationScreenState extends State<EducationScreen> {
       subjects[doc.id] = {
         'name': doc.data()['name'] as String,
         'ref': doc.reference,
+        'commissionId': commission.id, // Store commission ID
+        'commissionName': commission.data()['name'] as String,
       };
     }
   }
 
-  // Load teachers
+  // Get all teachers
+  final teachers = <String, Map<String, dynamic>>{};
   final teachersSnapshot = await FirebaseFirestore.instance
       .collection('teachers')
       .get();
@@ -2892,6 +2892,7 @@ class _EducationScreenState extends State<EducationScreen> {
         'subjectId': lessonData['subjectId'],
         'teacherId': lessonData['teacherId'],
         'room': lessonData['room'],
+        'commissionId': lessonData['commissionId'], // Add commission ID field
       };
     }
   }
@@ -3066,8 +3067,25 @@ class _EducationScreenState extends State<EducationScreen> {
 
   if (result == true) {
     try {
+      final dataToSave = <String, Map<String, Map<String, dynamic>>>{};
+      
+      for (var day in days) {
+        dataToSave[day] = {};
+        for (var lesson in lessons) {
+          final lessonData = selectedLessons[day]![lesson]!;
+          if (lessonData['subjectId'] != null) {
+            dataToSave[day]![lesson] = {
+              'subjectId': lessonData['subjectId'],
+              'teacherId': lessonData['teacherId'],
+              'room': lessonData['room'],
+              'commissionId': subjects[lessonData['subjectId']]!['commissionId'], // Add commission ID
+            };
+          }
+        }
+      }
+
       final existingData = scheduleData;
-      existingData[weekType] = selectedLessons;
+      existingData[weekType] = dataToSave;
 
       await courseRef
           .collection('schedule')
