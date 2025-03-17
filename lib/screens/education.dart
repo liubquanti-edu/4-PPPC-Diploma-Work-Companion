@@ -2880,7 +2880,7 @@ class _EducationScreenState extends State<EducationScreen> {
     };
   }
 
-  final days = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', "П'ятниця"];
+  final days = ['monday', 'tuesday', 'wednesday', 'thursday', "friday"];
   final lessons = ['1', '2', '3', '4'];
   
   final selectedLessons = <String, Map<String, Map<String, dynamic>>>{};
