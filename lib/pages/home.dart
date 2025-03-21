@@ -39,6 +39,9 @@ class _MyHomePageState extends State<MyHomePage> {
   late ScrollController _scrollController;
   bool _showAppBarLogo = false;
   List<Map<String, dynamic>> _emergencyMessages = [];
+  Map<String, dynamic> _cachedSubjects = {};
+  Map<String, dynamic> _cachedTeachers = {};
+  DateTime? _lastCacheUpdate;
 
   @override
   void initState() {
@@ -146,35 +149,124 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<List<Lesson>> _fetchTimetable() async {
+  try {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return [];
 
+    // Get user's group
     final userDoc = await FirebaseFirestore.instance
         .collection('students')
         .doc(user.uid)
         .get();
     final group = userDoc.data()?['group'];
+    if (group == null) return [];
 
-    final weekday = DateFormat('EEEE').format(DateTime.now()).toLowerCase();
-    
-    final weekType = WeekType.getCurrentType();
-
-    final snapshot = await FirebaseFirestore.instance
-        .collection('timetable')
-        .doc(group.toString())
-        .collection(weekday)
-        .orderBy(FieldPath.documentId)
+    // Get current course
+    final now = Timestamp.now();
+    final coursesSnapshot = await FirebaseFirestore.instance
+        .collection('courses')
+        .where('groups', arrayContains: group)
+        .where('start', isLessThanOrEqualTo: now)
+        .where('end', isGreaterThan: now)
+        .limit(1)
         .get();
 
-    return snapshot.docs.map((doc) {
-      final lesson = Lesson.fromJson(doc.data());
-      if (lesson.week == null || lesson.week == weekType) {
-        return lesson;
-      }
-      return null;
-    }).whereType<Lesson>().toList();
-  }
+    if (coursesSnapshot.docs.isEmpty) return [];
 
+    final courseDoc = coursesSnapshot.docs.first;
+    
+    // Get schedule for user's group
+    final scheduleDoc = await courseDoc.reference
+        .collection('schedule')
+        .doc(group.toString())
+        .get();
+
+    if (!scheduleDoc.exists) return [];
+
+    // Determine current week type and day
+    final weekType = WeekType.getCurrentType();
+    final weekday = DateFormat('EEEE').format(DateTime.now()).toLowerCase();
+
+    // Get schedule data for current week type
+    final weekData = scheduleDoc.data()?[weekType] as Map<String, dynamic>?;
+    if (weekData == null) return [];
+
+    // Get schedule for current day
+    final daySchedule = weekData[weekday] as Map<String, dynamic>?;
+    if (daySchedule == null) return [];
+
+    // Check if cache needs refresh (every 24 hours)
+    if (_lastCacheUpdate == null || 
+        DateTime.now().difference(_lastCacheUpdate!) > const Duration(hours: 24)) {
+      _cachedSubjects.clear();
+      _cachedTeachers.clear();
+      _lastCacheUpdate = DateTime.now();
+    }
+
+    final lessons = <Lesson>[];
+    
+    // Sort lesson numbers to ensure correct order
+    final sortedLessonNumbers = daySchedule.keys.toList()..sort();
+    
+    for (var lessonNumber in sortedLessonNumbers) {
+      final lessonData = daySchedule[lessonNumber] as Map<String, dynamic>;
+      final subjectId = lessonData['subjectId'];
+      final teacherId = lessonData['teacherId'];
+      final commissionId = lessonData['commissionId'];
+
+      // Get subject data (from cache or Firestore)
+      String? subjectName;
+      if (_cachedSubjects.containsKey(subjectId)) {
+        subjectName = _cachedSubjects[subjectId]['name'];
+      } else {
+        final commissionDoc = await FirebaseFirestore.instance
+            .collection('cyclecommission')
+            .doc(commissionId)
+            .get();
+
+        final subjectDoc = await commissionDoc.reference
+            .collection('subjects')
+            .doc(subjectId)
+            .get();
+            
+        if (subjectDoc.exists) {
+          _cachedSubjects[subjectId] = subjectDoc.data() ?? {};
+          subjectName = subjectDoc.data()?['name'];
+        }
+      }
+
+      // Skip this lesson if subject name is null
+      if (subjectName == null) continue;
+
+      // Get teacher data (from cache or Firestore)
+      String? teacherName;
+      if (_cachedTeachers.containsKey(teacherId)) {
+        teacherName = _cachedTeachers[teacherId]['name'];
+      } else {
+        final teacherDoc = await FirebaseFirestore.instance
+            .collection('teachers')
+            .doc(teacherId)
+            .get();
+            
+        if (teacherDoc.exists) {
+          _cachedTeachers[teacherId] = teacherDoc.data() ?? {};
+          teacherName = teacherDoc.data()?['name'];
+        }
+      }
+
+      lessons.add(Lesson(
+        name: subjectName,
+        place: lessonData['room'] ?? '',
+        prof: teacherName ?? '',
+      ));
+    }
+
+    return lessons;
+  } catch (e) {
+    print('Error fetching timetable: $e');
+    return [];
+  }
+}
 
 Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
   final doc = await FirebaseFirestore.instance
