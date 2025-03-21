@@ -23,6 +23,7 @@ import 'dart:io';
 import 'dart:convert';
 import '/providers/transport_provider.dart';
 import 'package:pppc_companion/pages/transport/route_details.dart';
+import 'package:flutter/services.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -355,6 +356,19 @@ class MyApp extends StatelessWidget {
                 fontFamily: 'Comfortaa',
               ),
               themeMode: themeProvider.themeMode,
+              builder: (context, child) {
+                // Set navigation bar color based on theme and update on theme changes
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+                    systemNavigationBarColor: Theme.of(context).colorScheme.onSecondary,
+                    systemNavigationBarIconBrightness: Theme.of(context).brightness == Brightness.light 
+                        ? Brightness.dark 
+                        : Brightness.light,
+                  ));
+                });
+                
+                return child!;
+              },
               home: StreamBuilder<User?>(
                 stream: FirebaseAuth.instance.authStateChanges(),
                 builder: (context, snapshot) {
