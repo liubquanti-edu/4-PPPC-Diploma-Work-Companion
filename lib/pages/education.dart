@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import '/models/course.dart';
+import 'package:pppc_companion/pages/education/event.dart';
 import 'package:card_loading/card_loading.dart';
 
 class EducationPage extends StatefulWidget {
@@ -104,8 +105,6 @@ class _EducationPageState extends State<EducationPage> {
   Future<void> _fetchCourseEvents(String courseId) async {
     if (!mounted) return;
     
-    // Вже встановили _isLoadingEvents = true в _initData
-    
     try {
       final eventsSnapshot = await _firestore
           .collection('courses')
@@ -121,6 +120,7 @@ class _EducationPageState extends State<EducationPage> {
                 start: (doc.data()['start'] as Timestamp?)?.toDate() ?? DateTime.now(),
                 end: (doc.data()['end'] as Timestamp?)?.toDate() ?? DateTime.now(),
                 icon: _getEventIcon(doc.data()['name'] as String? ?? ''),
+                description: doc.data()['description'] as String? ?? '',
               ))
           .toList();
       
@@ -187,7 +187,7 @@ class _EducationPageState extends State<EducationPage> {
                 ),
               ),
               const SizedBox(height: 10.0, width: double.infinity),
-              _isLoadingCourse || _isLoadingEvents // Показуємо завантаження, якщо завантажується курс або події
+              _isLoadingCourse || _isLoadingEvents
                 ? _buildLoadingEventsList()
                 : _events.isEmpty
                     ? _buildEmptyEventsList()
@@ -342,59 +342,75 @@ class _EducationPageState extends State<EducationPage> {
   Widget _buildEventCard(CourseEvent event) {
     final dateFormat = DateFormat('dd/MM/yyyy');
     return Padding(
-      padding: EdgeInsets.only(bottom: event != _events.last ? 10.0 : 0.0),
-      child: Container(
-        padding: const EdgeInsets.all(10.0),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.onSecondary,
-          borderRadius: BorderRadius.circular(10.0),
-          border: Border.all(
-              color: Theme.of(context).colorScheme.primary, width: 2.0),
+      padding: EdgeInsets.only(bottom: _events.indexOf(event) < _events.length - 1 ? 10.0 : 0.0),
+      child: InkWell(
+        customBorder: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
         ),
-        child: Row(
-          children: [
-            SizedBox(
-              height: 50,
-              width: 50,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainer,
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                child: Icon(
-                  event.icon,
-                  size: 30.0,
-                  color: Theme.of(context).colorScheme.primary,
+        onTap: () async {
+          await Future.delayed(const Duration(milliseconds: 300));
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => EventDetailsPage(event: event),
+            ),
+          );
+        },
+        child: Ink(
+          padding: const EdgeInsets.all(10.0),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.onSecondary,
+            borderRadius: BorderRadius.circular(10.0),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.primary, 
+              width: 2.0
+            ),
+          ),
+          child: Row(
+            children: [
+              SizedBox(
+                height: 50,
+                width: 50,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainer,
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: Icon(
+                    event.icon,
+                    size: 30.0,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 10.0),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(event.name, 
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16.0),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  Row(
-                    children: [
-                      Icon(Icons.access_time_outlined, size: 16.0, color: Theme.of(context).colorScheme.primary),
-                      const SizedBox(width: 5.0),
-                      Flexible(
-                        child: Text(
-                          '${dateFormat.format(event.start)} - ${dateFormat.format(event.end)}',
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0),
-                          overflow: TextOverflow.ellipsis,
+              const SizedBox(width: 10.0),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(event.name, 
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16.0),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Row(
+                      children: [
+                        Icon(Icons.access_time_outlined, size: 16.0, color: Theme.of(context).colorScheme.primary),
+                        const SizedBox(width: 5.0),
+                        Flexible(
+                          child: Text(
+                            '${dateFormat.format(event.start)} - ${dateFormat.format(event.end)}',
+                            style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-            Icon(Icons.arrow_forward, size: 30.0, color: Theme.of(context).colorScheme.primary),
-          ],
+              Icon(Icons.arrow_forward, size: 30.0, color: Theme.of(context).colorScheme.primary),
+            ],
+          ),
         ),
       ),
     );
@@ -552,13 +568,13 @@ class _EducationPageState extends State<EducationPage> {
   }
 }
 
-// Class to hold course event data
 class CourseEvent {
   final String id;
   final String name;
   final DateTime start;
   final DateTime end;
   final IconData icon;
+  final String description;
 
   CourseEvent({
     required this.id,
@@ -566,5 +582,6 @@ class CourseEvent {
     required this.start,
     required this.end,
     required this.icon,
+    this.description = '',
   });
 }
