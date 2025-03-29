@@ -15,6 +15,43 @@ class EducationPage extends StatefulWidget {
 class _EducationPageState extends State<EducationPage> {
   final _firestore = FirebaseFirestore.instance;
   final _auth = FirebaseAuth.instance;
+  
+  Course? _currentCourse;
+  List<CourseEvent> _events = [];
+  bool _isLoadingEvents = false;
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initData();
+  }
+
+  Future<void> _initData() async {
+    if (!mounted) return;
+    
+    try {
+      final course = await _fetchMainCourse();
+      if (course != null && mounted) {
+        setState(() {
+          _currentCourse = course;
+        });
+        await _fetchCourseEvents(course.id);
+      }
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error initializing data: $e');
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+        });
+      }
+    }
+  }
 
   Future<Course?> _fetchMainCourse() async {
     try {
@@ -38,11 +75,64 @@ class _EducationPageState extends State<EducationPage> {
 
       if (coursesSnapshot.docs.isEmpty) return null;
 
-      return Course.fromFirestore(coursesSnapshot.docs.first.data());
+      final course = Course.fromFirestore(coursesSnapshot.docs.first.data());
+      course.id = coursesSnapshot.docs.first.id;
+      
+      return course;
     } catch (e) {
       debugPrint('Error fetching course: $e');
       return null;
     }
+  }
+  
+  Future<void> _fetchCourseEvents(String courseId) async {
+    if (!mounted) return;
+    
+    setState(() {
+      _isLoadingEvents = true;
+    });
+    
+    try {
+      final eventsSnapshot = await _firestore
+          .collection('courses')
+          .doc(courseId)
+          .collection('events')
+          .orderBy('start')
+          .get();
+          
+      final events = eventsSnapshot.docs
+          .map((doc) => CourseEvent(
+                id: doc.id,
+                name: doc.data()['name'] as String? ?? 'Unnamed Event',
+                start: (doc.data()['start'] as Timestamp?)?.toDate() ?? DateTime.now(),
+                end: (doc.data()['end'] as Timestamp?)?.toDate() ?? DateTime.now(),
+                icon: _getEventIcon(doc.data()['name'] as String? ?? ''),
+              ))
+          .toList();
+      
+      if (mounted) {
+        setState(() {
+          _events = events;
+          _isLoadingEvents = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching events: $e');
+      if (mounted) {
+        setState(() {
+          _isLoadingEvents = false;
+        });
+      }
+    }
+  }
+  
+  IconData _getEventIcon(String eventName) {
+    final lowerName = eventName.toLowerCase();
+    if (lowerName.contains('курсов')) return Icons.verified;
+    if (lowerName.contains('сесі')) return Icons.how_to_reg_sharp;
+    if (lowerName.contains('практик')) return Icons.work;
+    if (lowerName.contains('канікул')) return Icons.stream_rounded;
+    return Icons.event;
   }
 
   @override 
@@ -67,21 +157,11 @@ class _EducationPageState extends State<EducationPage> {
               const SizedBox(height: 10.0, width: double.infinity),
               SizedBox(
                 width: double.infinity,
-                child: FutureBuilder<Course?>(
-                  future: _fetchMainCourse(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return _buildLoadingCard();
-                  }
-
-                  final course = snapshot.data;
-                  if (course == null) {
-                    return _buildEmptyCourseCard();
-                  }
-
-                  return _buildCourseCard(course);
-                },
-              ),
+                child: !_isInitialized
+                  ? _buildLoadingCard()
+                  : _currentCourse == null
+                    ? _buildEmptyCourseCard()
+                    : _buildCourseCard(_currentCourse!),
               ),
               const SizedBox(height: 20.0, width: double.infinity),
               SizedBox(
@@ -93,214 +173,11 @@ class _EducationPageState extends State<EducationPage> {
                 ),
               ),
               const SizedBox(height: 10.0, width: double.infinity),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10.0),
-                child: Container(
-                  padding: const EdgeInsets.all(10.0),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.onSecondary,
-                    borderRadius: BorderRadius.circular(10.0),
-                    border: Border.all(
-                        color: Theme.of(context).colorScheme.primary, width: 2.0),
-                  ),
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        height: 50,
-                        width: 50,
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surfaceContainer,
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          child: Icon(
-                            Icons.verified,
-                            size: 30.0,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10.0),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Захист курсової роботи', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16.0)),
-                          Row(
-                            children: [
-                              Icon(Icons.access_time_outlined, size: 16.0, color: Theme.of(context).colorScheme.primary),
-                              const SizedBox(width: 5.0),
-                              Text('13/11/2024 - 14/11/2024', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 10.0),
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: Icon(Icons.arrow_forward, size: 30.0, color: Theme.of(context).colorScheme.primary),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10.0),
-                child: Container(
-                  padding: const EdgeInsets.all(10.0),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.onSecondary,
-                    borderRadius: BorderRadius.circular(10.0),
-                    border: Border.all(
-                        color: Theme.of(context).colorScheme.primary, width: 2.0),
-                  ),
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        height: 50,
-                        width: 50,
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surfaceContainer,
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          child: Icon(
-                            Icons.how_to_reg_sharp,
-                            size: 30.0,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10.0),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Сесія', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16.0)),
-                          Row(
-                            children: [
-                              Icon(Icons.access_time_outlined, size: 16.0, color: Theme.of(context).colorScheme.primary),
-                              const SizedBox(width: 5.0),
-                              Text('11/11/2024 - 22/11/2024', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 10.0),
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: Icon(Icons.arrow_forward, size: 30.0, color: Theme.of(context).colorScheme.primary),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10.0),
-                child: Container(
-                  padding: const EdgeInsets.all(10.0),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.onSecondary,
-                    borderRadius: BorderRadius.circular(10.0),
-                    border: Border.all(
-                        color: Theme.of(context).colorScheme.primary, width: 2.0),
-                  ),
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        height: 50,
-                        width: 50,
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surfaceContainer,
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          child: Icon(
-                            Icons.work,
-                            size: 30.0,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10.0),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Практика', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16.0)),
-                          Row(
-                            children: [
-                              Icon(Icons.access_time_outlined, size: 16.0, color: Theme.of(context).colorScheme.primary),
-                              const SizedBox(width: 5.0),
-                              Text('01/12/2024 - 31/12/2024', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 10.0),
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: Icon(Icons.arrow_forward, size: 30.0, color: Theme.of(context).colorScheme.primary),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10.0),
-                child: Container(
-                  padding: const EdgeInsets.all(10.0),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.onSecondary,
-                    borderRadius: BorderRadius.circular(10.0),
-                    border: Border.all(
-                        color: Theme.of(context).colorScheme.primary, width: 2.0),
-                  ),
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        height: 50,
-                        width: 50,
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surfaceContainer,
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          child: Icon(
-                            Icons.stream_rounded,
-                            size: 30.0,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10.0),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Зимові канікули', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16.0)),
-                          Row(
-                            children: [
-                              Icon(Icons.access_time_outlined, size: 16.0, color: Theme.of(context).colorScheme.primary),
-                              const SizedBox(width: 5.0),
-                              Text('01/01/2025 - 15/10/2025', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 10.0),
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: Icon(Icons.arrow_forward, size: 30.0, color: Theme.of(context).colorScheme.primary),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              _isLoadingEvents
+                ? _buildLoadingEventsList()
+                : _events.isEmpty
+                    ? _buildEmptyEventsList()
+                    : _buildEventsList(),
               const SizedBox(height: 20.0, width: double.infinity),
               SizedBox(
                 width: double.infinity,
@@ -354,6 +231,163 @@ class _EducationPageState extends State<EducationPage> {
       ),
     );
   }
+  
+  // Решта коду залишається незмінною
+  // ...
+  
+  Widget _buildLoadingEventsList() {
+    return Column(
+      children: List.generate(
+        2,
+        (index) => Padding(
+            padding: EdgeInsets.only(bottom: index < 1 ? 10.0 : 0.0),
+          child: Container(
+            padding: const EdgeInsets.all(10.0),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.onSecondary,
+              borderRadius: BorderRadius.circular(10.0),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.primary, 
+                width: 2.0
+              ),
+            ),
+            child: Row(
+              children: [
+                SizedBox(
+                  height: 50,
+                  width: 50,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceContainer,
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: CardLoading(
+                      height: 50,
+                      width: 50,
+                      borderRadius: BorderRadius.circular(5),
+                      cardLoadingTheme: CardLoadingTheme(
+                        colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                        colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10.0),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CardLoading(
+                      height: 16,
+                      width: 150,
+                      borderRadius: BorderRadius.circular(5),
+                      margin: const EdgeInsets.only(bottom: 8),
+                      cardLoadingTheme: CardLoadingTheme(
+                        colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                        colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                      ),
+                    ),
+                    CardLoading(
+                      height: 12,
+                      width: 120,
+                      borderRadius: BorderRadius.circular(5),
+                      cardLoadingTheme: CardLoadingTheme(
+                        colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                        colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildEmptyEventsList() {
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.onSecondary,
+        borderRadius: BorderRadius.circular(10.0),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.primary,
+          width: 2.0
+        ),
+      ),
+      child: const Center(
+        child: Text('Немає запланованих подій'),
+      ),
+    );
+  }
+  
+  Widget _buildEventsList() {
+    return Column(
+      children: _events.map((event) => _buildEventCard(event)).toList(),
+    );
+  }
+  
+  Widget _buildEventCard(CourseEvent event) {
+    final dateFormat = DateFormat('dd/MM/yyyy');
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10.0),
+      child: Container(
+        padding: const EdgeInsets.all(10.0),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.onSecondary,
+          borderRadius: BorderRadius.circular(10.0),
+          border: Border.all(
+              color: Theme.of(context).colorScheme.primary, width: 2.0),
+        ),
+        child: Row(
+          children: [
+            SizedBox(
+              height: 50,
+              width: 50,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainer,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: Icon(
+                  event.icon,
+                  size: 30.0,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10.0),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(event.name, 
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16.0),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Row(
+                    children: [
+                      Icon(Icons.access_time_outlined, size: 16.0, color: Theme.of(context).colorScheme.primary),
+                      const SizedBox(width: 5.0),
+                      Flexible(
+                        child: Text(
+                          '${dateFormat.format(event.start)} - ${dateFormat.format(event.end)}',
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.arrow_forward, size: 30.0, color: Theme.of(context).colorScheme.primary),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget _buildLoadingCard() {
     return Container(
@@ -382,7 +416,7 @@ class _EducationPageState extends State<EducationPage> {
                 ),
               ),
               CardLoading(
-                height: 16,
+                height: 10,
                 width: 150,
                 borderRadius: BorderRadius.circular(5), 
                 margin: const EdgeInsets.only(bottom: 8),
@@ -392,7 +426,7 @@ class _EducationPageState extends State<EducationPage> {
                 ),
               ),
               CardLoading(
-                height: 16,
+                height: 11,
                 width: 180,
                 borderRadius: BorderRadius.circular(5),
                 cardLoadingTheme: CardLoadingTheme(
@@ -415,7 +449,7 @@ class _EducationPageState extends State<EducationPage> {
 
   Widget _buildEmptyCourseCard() {
     return Container(
-      padding: const EdgeInsets.all(10.0),
+      padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.onSecondary,
         borderRadius: BorderRadius.circular(10.0),
@@ -424,7 +458,9 @@ class _EducationPageState extends State<EducationPage> {
           width: 2.0
         ),
       ),
-      child: const Text('Немає активних курсів'),
+      child: const Center(
+        child: const Text('Немає активних курсів'),
+      ),
     );
   }
 
@@ -442,51 +478,58 @@ class _EducationPageState extends State<EducationPage> {
         ),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                course.name,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontSize: 20.0
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  course.name,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontSize: 20.0
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              Row(
-                children: [
-                  Icon(
-                    Icons.info_outline,
-                    size: 16.0,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  const SizedBox(width: 5.0),
-                  Text(
-                    '${course.semester}-й семестр',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      fontSize: 12.0
+                Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      size: 16.0,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  Icon(
-                    Icons.access_time_outlined,
-                    size: 16.0,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  const SizedBox(width: 5.0),
-                  Text(
-                    '${dateFormat.format(course.start)} - ${dateFormat.format(course.end)}',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      fontSize: 12.0  
+                    const SizedBox(width: 5.0),
+                    Text(
+                      '${course.semester}-й семестр',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        fontSize: 12.0
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.access_time_outlined,
+                      size: 16.0,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(width: 5.0),
+                    Flexible(
+                      child: Text(
+                        '${dateFormat.format(course.start)} - ${dateFormat.format(course.end)}',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          fontSize: 12.0  
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-          const Spacer(),
+          const SizedBox(width: 10.0),
           Icon(
             Icons.arrow_forward,
             size: 30.0,
@@ -496,4 +539,21 @@ class _EducationPageState extends State<EducationPage> {
       ),
     );
   }
+}
+
+// Class to hold course event data
+class CourseEvent {
+  final String id;
+  final String name;
+  final DateTime start;
+  final DateTime end;
+  final IconData icon;
+
+  CourseEvent({
+    required this.id,
+    required this.name,
+    required this.start,
+    required this.end,
+    required this.icon,
+  });
 }

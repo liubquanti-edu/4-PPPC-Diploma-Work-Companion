@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Course {
+  String id; // Додане поле для зберігання ID документа
   final String name;
   final int semester;
   final List<int> groups;
@@ -8,6 +9,7 @@ class Course {
   final DateTime end;
 
   Course({
+    this.id = '', // Значення за замовчуванням - пустий рядок
     required this.name,
     required this.semester,
     required this.groups,
