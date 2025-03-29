@@ -19,6 +19,7 @@ class _EducationPageState extends State<EducationPage> {
   Course? _currentCourse;
   List<CourseEvent> _events = [];
   bool _isLoadingEvents = false;
+  bool _isLoadingCourse = true;
   bool _isInitialized = false;
 
   @override
@@ -31,13 +32,26 @@ class _EducationPageState extends State<EducationPage> {
     if (!mounted) return;
     
     try {
+      setState(() {
+        _isLoadingCourse = true;
+        _isLoadingEvents = true;
+      });
+      
       final course = await _fetchMainCourse();
+      
       if (course != null && mounted) {
         setState(() {
           _currentCourse = course;
+          _isLoadingCourse = false;
         });
         await _fetchCourseEvents(course.id);
+      } else if (mounted) {
+        setState(() {
+          _isLoadingCourse = false;
+          _isLoadingEvents = false;
+        });
       }
+      
       if (mounted) {
         setState(() {
           _isInitialized = true;
@@ -47,6 +61,8 @@ class _EducationPageState extends State<EducationPage> {
       debugPrint('Error initializing data: $e');
       if (mounted) {
         setState(() {
+          _isLoadingCourse = false;
+          _isLoadingEvents = false;
           _isInitialized = true;
         });
       }
@@ -88,9 +104,7 @@ class _EducationPageState extends State<EducationPage> {
   Future<void> _fetchCourseEvents(String courseId) async {
     if (!mounted) return;
     
-    setState(() {
-      _isLoadingEvents = true;
-    });
+    // Вже встановили _isLoadingEvents = true в _initData
     
     try {
       final eventsSnapshot = await _firestore
@@ -157,7 +171,7 @@ class _EducationPageState extends State<EducationPage> {
               const SizedBox(height: 10.0, width: double.infinity),
               SizedBox(
                 width: double.infinity,
-                child: !_isInitialized
+                child: _isLoadingCourse
                   ? _buildLoadingCard()
                   : _currentCourse == null
                     ? _buildEmptyCourseCard()
@@ -173,7 +187,7 @@ class _EducationPageState extends State<EducationPage> {
                 ),
               ),
               const SizedBox(height: 10.0, width: double.infinity),
-              _isLoadingEvents
+              _isLoadingCourse || _isLoadingEvents // Показуємо завантаження, якщо завантажується курс або події
                 ? _buildLoadingEventsList()
                 : _events.isEmpty
                     ? _buildEmptyEventsList()
@@ -231,9 +245,6 @@ class _EducationPageState extends State<EducationPage> {
       ),
     );
   }
-  
-  // Решта коду залишається незмінною
-  // ...
   
   Widget _buildLoadingEventsList() {
     return Column(
@@ -331,7 +342,7 @@ class _EducationPageState extends State<EducationPage> {
   Widget _buildEventCard(CourseEvent event) {
     final dateFormat = DateFormat('dd/MM/yyyy');
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10.0),
+      padding: EdgeInsets.only(bottom: event != _events.last ? 10.0 : 0.0),
       child: Container(
         padding: const EdgeInsets.all(10.0),
         decoration: BoxDecoration(
@@ -459,7 +470,7 @@ class _EducationPageState extends State<EducationPage> {
         ),
       ),
       child: const Center(
-        child: const Text('Немає активних курсів'),
+        child: Text('Немає активних курсів'),
       ),
     );
   }
