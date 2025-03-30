@@ -111,7 +111,7 @@ class _EmailScreenState extends State<EmailScreen> {
                 onPressed: _handleEmailSubmit,
                 child: const Text('Далі'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.onSecondary,
+                  backgroundColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
                   foregroundColor: Theme.of(context).colorScheme.primary,
                 ),
               ),

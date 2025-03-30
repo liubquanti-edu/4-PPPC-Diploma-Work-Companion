@@ -132,7 +132,7 @@ class NewsDetailScreen extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () => launch(newsItem['link']),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.onSecondary,
+                    backgroundColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
                     foregroundColor: Theme.of(context).colorScheme.primary,
                   ),
                   child: const Text(

@@ -208,7 +208,7 @@ class _EducationPageState extends State<EducationPage> {
                 child: Container(
                   padding: const EdgeInsets.all(10.0),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.onSecondary,
+                    color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
                     borderRadius: BorderRadius.circular(10.0),
                     border: Border.all(
                         color: Theme.of(context).colorScheme.primary, width: 2.0),
@@ -256,7 +256,7 @@ class _EducationPageState extends State<EducationPage> {
           child: Container(
             padding: const EdgeInsets.all(10.0),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.onSecondary,
+              color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
               borderRadius: BorderRadius.circular(10.0),
               border: Border.all(
                 color: Theme.of(context).colorScheme.primary, 
@@ -321,7 +321,7 @@ class _EducationPageState extends State<EducationPage> {
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.onSecondary,
+        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
         borderRadius: BorderRadius.circular(10.0),
         border: Border.all(
           color: Theme.of(context).colorScheme.primary,
@@ -360,7 +360,7 @@ class _EducationPageState extends State<EducationPage> {
         child: Ink(
           padding: const EdgeInsets.all(10.0),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.onSecondary,
+            color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
             borderRadius: BorderRadius.circular(10.0),
             border: Border.all(
               color: Theme.of(context).colorScheme.primary, 
@@ -421,7 +421,7 @@ class _EducationPageState extends State<EducationPage> {
     return Container(
       padding: const EdgeInsets.all(10.0),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.onSecondary,
+        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
         borderRadius: BorderRadius.circular(10.0),
         border: Border.all(
           color: Theme.of(context).colorScheme.primary,
@@ -479,7 +479,7 @@ class _EducationPageState extends State<EducationPage> {
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.onSecondary,
+        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
         borderRadius: BorderRadius.circular(10.0),
         border: Border.all(
           color: Theme.of(context).colorScheme.primary,
@@ -507,7 +507,7 @@ class _EducationPageState extends State<EducationPage> {
       child: Container(
         padding: const EdgeInsets.all(10.0),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.onSecondary,
+          color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
           borderRadius: BorderRadius.circular(10.0),
           border: Border.all(
             color: Theme.of(context).colorScheme.primary,

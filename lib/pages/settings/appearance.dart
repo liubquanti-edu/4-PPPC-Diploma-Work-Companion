@@ -218,7 +218,7 @@ class _AppearanceSettingsScreenState extends State<AppearanceSettingsScreen> {
                         Center(
                         child: ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).colorScheme.onSecondary,
+                          backgroundColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
                           foregroundColor: Theme.of(context).colorScheme.primary,
                           ),
                           onPressed: () async {

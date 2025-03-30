@@ -57,7 +57,7 @@ class OtherPage extends StatelessWidget {
                       child: Ink(
                         padding: const EdgeInsets.all(10.0),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.onSecondary,
+                          color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
                           borderRadius: BorderRadius.circular(10.0),
                           border: Border.all(
                             color: Theme.of(context).colorScheme.primary,
@@ -122,7 +122,7 @@ class OtherPage extends StatelessWidget {
                   child: Ink(
                     padding: const EdgeInsets.all(10.0),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.onSecondary,
+                      color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
                       borderRadius: BorderRadius.circular(10.0),
                       border: Border.all(
                         color: Theme.of(context).colorScheme.primary,
@@ -234,7 +234,7 @@ class OtherPage extends StatelessWidget {
     required VoidCallback onTap,
   }) {
     return Material(
-      color: Theme.of(context).colorScheme.onSecondary,
+      color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
         side: BorderSide(width: 2, color: Theme.of(context).colorScheme.primary),

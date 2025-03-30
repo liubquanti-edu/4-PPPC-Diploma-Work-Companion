@@ -174,7 +174,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 children: [
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.onSecondary,
+                      backgroundColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
                       foregroundColor: Theme.of(context).colorScheme.primary,
                     ),
                     onPressed: _pickImage,
@@ -184,7 +184,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     const SizedBox(width: 10),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.onSecondary,
+                        backgroundColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
                         foregroundColor: Theme.of(context).colorScheme.primary,
                       ),
                       onPressed: _isLoading ? null : _removeAvatar,
@@ -252,7 +252,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     onPressed: _saveChanges,
                     child: const Text('Зберегти'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.onSecondary,
+                      backgroundColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
                       foregroundColor: Theme.of(context).colorScheme.primary,
                     ),
                   ),

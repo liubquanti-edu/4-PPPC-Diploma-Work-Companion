@@ -55,7 +55,7 @@ class EventDetailsPage extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16.0),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.onSecondary,
+                  color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
                   borderRadius: BorderRadius.circular(10.0),
                   border: Border.all(
                   color: Theme.of(context).colorScheme.primary,
@@ -95,7 +95,7 @@ class EventDetailsPage extends StatelessWidget {
                 Container(
                 padding: const EdgeInsets.all(16.0),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.onSecondary,
+                  color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
                   borderRadius: BorderRadius.circular(10.0),
                   border: Border.all(
                   color: Theme.of(context).colorScheme.primary,
@@ -139,7 +139,7 @@ class EventDetailsPage extends StatelessWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.onSecondary,
+                  color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
                   borderRadius: BorderRadius.circular(10.0),
                   border: Border.all(
                     color: Theme.of(context).colorScheme.primary,

@@ -33,7 +33,7 @@ class CalculatorScreen extends StatelessWidget {
               fontFamily: 'Comfortaa',
             ),
             operatorColor: Theme.of(context).colorScheme.onPrimary,
-            commandColor: Theme.of(context).colorScheme.onSecondary,
+            commandColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
           ),
         ),
       ),

@@ -461,7 +461,7 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                           width: double.infinity,
                           padding: const EdgeInsets.all(12.0),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.onSecondary,
+                            color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
                             borderRadius: BorderRadius.circular(10.0),
                             border: Border.all(
                               color: Theme.of(context).colorScheme.primary,
@@ -680,7 +680,7 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                         width: double.infinity,
                         padding: const EdgeInsets.all(12.0),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.onSecondary,
+                          color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
                           borderRadius: BorderRadius.circular(10.0),
                           border: Border.all(
                             color: Theme.of(context).colorScheme.primary,
@@ -764,7 +764,7 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                     child: Ink(
                       height: 80,
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.onSecondary,
+                        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
                         borderRadius: const BorderRadius.all(Radius.circular(10.0)),
                         border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
                       ),
@@ -942,7 +942,7 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                           height: 80,
                           width: double.infinity,
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.onSecondary,
+                            color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
                             borderRadius: BorderRadius.circular(10.0),
                             border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
                           ),
@@ -1073,7 +1073,7 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                   Center(
                                   child: Container(
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.onSecondary,
+                                    color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
                                     borderRadius: BorderRadius.circular(10.0),
                                     border: Border.all(
                                       color: Theme.of(context).colorScheme.primary,
@@ -1120,7 +1120,7 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                         child: isLoading
                                             ? Container(
                                               decoration: BoxDecoration(
-                                              color: Theme.of(context).colorScheme.onSecondary,
+                                              color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
                                               borderRadius: BorderRadius.circular(10.0),
                                               border: Border.all(
                                                 color: Theme.of(context).colorScheme.primary,
@@ -1188,7 +1188,7 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                             ? Center(
                                               child: Container(
                                               decoration: BoxDecoration(
-                                                color: Theme.of(context).colorScheme.onSecondary,
+                                                color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
                                                 borderRadius: BorderRadius.circular(10.0),
                                                 border: Border.all(
                                                   color: Theme.of(context).colorScheme.primary,
@@ -1230,7 +1230,7 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                               child: Ink(
                                                 width: double.infinity,
                                                 decoration: BoxDecoration(
-                                                color: Theme.of(context).colorScheme.onSecondary,
+                                                color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
                                                 borderRadius: BorderRadius.circular(10.0),
                                                 border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
                                                 ),
@@ -1429,7 +1429,7 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                           padding: const EdgeInsets.only(bottom: 10.0),
                           child: Container(
                             decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.onSecondary,
+                              color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
                               borderRadius: BorderRadius.circular(10.0),
                               border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
                             ),
@@ -1502,7 +1502,7 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                 child: Ink(
                                   padding: const EdgeInsets.all(10.0),
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.onSecondary,
+                                    color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
                                     borderRadius: BorderRadius.circular(10.0),
                                     border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
                                   ),
@@ -1554,7 +1554,7 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                     onPressed: () => _launchUrl('https://polytechnic-news.blogspot.com'),
                     style: ElevatedButton.styleFrom(
                       minimumSize: const Size.fromHeight(50),
-                      backgroundColor: Theme.of(context).colorScheme.onSecondary,
+                      backgroundColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
                       foregroundColor: Theme.of(context).colorScheme.primary,
                     ),
                     child: const Text('Більше новин'),
