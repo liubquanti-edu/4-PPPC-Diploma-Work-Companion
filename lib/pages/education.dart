@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import '/models/course.dart';
 import 'package:pppc_companion/pages/education/event.dart';
+import 'package:pppc_companion/pages/education/course.dart';
 import 'package:card_loading/card_loading.dart';
 
 class EducationPage extends StatefulWidget {
@@ -491,78 +492,88 @@ class _EducationPageState extends State<EducationPage> {
     );
   }
 
-  Widget _buildCourseCard(Course course) {
+    Widget _buildCourseCard(Course course) {
     final dateFormat = DateFormat('dd/MM/yyyy');
     
-    return Container(
-      padding: const EdgeInsets.all(10.0),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.onSecondary,
-        borderRadius: BorderRadius.circular(10.0),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.primary,
-          width: 2.0
-        ),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  course.name,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontSize: 20.0
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.info_outline,
-                      size: 16.0,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    const SizedBox(width: 5.0),
-                    Text(
-                      '${course.semester}-й семестр',
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        fontSize: 12.0
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.access_time_outlined,
-                      size: 16.0,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    const SizedBox(width: 5.0),
-                    Flexible(
-                      child: Text(
-                        '${dateFormat.format(course.start)} - ${dateFormat.format(course.end)}',
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          fontSize: 12.0  
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CourseDetailsPage(course: course),
           ),
-          const SizedBox(width: 10.0),
-          Icon(
-            Icons.arrow_forward,
-            size: 30.0,
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(10.0),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.onSecondary,
+          borderRadius: BorderRadius.circular(10.0),
+          border: Border.all(
             color: Theme.of(context).colorScheme.primary,
+            width: 2.0
           ),
-        ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    course.name,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontSize: 20.0
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        size: 16.0,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      const SizedBox(width: 5.0),
+                      Text(
+                        '${course.semester}-й семестр',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          fontSize: 12.0
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.access_time_outlined,
+                        size: 16.0,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      const SizedBox(width: 5.0),
+                      Flexible(
+                        child: Text(
+                          '${dateFormat.format(course.start)} - ${dateFormat.format(course.end)}',
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            fontSize: 12.0  
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10.0),
+            Icon(
+              Icons.arrow_forward,
+              size: 30.0,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ],
+        ),
       ),
     );
   }
