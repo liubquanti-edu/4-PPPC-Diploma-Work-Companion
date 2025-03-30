@@ -304,7 +304,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
                       ),
@@ -347,14 +347,6 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
           CircularProgressIndicator(
             color: Theme.of(context).colorScheme.primary,
           ),
-          const SizedBox(height: 16),
-          Text(
-            'Завантаження розкладу...',
-            style: TextStyle(
-              fontSize: 16,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
         ],
       ),
     );
@@ -365,13 +357,15 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
       scrollDirection: Axis.horizontal,
       child: SingleChildScrollView(
         child: DataTable(
-          headingRowColor: MaterialStateProperty.resolveWith<Color>(
-            (Set<MaterialState> states) => Theme.of(context).colorScheme.primary.withOpacity(0.1),
-          ),
-          border: TableBorder.all(
-            color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
-            width: 1,
-          ),
+            headingRowColor: MaterialStateProperty.resolveWith<Color>(
+              (Set<MaterialState> states) => Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            ),
+            clipBehavior: Clip.antiAlias,
+            border: TableBorder.all(
+              color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+              width: 1,
+              borderRadius: BorderRadius.circular(10),
+            ),
           headingRowHeight: 40,
           dataRowMinHeight: 50,
           dataRowMaxHeight: 80,
