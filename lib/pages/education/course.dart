@@ -246,7 +246,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.course.name),
+        title: Text('Деталі курсу'),
       ),
       body: _isLoading
           ? _buildLoadingView()

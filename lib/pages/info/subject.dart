@@ -161,28 +161,31 @@ class _LessonDetailsScreenState extends State<LessonDetailsScreen> {
                     const SizedBox(height: 10),
                     const Divider(height: 1),
                     const SizedBox(height: 10),
-                    GestureDetector(
-                      onTap: () => _showEnlargedMap(context),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: ColorFiltered(
-                          colorFilter: Theme.of(context).brightness == Brightness.dark
-                            ? const ColorFilter.matrix([
-                                -1, 0, 0, 0, 255,
-                                0, -1, 0, 0, 255,
-                                0, 0, -1, 0, 255,
-                                0, 0, 0, 1, 0,
-                              ])
-                            : const ColorFilter.matrix([
-                                1, 0, 0, 0, 0,
-                                0, 1, 0, 0, 0,
-                                0, 0, 1, 0, 0,
-                                0, 0, 0, 1, 0,
-                              ]),
-                          child: Image.asset(
-                            'assets/img/map/$currentFloor.jpg',
-                            fit: BoxFit.cover,
-                            width: double.infinity,
+                    Container(
+                      height: 220,
+                      child: GestureDetector(
+                        onTap: () => _showEnlargedMap(context),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: ColorFiltered(
+                            colorFilter: Theme.of(context).brightness == Brightness.dark
+                              ? const ColorFilter.matrix([
+                                  -1, 0, 0, 0, 255,
+                                  0, -1, 0, 0, 255,
+                                  0, 0, -1, 0, 255,
+                                  0, 0, 0, 1, 0,
+                                ])
+                              : const ColorFilter.matrix([
+                                  1, 0, 0, 0, 0,
+                                  0, 1, 0, 0, 0,
+                                  0, 0, 1, 0, 0,
+                                  0, 0, 0, 1, 0,
+                                ]),
+                            child: Image.asset(
+                              'assets/img/map/$currentFloor.jpg',
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                            ),
                           ),
                         ),
                       ),
