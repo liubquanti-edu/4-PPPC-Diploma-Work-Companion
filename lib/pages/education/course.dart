@@ -426,14 +426,20 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                       (numeratorLesson == null && denominatorLesson != null)) {
                     final lesson = numeratorLesson ?? denominatorLesson!;
                     return DataCell(
-                      GestureDetector(
-                        onTap: () {
+                      InkWell(
+                        customBorder: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        onTap: () async {
+                          await Future.delayed(const Duration(milliseconds: 300));
                           _showLessonDetails(lesson, lessonNumber);
                         },
-                        child: Container(
+                        child: Ink(
                           width: 120,
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          alignment: Alignment.center,
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
                           child: Text(
                             lesson.name,
                             textAlign: TextAlign.center,
@@ -454,12 +460,19 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                           children: [
                             // Чисельник
                             if (numeratorLesson != null)
-                              GestureDetector(
-                                onTap: () {
+                              InkWell(
+                                customBorder: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                onTap: () async {
+                                  await Future.delayed(const Duration(milliseconds: 300));
                                   _showLessonDetails(numeratorLesson, lessonNumber);
                                 },
-                                child: Container(
-                                  alignment: Alignment.center,
+                                child: Ink(
+                                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
@@ -488,13 +501,19 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                             ),
                             // Знаменник
                             if (denominatorLesson != null)
-                              GestureDetector(
-                                onTap: () {
+                              InkWell(
+                                customBorder: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                onTap: () async {
+                                  await Future.delayed(const Duration(milliseconds: 300));
                                   _showLessonDetails(denominatorLesson, lessonNumber);
                                 },
-                                child: Container(
-                                  alignment: Alignment.center,
-                                  padding: const EdgeInsets.only(top: 2),
+                                child: Ink(
+                                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
