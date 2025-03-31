@@ -295,7 +295,7 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
     now.day,
     int.parse(startParts[0]) - ukraineOffset,
     int.parse(startParts[1])
-  );
+  ).toLocal();
   
   final endTime = DateTime.utc(
     now.year,
@@ -303,15 +303,12 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
     now.day,
     int.parse(endParts[0]) - ukraineOffset,
     int.parse(endParts[1])
-  );
-
-  final localStartTime = startTime.toLocal();
-  final localEndTime = endTime.toLocal();
+  ).toLocal();
 
   final formatter = DateFormat('HH:mm');
   return {
-    'start': formatter.format(localStartTime),
-    'end': formatter.format(localEndTime),
+    'start': formatter.format(startTime),
+    'end': formatter.format(endTime),
   };
 }
 
