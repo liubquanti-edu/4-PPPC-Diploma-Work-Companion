@@ -5,11 +5,9 @@ import 'package:xml/xml.dart' as xml;
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:card_loading/card_loading.dart';
-import 'package:weather/weather.dart';
 import 'package:parallax_rain/parallax_rain.dart';
 import 'dart:async';
 import 'dart:math';
-import 'config/api.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -21,6 +19,8 @@ import '/providers/alert_provider.dart';
 import '/pages/transport/transport_schedule.dart';
 import '/providers/transport_provider.dart';
 import '/providers/theme_provider.dart';
+import '/models/weather.dart';
+import '/pages/weather/weather_details.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -103,34 +103,44 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _fetchWeather() async {
-    try {
-      setState(() {
-        _isWeatherLoading = true;
-      });
-      
-      WeatherFactory wf = WeatherFactory(ApiConfig.weatherApiKey, language: Language.UKRAINIAN);
-      Weather weather = await wf.currentWeatherByCityName("Poltava,UA");
-      
-      setState(() {
-        _weather = weather;
-        _isWeatherLoading = false;
-      });
-    } catch (e) {
-      debugPrint('Error fetching weather: $e');
-      setState(() {
-        _isWeatherLoading = false;
-        _weather = null;
-      });
-      
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Помилка API ключа OpenWeatherMap. Будь ласка, перевірте ключ.'),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
+  try {
+    setState(() {
+      _isWeatherLoading = true;
+    });
+
+    // Отримання даних з Firestore
+    final weatherDoc = await FirebaseFirestore.instance
+        .collection('info')
+        .doc('weather')
+        .get();
+
+    if (weatherDoc.exists) {
+      final data = weatherDoc.data();
+      if (data != null) {
+        setState(() {
+          _weather = Weather.fromFirestore(data);
+          _isWeatherLoading = false;
+        });
+      }
+    } else {
+      throw Exception('Weather document does not exist in Firestore');
     }
+  } catch (e) {
+    debugPrint('Error fetching weather from Firestore: $e');
+    setState(() {
+      _isWeatherLoading = false;
+      _weather = null;
+    });
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Не вдалося отримати дані про погоду з Firestore.'),
+        backgroundColor: Theme.of(context).colorScheme.error,
+      ),
+    );
   }
+}
 
   Future<void> _launchUrl(String url) async {
     try {
@@ -402,6 +412,54 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _getWeatherIcon(String? weatherMain) {
+    IconData iconData;
+    Color iconColor;
+
+    switch (weatherMain?.toLowerCase()) {
+      case 'clear':
+        iconData = Icons.wb_sunny_rounded;
+        iconColor = const Color(0xFFFEF89F); // жовтий
+        break;
+      case 'rain':
+        iconData = Icons.water_drop;
+        iconColor = const Color(0xFF9FE3FE); // блакитний
+        break;
+      case 'snow':
+        iconData = Icons.ac_unit;
+        iconColor = const Color(0xFFFFFFFF); // білий
+        break;
+      case 'clouds':
+        iconData = Icons.cloud_rounded;
+        iconColor = const Color(0xFFB4B4B4); // сірий
+        break;
+      case 'thunderstorm':
+        iconData = Icons.flash_on_rounded;
+        iconColor = const Color(0xFFC39FFE); // фіолетовий
+        break;
+      case 'drizzle':
+        iconData = Icons.grain_rounded;
+        iconColor = const Color(0xFF9FE3FE); // блакитний
+        break;
+      case 'mist':
+      case 'fog':
+      case 'haze':
+        iconData = Icons.blur_on_rounded;
+        iconColor = const Color(0xFFB4B4B4); // сірий
+        break;
+      default:
+        iconData = Icons.cloud_rounded;
+        iconColor = const Color(0xFFB4B4B4); // сірий
+        break;
+    }
+
+    return Icon(
+      iconData,
+      size: 30.0,
+      color: iconColor,
     );
   }
 
@@ -757,7 +815,7 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                     ),
                   ),
                   const SizedBox(height: 10.0, width: double.infinity),
-                    GestureDetector(
+                  GestureDetector(
                     child: Ink(
                       height: 80,
                       decoration: BoxDecoration(
@@ -767,161 +825,169 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                       ),
                       child: InkWell(
                         borderRadius: BorderRadius.circular(10.0),
-                    onTap: () async {
-                      await Future.delayed(const Duration(milliseconds: 300));
-                      if (!mounted) return;
-                      _launchUrl('https://openweathermap.org/city/696643');
-                    },
-                    child: Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: Stack(
-                        children: [
-                        Column(
-                          children: [
-                            if (_isWeatherLoading)
-                              Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                        onTap: () {
+                          if (_weather != null) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => WeatherDetailsScreen(weather: _weather!),
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: const Text('Дані про погоду недоступні.'),
+                                backgroundColor: Theme.of(context).colorScheme.error,
+                              ),
+                            );
+                          }
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: Stack(
+                              children: [
+                                Column(
                                   children: [
-                                  CardLoading(
-                                    height: 25,
-                                    width: 250,
-                                    borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                    animationDuration: const Duration(milliseconds: 1000),
-                                    animationDurationTwo: const Duration(milliseconds: 700),
-                                    cardLoadingTheme: CardLoadingTheme(
-                                      colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                                      colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10.0),
-                                  CardLoading(
-                                    height: 20,
-                                    width: 300,
-                                    borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                    animationDuration: const Duration(milliseconds: 1000),
-                                    animationDurationTwo: const Duration(milliseconds: 700),
-                                    cardLoadingTheme: CardLoadingTheme(
-                                      colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                                      colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                                    ),
-                                  ),
-                                ],
-                              )
-                            else if (_weather != null) ...[
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Text(
-                                        '${_weather!.temperature?.celsius?.round()}°C • ',
-                                        style: Theme.of(context).textTheme.titleLarge,
-                                      ),
-                                      Text(
-                                        _weather!.weatherDescription?.replaceFirst(
-                                          _weather!.weatherDescription![0],
-                                          _weather!.weatherDescription![0].toUpperCase()) ?? '',
-                                        style: Theme.of(context).textTheme.titleLarge,
-                                      ),
-                                    ],
-                                  ),
-                                  Row(
-                                    children: [
-                                      Row(
-                                        crossAxisAlignment: CrossAxisAlignment.end,
+                                    if (_isWeatherLoading)
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Row(
-                                            children: [
-                                                Icon(
-                                                Icons.thermostat_rounded, 
-                                                color: (_weather!.tempFeelsLike?.celsius ?? 0) < -15 || (_weather!.tempFeelsLike?.celsius ?? 0) > 30
-                                                  ? Colors.red.shade400 
-                                                  : Theme.of(context).colorScheme.secondary
+                                          CardLoading(
+                                            height: 25,
+                                            width: 250,
+                                            borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                            animationDuration: const Duration(milliseconds: 1000),
+                                            animationDurationTwo: const Duration(milliseconds: 700),
+                                            cardLoadingTheme: CardLoadingTheme(
+                                              colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                              colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 10.0),
+                                          CardLoading(
+                                            height: 20,
+                                            width: 300,
+                                            borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                            animationDuration: const Duration(milliseconds: 1000),
+                                            animationDurationTwo: const Duration(milliseconds: 700),
+                                            cardLoadingTheme: CardLoadingTheme(
+                                              colorOne: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                              colorTwo: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                            ),
+                                          ),
+                                        ],
+                                      )
+                                    else if (_weather != null) ...[
+                                      Row(
+                                        children: [
+                                          SizedBox(
+                                            height: 50,
+                                            width: 50,
+                                            child: DecoratedBox(
+                                              decoration: BoxDecoration(
+                                                color: Theme.of(context).colorScheme.surfaceContainer,
+                                                borderRadius: BorderRadius.circular(5),
+                                              ),
+                                              child: Center(
+                                                child: _getWeatherIcon(_weather!.weatherMain),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 10.0),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  '${_weather!.temperature?.celsius?.round()}°C • ${_weather!.weatherDescription?.replaceFirst(
+                                                    _weather!.weatherDescription![0],
+                                                    _weather!.weatherDescription![0].toUpperCase(),
+                                                  ) ?? ''}',
+                                                  style: Theme.of(context).textTheme.titleLarge,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  maxLines: 1,
                                                 ),
-                                              const SizedBox(width: 2),
-                                              Text(
-                                                  '${_weather!.tempFeelsLike?.celsius?.round()}°C',
-                                                style: Theme.of(context).textTheme.bodyMedium,
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(width: 10.0),
-                                          Row(
-                                            children: [
-                                              Icon(Icons.water_drop_rounded, color: Theme.of(context).colorScheme.secondary),
-                                              const SizedBox(width: 2),
-                                              Text(
-                                                '${_weather!.humidity?.round() ?? 0}%',
-                                                style: Theme.of(context).textTheme.bodyMedium,
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(width: 10.0),
-                                          Row(
-                                            children: [
-                                              Transform.rotate(
-                                                angle: (_weather!.windDegree ?? 0) * (3.1415927 / 360),
-                                                child: Icon(Icons.navigation_rounded, color: (_weather!.windSpeed ?? 0) > 13 ? Colors.red.shade400 : Theme.of(context).colorScheme.secondary),
-                                              ),
-                                              const SizedBox(width: 2),
-                                              Text(
-                                                '${_weather!.windSpeed?.round() ?? 0} м/с',
-                                                style: Theme.of(context).textTheme.bodyMedium,
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(width: 10.0),
-                                          Row(
-                                            children: [
-                                              Icon(Icons.arrow_downward_rounded, color: Theme.of(context).colorScheme.secondary),
-                                              const SizedBox(width: 2),
-                                              Text(
-                                                  '${_weather!.pressure?.round() ?? 0} Pa',
-                                                style: Theme.of(context).textTheme.bodyMedium,
-                                              ),
-                                            ],
+                                                Row(
+                                                  children: [
+                                                    Row(
+                                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                                      children: [
+                                                        Icon(
+                                                          Icons.thermostat_rounded,
+                                                          color: (_weather!.tempFeelsLike?.celsius ?? 0) < -15 ||
+                                                                  (_weather!.tempFeelsLike?.celsius ?? 0) > 30
+                                                              ? Colors.red.shade400
+                                                              : Theme.of(context).colorScheme.secondary,
+                                                          size: 16,
+                                                        ),
+                                                        const SizedBox(width: 2),
+                                                        Text(
+                                                          '${_weather!.tempFeelsLike?.celsius?.round()}°C',
+                                                          style: Theme.of(context).textTheme.bodyMedium,
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    const SizedBox(width: 10.0),
+                                                    Row(
+                                                      children: [
+                                                        Icon(
+                                                          Icons.water_drop_rounded,
+                                                          color: Theme.of(context).colorScheme.secondary,
+                                                          size: 16,
+                                                        ),
+                                                        const SizedBox(width: 2),
+                                                        Text(
+                                                          '${_weather!.humidity?.round() ?? 0}%',
+                                                          style: Theme.of(context).textTheme.bodyMedium,
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         ],
                                       ),
-                                    ],
+                                    ] else
+                                      const Text('Не вдалося завантажити погоду'),
+                                  ],
+                                ),
+                                if (_weather?.weatherMain?.toLowerCase() == 'rain')
+                                  Positioned.fill(
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(10.0),
+                                      child: ParallaxRain(
+                                        dropColors: [Theme.of(context).colorScheme.primary],
+                                        trail: true,
+                                        dropFallSpeed: 2,
+                                        numberOfDrops: 10,
+                                        dropHeight: 15,
+                                      ),
+                                    ),
+                                  )
+                                else if (_weather?.weatherMain?.toLowerCase() == 'snow')
+                                  Positioned.fill(
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(10.0),
+                                      child: ParallaxRain(
+                                        dropColors: [Theme.of(context).colorScheme.primary],
+                                        trail: true,
+                                        dropFallSpeed: 0.5,
+                                        numberOfDrops: 10,
+                                        dropHeight: 2,
+                                      ),
+                                    ),
                                   ),
-                                ],
-                              ),
-                            ] else
-                              const Text('Не вдалося завантажити погоду'),
-                          ],
-                      ),
-                      if (_weather?.weatherMain?.toLowerCase() == 'rain')
-                        Positioned.fill(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(10.0),
-                            child: ParallaxRain(
-                              dropColors: [Theme.of(context).colorScheme.primary],
-                              trail: true,
-                              dropFallSpeed: 2,
-                              numberOfDrops: 10,
-                              dropHeight: 15,
-                            ),
-                          ),
-                        )
-                      else if (_weather?.weatherMain?.toLowerCase() == 'snow')
-                        Positioned.fill(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(10.0),
-                            child: ParallaxRain(
-                              dropColors: [Theme.of(context).colorScheme.primary],
-                              trail: true,
-                              dropFallSpeed: 0.5,
-                              numberOfDrops: 10,
-                              dropHeight: 2,
+                              ],
                             ),
                           ),
                         ),
-                      ],
+                      ),
                     ),
-                  ),),),),),
+                  ),
                   const SizedBox(height: 20.0, width: double.infinity),
                   SizedBox(
                     width: double.infinity,
