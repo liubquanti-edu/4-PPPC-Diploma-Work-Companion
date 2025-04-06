@@ -57,13 +57,12 @@ class _WeatherDetailsScreenState extends State<WeatherDetailsScreen> {
 
   Future<void> _createWeatherMarkerIcon() async {
     final recorder = ui.PictureRecorder();
-    const size = 150.0; // Doubled from 75.0
+    const size = 150.0;
     final canvas = Canvas(recorder, Rect.fromLTWH(0, 0, size, size));
     
-    const padding = 30.0; // Doubled from 15.0
-    const squareSize = 90.0; // Doubled from 45.0
+    const padding = 30.0;
+    const squareSize = 90.0;
     
-    // Малюємо квадрат з заокругленими кутами
     final bgPaint = Paint()
       ..color = const Color.fromARGB(255, 61, 61, 61)
       ..style = PaintingStyle.fill;
@@ -71,26 +70,24 @@ class _WeatherDetailsScreenState extends State<WeatherDetailsScreen> {
     canvas.drawRRect(
       RRect.fromRectAndRadius(
         Rect.fromLTWH(padding, padding, squareSize, squareSize),
-        const Radius.circular(14), // Doubled from 7
+        const Radius.circular(14),
       ),
       bgPaint,
     );
 
-    // Малюємо рамку
     final borderPaint = Paint()
-      ..color = const Color(0xFF9FE3FE) // Синій колір для погоди
-      ..strokeWidth = 6 // Doubled from 3
+      ..color = const Color(0xFF9FE3FE)
+      ..strokeWidth = 6
       ..style = PaintingStyle.stroke;
     
     canvas.drawRRect(
       RRect.fromRectAndRadius(
         Rect.fromLTWH(padding, padding, squareSize, squareSize),
-        const Radius.circular(20), // Doubled from 10
+        const Radius.circular(20),
       ),
       borderPaint,
     );
     
-    // Додаємо іконку погоди
     final textPainter = TextPainter(
       textDirection: ui.TextDirection.ltr,
     );
@@ -107,7 +104,7 @@ class _WeatherDetailsScreenState extends State<WeatherDetailsScreen> {
     textPainter.text = TextSpan(
       text: String.fromCharCode(weatherIcon.codePoint),
       style: TextStyle(
-        fontSize: 60, // Doubled from 30
+        fontSize: 60,
         color: Colors.white,
         fontFamily: weatherIcon.fontFamily,
       ),

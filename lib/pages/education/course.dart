@@ -22,13 +22,10 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
   bool _isLoading = true;
   int _userGroup = 0;
   
-  // Структура даних для зберігання розкладу обох типів тижнів
   Map<String, Map<int, Map<String, Lesson>>> _scheduleData = {};
   
-  // Список днів тижня
   final List<String> _days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
   
-  // Переклад назв днів українською
   final Map<String, String> _dayNames = {
     'monday': 'Понеділок',
     'tuesday': 'Вівторок',
@@ -37,11 +34,9 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
     'friday': 'П\'ятниця',
   };
   
-  // Кеш для зберігання даних предметів і викладачів
   Map<String, dynamic> _cachedSubjects = {};
   Map<String, dynamic> _cachedTeachers = {};
   
-  // Кількість пар (максимальне число пар у розкладі)
   int _maxLessons = 0;
 
   @override
@@ -97,7 +92,6 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
         return;
       }
 
-      // Отримання розкладу для обох типів тижнів
       final numeratorData = scheduleDoc.data()?['numerator'] as Map<String, dynamic>?;
       final denominatorData = scheduleDoc.data()?['denominator'] as Map<String, dynamic>?;
 
@@ -108,18 +102,14 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
         return;
       }
 
-      // Обробка розкладу для обох типів тижнів
       final Map<String, Map<int, Map<String, Lesson>>> scheduleData = {};
       
-      // Ініціалізація структури даних для кожного дня тижня
       for (final day in _days) {
         scheduleData[day] = {};
       }
 
-      // Максимальна кількість пар в обох типах тижнів
       int maxLessons = 0;
       
-      // Обробка розкладу чисельника
       if (numeratorData != null) {
         for (final day in numeratorData.keys) {
           final daySchedule = numeratorData[day] as Map<String, dynamic>?;
@@ -145,7 +135,6 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
         }
       }
       
-      // Обробка розкладу знаменника
       if (denominatorData != null) {
         for (final day in denominatorData.keys) {
           final daySchedule = denominatorData[day] as Map<String, dynamic>?;
@@ -190,7 +179,6 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
     final teacherId = lessonData['teacherId'];
     final commissionId = lessonData['commissionId'];
 
-    // Отримання назви предмета
     String subjectName = '';
     if (_cachedSubjects.containsKey(subjectId)) {
       subjectName = _cachedSubjects[subjectId]['name'] ?? '';
@@ -215,7 +203,6 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
       }
     }
 
-    // Отримання імені викладача
     String teacherName = '';
     if (_cachedTeachers.containsKey(teacherId)) {
       teacherName = _cachedTeachers[teacherId]['name'] ?? '';
@@ -255,14 +242,12 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Назва групи
                   Text(
                     'Група $_userGroup',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 8),
                   
-                  // Семестр і період
                   Row(
                     children: [
                       Icon(
@@ -291,7 +276,6 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                   
                   const SizedBox(height: 10),
                   
-                  // Розклад занять
                   Text(
                     'Розклад занять',
                     style: Theme.of(context).textTheme.titleLarge,
@@ -299,7 +283,6 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                   
                   const SizedBox(height: 8),
                   
-                  // Легенда
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
@@ -329,7 +312,6 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                   
                   const SizedBox(height: 16),
                   
-                  // Таблиця розкладу
                   _buildScheduleTable(),
                   
                   const SizedBox(height: 16),
@@ -398,7 +380,6 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
             return DataRow(
               cells: [
                 DataCell(
-                  // Номер пари
                   Container(
                     alignment: Alignment.center,
                     child: Text(
@@ -407,20 +388,16 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                     ),
                   ),
                 ),
-                // Комірки з предметами для кожного дня
                 ..._days.map((day) {
                   final lessonData = _scheduleData[day]?[lessonNumber] ?? {};
                   
-                  // Перевіряємо, чи є предмети для обох типів тижнів
                   final numeratorLesson = lessonData['numerator'];
                   final denominatorLesson = lessonData['denominator'];
                   
-                  // Якщо дані відсутні, показуємо порожню комірку
                   if (numeratorLesson == null && denominatorLesson == null) {
                     return const DataCell(SizedBox());
                   }
                   
-                  // Якщо предмети однакові або один з них відсутній
                   if (numeratorLesson?.name == denominatorLesson?.name || 
                       (numeratorLesson != null && denominatorLesson == null) || 
                       (numeratorLesson == null && denominatorLesson != null)) {
@@ -450,7 +427,6 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                       ),
                     );
                   } 
-                  // Якщо предмети різні, розділяємо комірку на дві частини
                   else {
                     return DataCell(
                       Container(
@@ -458,7 +434,6 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            // Чисельник
                             if (numeratorLesson != null)
                               InkWell(
                                 customBorder: RoundedRectangleBorder(
@@ -499,7 +474,6 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                               color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
                               thickness: 1.5,
                             ),
-                            // Знаменник
                             if (denominatorLesson != null)
                               InkWell(
                                 customBorder: RoundedRectangleBorder(

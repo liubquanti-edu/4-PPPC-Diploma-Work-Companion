@@ -104,13 +104,12 @@ class _ChatScreenState extends State<ChatScreen> {
       
       setState(() {
         _editingMessageKey = null;
-        _messageController.clear(); // Очищаємо поле введення
+        _messageController.clear();
         _isUploading = false;
       });
       return;
     }
 
-    // Rest of the existing _sendMessage code for new messages
     debugPrint('Початок відправки повідомлення');
     final messageRef = _database.child('chats/$chatRoomId/messages').push();
     String? imageUrl;
@@ -217,7 +216,7 @@ class _ChatScreenState extends State<ChatScreen> {
       }
     }
 
-    _messageController.clear(); // Додаємо очищення поля введення
+    _messageController.clear();
     
     setState(() {
       _attachedImage = null;
@@ -544,7 +543,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               onDismissed: null,
                               confirmDismiss: (direction) async {
                                 _startReply(message);
-                                await Vibration.vibrate(duration: 50); // Додаємо коротку вібрацію
+                                await Vibration.vibrate(duration: 50);
                                 return false;
                               },
                               background: Container(
@@ -978,11 +977,11 @@ class _ChatScreenState extends State<ChatScreen> {
                           maxLength: 1000,
                           buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
                           textInputAction: TextInputAction.send,
-                          onSubmitted: _isUploading ? null : (_) => _sendMessage(), // Disable when uploading
+                          onSubmitted: _isUploading ? null : (_) => _sendMessage(),
                         ),
                       ),
                       IconButton(
-                        onPressed: _isUploading ? null : _sendMessage, // Disable when uploading
+                        onPressed: _isUploading ? null : _sendMessage,
                         icon: Icon(_isEditing ? Icons.check_rounded : Icons.send_rounded),
                       ),
                     ],

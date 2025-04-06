@@ -158,7 +158,6 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                           if (_fromLanguage == _toLanguage) {
                           _toLanguage = _fromLanguage == 'uk' ? 'en' : 'uk';
                           }
-                          // Викликаємо переклад якщо є текст
                           if (_textController.text.isNotEmpty) {
                           _translateText();
                           }
@@ -175,7 +174,6 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                         _fromLanguage = _toLanguage;
                         _toLanguage = temp;
                         _translatedText = '';
-                        // Викликаємо переклад якщо є текст
                         if (_textController.text.isNotEmpty) {
                           _translateText();
                         }
@@ -205,7 +203,6 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                       if (_fromLanguage == _toLanguage) {
                         _fromLanguage = _toLanguage == 'uk' ? 'en' : 'uk';
                       }
-                      // Викликаємо переклад якщо є текст
                       if (_textController.text.isNotEmpty) {
                         _translateText();
                       }

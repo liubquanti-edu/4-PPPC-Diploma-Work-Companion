@@ -410,7 +410,6 @@ class MyApp extends StatelessWidget {
               ),
               themeMode: themeProvider.themeMode,
               builder: (context, child) {
-                // Set navigation bar color based on theme and update on theme changes
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
                     systemNavigationBarColor: Theme.of(context).colorScheme.onSecondary,

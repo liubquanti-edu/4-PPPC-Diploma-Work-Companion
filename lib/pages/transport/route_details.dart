@@ -38,7 +38,6 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
   BitmapDescriptor? _busStopIcon;
   BitmapDescriptor? _trainStopIcon;
 
-  // Видалити змінні для відслідковування прокрутки
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -230,14 +229,12 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
     }
   }
 
-  // Оновити метод _createMapMarkers щоб показувати всі маршрути
   void _createMapMarkers() {
     if (_routeDetails == null || RouteDetails._stations == null) return;
 
     _markers.clear();
     _polylines.clear();
 
-    // Для кожного напрямку
     for (var direction in _routeDetails!.directions) {
       List<LatLng> polylinePoints = [];
       
@@ -250,7 +247,6 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
           
           polylinePoints.add(position);
           
-          // Перевіряємо чи це залізнична станція
           bool isTrainStation = stopData.length > 3 && 
               stopData[3] is Map && 
               (stopData[3] as Map).containsKey('train');
@@ -262,7 +258,7 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
               icon: isTrainStation 
                   ? (_trainStopIcon ?? BitmapDescriptor.defaultMarker)
                   : (_busStopIcon ?? BitmapDescriptor.defaultMarker),
-              anchor: const Offset(0.5, 0.5), // Додати цей параметр
+              anchor: const Offset(0.5, 0.5),
               infoWindow: InfoWindow(
                 title: stop.stopName,
                 snippet: isTrainStation ? 'Залізнична зупинка' : null,
@@ -340,12 +336,6 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
     return firstStopForTransport;
   }
 
-  // Видалити метод _onScroll
-
-  // Завантаження обох стилів карти
-
-
-  // Оновлений метод _onMapCreated
   void _onMapCreated(GoogleMapController controller) async {
     _mapController = controller;
   
@@ -402,13 +392,13 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                           polylines: _polylines,
                           zoomControlsEnabled: false,
                           mapToolbarEnabled: false,
-                          compassEnabled: false, // Вимкнути компас
+                          compassEnabled: false,
                         ),
                       ),
                     ),
                     Expanded(
-                      child: ListView.builder( // Видалити RefreshIndicator
-                        controller: _scrollController, // Додаємо контролер
+                      child: ListView.builder(
+                        controller: _scrollController,
                         padding: const EdgeInsets.all(16),
                         itemCount: _routeDetails!.directions.length,
                         itemBuilder: (context, directionIndex) {

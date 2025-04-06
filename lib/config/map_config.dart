@@ -1,13 +1,13 @@
 class MapStyle {
   final String name;
   final String assetPath;
-  final String darkAssetPath; // Add dark theme variant path
+  final String darkAssetPath;
   final String id;
 
   const MapStyle({
     required this.name,
     required this.assetPath,
-    this.darkAssetPath = '', // Optional dark theme path
+    this.darkAssetPath = '',
     required this.id,
   });
 }

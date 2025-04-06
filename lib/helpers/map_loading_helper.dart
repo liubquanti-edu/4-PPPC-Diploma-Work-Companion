@@ -27,7 +27,6 @@ class MapStyleHelper {
 
     String? mapStyle;
 
-    // For default style, check system brightness
     if (style.id == 'default') {
       final isDark = brightness == Brightness.dark;
       if (isDark && style.darkAssetPath.isNotEmpty) {
@@ -42,7 +41,6 @@ class MapStyleHelper {
       }
     }
 
-    // If we have a style, merge it with transit station rules
     if (mapStyle != null) {
       final List<dynamic> baseStyle = json.decode(mapStyle);
       final List<dynamic> combinedStyle = [
@@ -51,7 +49,6 @@ class MapStyleHelper {
       ];
       return json.encode(combinedStyle);
     } else if (style.id == 'default') {
-      // For default style without dark theme, just return transit station rules
       return json.encode(_hideTransitStations);
     }
 

@@ -201,7 +201,6 @@ class _AppearanceSettingsScreenState extends State<AppearanceSettingsScreen> {
                       ),
                       const SizedBox(height: 10),
                       ...themeProvider.stopIds.map((stopId) {
-                        // Отримуємо назву зупинки з stations.json
                         final stopName = _stations[stopId]?[2] ?? 'Зупинка №$stopId';
                         return Container(
                           child: ListTile(

@@ -9,7 +9,7 @@ class ThemeProvider with ChangeNotifier {
   final SharedPreferences _prefs;
   bool _isInitialized = false;
   List<String> _stopIds = [];
-  String _mapStyle = 'default'; // Add new field for map style
+  String _mapStyle = 'default';
 
   ThemeProvider(this._prefs) {
     _loadPreferences();

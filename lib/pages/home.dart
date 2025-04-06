@@ -108,7 +108,6 @@ class _MyHomePageState extends State<MyHomePage> {
       _isWeatherLoading = true;
     });
 
-    // Отримання даних з Firestore
     final weatherDoc = await FirebaseFirestore.instance
         .collection('info')
         .doc('weather')
@@ -163,7 +162,6 @@ class _MyHomePageState extends State<MyHomePage> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return [];
 
-    // Get user's group
     final userDoc = await FirebaseFirestore.instance
         .collection('students')
         .doc(user.uid)
@@ -171,7 +169,6 @@ class _MyHomePageState extends State<MyHomePage> {
     final group = userDoc.data()?['group'];
     if (group == null) return [];
 
-    // Get current course
     final now = Timestamp.now();
     final coursesSnapshot = await FirebaseFirestore.instance
         .collection('courses')
@@ -185,7 +182,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
     final courseDoc = coursesSnapshot.docs.first;
     
-    // Get schedule for user's group
     final scheduleDoc = await courseDoc.reference
         .collection('schedule')
         .doc(group.toString())
@@ -193,19 +189,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
     if (!scheduleDoc.exists) return [];
 
-    // Determine current week type and day
     final weekType = WeekType.getCurrentType();
     final weekday = DateFormat('EEEE').format(DateTime.now()).toLowerCase();
 
-    // Get schedule data for current week type
     final weekData = scheduleDoc.data()?[weekType] as Map<String, dynamic>?;
     if (weekData == null) return [];
 
-    // Get schedule for current day
     final daySchedule = weekData[weekday] as Map<String, dynamic>?;
     if (daySchedule == null) return [];
 
-    // Check if cache needs refresh (every 24 hours)
     if (_lastCacheUpdate == null || 
         DateTime.now().difference(_lastCacheUpdate!) > const Duration(hours: 24)) {
       _cachedSubjects.clear();
@@ -215,7 +207,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
     final lessons = <Lesson>[];
     
-    // Sort lesson numbers to ensure correct order
     final sortedLessonNumbers = daySchedule.keys.toList()..sort();
     
     for (var lessonNumber in sortedLessonNumbers) {
@@ -224,7 +215,6 @@ class _MyHomePageState extends State<MyHomePage> {
       final teacherId = lessonData['teacherId'];
       final commissionId = lessonData['commissionId'];
 
-      // Get subject data (from cache or Firestore)
       String? subjectName;
       if (_cachedSubjects.containsKey(subjectId)) {
         subjectName = _cachedSubjects[subjectId]['name'];
@@ -245,10 +235,8 @@ class _MyHomePageState extends State<MyHomePage> {
         }
       }
 
-      // Skip this lesson if subject name is null
       if (subjectName == null) continue;
 
-      // Get teacher data (from cache or Firestore)
       String? teacherName;
       if (_cachedTeachers.containsKey(teacherId)) {
         teacherName = _cachedTeachers[teacherId]['name'];
