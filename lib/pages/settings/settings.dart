@@ -60,7 +60,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       child: Ink(
                         padding: const EdgeInsets.all(10.0),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                          color: Theme.of(context).colorScheme.onSecondary,
                           borderRadius: BorderRadius.circular(10.0),
                           border: Border.all(
                             color: Theme.of(context).colorScheme.primary,
@@ -122,7 +122,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       child: Ink(
                         padding: const EdgeInsets.all(10.0),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                          color: Theme.of(context).colorScheme.onSecondary,
                           borderRadius: BorderRadius.circular(10.0),
                           border: Border.all(
                             color: Theme.of(context).colorScheme.primary,
@@ -179,7 +179,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       child: Ink(
                         padding: const EdgeInsets.all(10.0),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                          color: Theme.of(context).colorScheme.onSecondary,
                           borderRadius: BorderRadius.circular(10.0),
                           border: Border.all(
                             color: Theme.of(context).colorScheme.primary,
@@ -246,7 +246,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       child: Ink(
                       padding: const EdgeInsets.all(10.0),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                        color: Theme.of(context).colorScheme.onSecondary,
                         borderRadius: BorderRadius.circular(10.0),
                         border: Border.all(
                         color: Theme.of(context).colorScheme.primary,
@@ -306,7 +306,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       child: Ink(
                         padding: const EdgeInsets.all(10.0),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                          color: Theme.of(context).colorScheme.onSecondary,
                           borderRadius: BorderRadius.circular(10.0),
                           border: Border.all(
                             color: Theme.of(context).colorScheme.primary,
@@ -431,7 +431,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       child: Ink(
                         padding: const EdgeInsets.all(10.0),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                          color: Theme.of(context).colorScheme.onSecondary,
                           borderRadius: BorderRadius.circular(10.0),
                           border: Border.all(
                             color: Theme.of(context).colorScheme.primary,

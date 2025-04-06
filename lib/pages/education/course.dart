@@ -303,7 +303,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                      color: Theme.of(context).colorScheme.onSecondary,
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: Theme.of(context).colorScheme.outline.withOpacity(0.3),

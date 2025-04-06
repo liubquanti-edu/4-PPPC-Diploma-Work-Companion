@@ -258,7 +258,7 @@ class _WeatherDetailsScreenState extends State<WeatherDetailsScreen> {
                   const SizedBox(height: 10),
                     Container(
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                      color: Theme.of(context).colorScheme.onSecondary,
                       borderRadius: const BorderRadius.all(Radius.circular(10.0)),
                       border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
                     ),
@@ -306,7 +306,7 @@ class _WeatherDetailsScreenState extends State<WeatherDetailsScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+        color: Theme.of(context).colorScheme.onSecondary,
         borderRadius: const BorderRadius.all(Radius.circular(10.0)),
         border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
       ),

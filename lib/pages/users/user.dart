@@ -124,7 +124,7 @@ class UserProfilePage extends StatelessWidget {
                           if (isCurrentUser)
                           ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                            backgroundColor: Theme.of(context).colorScheme.onSecondary,
                             foregroundColor: Theme.of(context).colorScheme.primary,
                             ),
                             icon: const Icon(Icons.edit),
@@ -146,7 +146,7 @@ class UserProfilePage extends StatelessWidget {
                           if (userData['contactnumber']?.isNotEmpty ?? false)
                             ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                              backgroundColor: Theme.of(context).colorScheme.onSecondary,
                               foregroundColor: Theme.of(context).colorScheme.primary,
                             ),
                             icon: const Icon(Icons.phone),
@@ -161,7 +161,7 @@ class UserProfilePage extends StatelessWidget {
                           if (userData['contactemail']?.isNotEmpty ?? false)
                             ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                              backgroundColor: Theme.of(context).colorScheme.onSecondary,
                               foregroundColor: Theme.of(context).colorScheme.primary,
                             ),
                             icon: const Icon(Icons.email),
@@ -187,7 +187,7 @@ class UserProfilePage extends StatelessWidget {
 
                             return ElevatedButton.icon(
                               style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                              backgroundColor: Theme.of(context).colorScheme.onSecondary,
                               foregroundColor: Theme.of(context).colorScheme.primary,
                               ),
                               icon: Icon(isFollowing ? Icons.person_remove : Icons.person_add),
@@ -238,7 +238,7 @@ class UserProfilePage extends StatelessWidget {
                             padding: const EdgeInsets.all(12.0),
                             margin: const EdgeInsets.only(top: 10.0, bottom: 10.0),
                             decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                              color: Theme.of(context).colorScheme.onSecondary,
                               borderRadius: BorderRadius.circular(10.0),
                               border: Border.all(
                                 color: Theme.of(context).colorScheme.primary,
@@ -380,7 +380,7 @@ class UserProfilePage extends StatelessWidget {
                                   child: Container(
                                     padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
-                                      color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                                      color: Theme.of(context).colorScheme.onSecondary,
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
                                         color: Theme.of(context).colorScheme.primary,

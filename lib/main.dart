@@ -360,7 +360,7 @@ class MyApp extends StatelessWidget {
                 // Set navigation bar color based on theme and update on theme changes
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-                    systemNavigationBarColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                    systemNavigationBarColor: Theme.of(context).colorScheme.onSecondary,
                     systemNavigationBarIconBrightness: Theme.of(context).brightness == Brightness.light 
                         ? Brightness.dark 
                         : Brightness.light,
@@ -426,7 +426,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                   labelType: NavigationRailLabelType.all,
                   useIndicator: true,
                   groupAlignment: 0,
-                  backgroundColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                  backgroundColor: Theme.of(context).colorScheme.onSecondary,
                   destinations: const [
                     NavigationRailDestination(
                       icon: Icon(Icons.home_outlined),
@@ -461,7 +461,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         return Scaffold(
           body: _pages[_selectedIndex],
             bottomNavigationBar: NavigationBar(
-            backgroundColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+            backgroundColor: Theme.of(context).colorScheme.onSecondary,
             selectedIndex: _selectedIndex,
             onDestinationSelected: _onItemTapped,
             labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,

@@ -90,7 +90,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         padding: const EdgeInsets.all(12.0),
                         margin: const EdgeInsets.only(top: 10.0),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                          color: Theme.of(context).colorScheme.onSecondary,
                           borderRadius: BorderRadius.circular(10.0),
                           border: Border.all(
                             color: Theme.of(context).colorScheme.primary,
@@ -186,7 +186,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Ink(
                         padding: const EdgeInsets.all(10.0),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                          color: Theme.of(context).colorScheme.onSecondary,
                           borderRadius: BorderRadius.circular(10.0),
                           border: Border.all(
                             color: Theme.of(context).colorScheme.primary,
@@ -248,7 +248,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Ink(
                         padding: const EdgeInsets.all(10.0),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                          color: Theme.of(context).colorScheme.onSecondary,
                           borderRadius: BorderRadius.circular(10.0),
                           border: Border.all(
                             color: Theme.of(context).colorScheme.primary,
@@ -310,7 +310,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Ink(
                         padding: const EdgeInsets.all(10.0),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                          color: Theme.of(context).colorScheme.onSecondary,
                           borderRadius: BorderRadius.circular(10.0),
                           border: Border.all(
                             color: Theme.of(context).colorScheme.primary,
@@ -367,7 +367,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Ink(
                         padding: const EdgeInsets.all(10.0),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                          color: Theme.of(context).colorScheme.onSecondary,
                           borderRadius: BorderRadius.circular(10.0),
                           border: Border.all(
                             color: Theme.of(context).colorScheme.primary,
@@ -434,7 +434,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Ink(
                       padding: const EdgeInsets.all(10.0),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                        color: Theme.of(context).colorScheme.onSecondary,
                         borderRadius: BorderRadius.circular(10.0),
                         border: Border.all(
                         color: Theme.of(context).colorScheme.primary,
@@ -494,7 +494,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Ink(
                         padding: const EdgeInsets.all(10.0),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                          color: Theme.of(context).colorScheme.onSecondary,
                           borderRadius: BorderRadius.circular(10.0),
                           border: Border.all(
                             color: Theme.of(context).colorScheme.primary,
@@ -619,7 +619,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Ink(
                         padding: const EdgeInsets.all(10.0),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                          color: Theme.of(context).colorScheme.onSecondary,
                           borderRadius: BorderRadius.circular(10.0),
                           border: Border.all(
                             color: Theme.of(context).colorScheme.primary,

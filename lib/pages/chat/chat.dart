@@ -827,7 +827,7 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
             Container(
               padding: const EdgeInsets.all(8),
-              color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+              color: Theme.of(context).colorScheme.onSecondary,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
