@@ -1,58 +1,54 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
-import 'package:pppc_companion/pages/config/api.dart';
 
 class AlertProvider with ChangeNotifier {
   bool isLoading = true;
   AlertInfo alertInfo = AlertInfo(status: 'N');
-  Timer? _timer;
+  StreamSubscription? _alertSubscription;
 
   AlertProvider() {
-    fetchAlertStatus();
-    _timer = Timer.periodic(const Duration(seconds: 30), (_) => fetchAlertStatus());
+    subscribeToAlerts();
   }
 
-  Future<void> fetchAlertStatus() async {
-    try {
-      isLoading = true;
-      notifyListeners();
-      
-      final response = await http.get(
-        Uri.parse('https://api.alerts.in.ua/v1/alerts/active.json'),
-        headers: {'Authorization': 'Bearer ${ApiConfig.alertsApiKey}'}
-      );
+  void subscribeToAlerts() {
+    isLoading = true;
+    notifyListeners();
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final alerts = data['alerts'] as List;
-        
-        final poltavaAlert = alerts.firstWhere(
-          (alert) => alert['location_uid'] == '19' && alert['alert_type'] == 'air_raid',
-          orElse: () => null
-        );
-
-        if (poltavaAlert != null) {
-          alertInfo = AlertInfo(
-            status: 'A',
-            startTime: DateTime.parse(poltavaAlert['started_at'])
-          );
-        } else {
-          alertInfo = AlertInfo(status: 'N');
+    final alertRef = FirebaseFirestore.instance.collection('info').doc('alert');
+    _alertSubscription = alertRef.snapshots().listen(
+      (snapshot) {
+        if (snapshot.exists) {
+          final data = snapshot.data()!;
+          
+          if (data['status'] == 'A') {
+            alertInfo = AlertInfo(
+              status: 'A',
+              startTime: data['startTime'] != null 
+                ? (data['startTime'] is Timestamp 
+                  ? (data['startTime'] as Timestamp).toDate() 
+                  : DateTime.parse(data['startTime']))
+                : null
+            );
+          } else {
+            alertInfo = AlertInfo(status: 'N');
+          }
+          
+          isLoading = false;
+          notifyListeners();
         }
+      },
+      onError: (e) {
+        debugPrint('Error getting alert data: $e');
+        isLoading = false;
+        notifyListeners();
       }
-    } catch (e) {
-      debugPrint('Error fetching alert status: $e');
-    } finally {
-      isLoading = false;
-      notifyListeners();
-    }
+    );
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _alertSubscription?.cancel();
     super.dispose();
   }
 }

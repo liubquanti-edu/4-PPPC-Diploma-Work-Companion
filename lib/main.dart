@@ -154,6 +154,47 @@ void main() async {
           ),
           payload: json.encode(message.data),
         );
+      } else if (notificationType == 'chat_message') {
+        _notificationId++;
+        
+        FlutterLocalNotificationsPlugin().show(
+          _notificationId,
+          message.notification!.title,
+          message.notification!.body,
+          NotificationDetails(
+            android: AndroidNotificationDetails(
+              'chat_channel',
+              'Chat Notifications',
+              importance: Importance.high,
+              priority: Priority.high,
+              icon: 'notification_icon',
+              channelShowBadge: true,
+              autoCancel: true,
+            ),
+          ),
+          payload: json.encode(message.data),
+        );
+      } else if (notificationType == 'alert_status') {
+        _notificationId++;
+        
+        FlutterLocalNotificationsPlugin().show(
+          _notificationId,
+          message.notification!.title,
+          message.notification!.body,
+          NotificationDetails(
+            android: AndroidNotificationDetails(
+              'alert_channel',
+              'Air Raid Alert Notifications',
+              importance: Importance.high,
+              priority: Priority.high,
+              icon: 'notification_icon',
+              channelShowBadge: true,
+              autoCancel: true,
+              color: message.data['status'] == 'A' ? Colors.red : Colors.green,
+            ),
+          ),
+          payload: json.encode(message.data),
+        );
       }
     }
   });
@@ -240,16 +281,14 @@ Future<void> _initNotifications() async {
               showBadge: true,
             ),
           );
-    }
-
-    if (Platform.isAndroid) {
+          
       await FlutterLocalNotificationsPlugin()
           .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
           ?.createNotificationChannel(
             const AndroidNotificationChannel(
-              'post_comments_channel',
-              'Post Comments Notifications',
-              description: 'Notifications for post comments',
+              'alert_channel',
+              'Air Raid Alert Notifications',
+              description: 'Air raid alert notifications',
               importance: Importance.max,
               playSound: true,
               enableVibration: true,
@@ -257,6 +296,20 @@ Future<void> _initNotifications() async {
             ),
           );
     }
+
+    await FlutterLocalNotificationsPlugin()
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(
+          const AndroidNotificationChannel(
+            'post_comments_channel',
+            'Post Comments Notifications',
+            description: 'Notifications for post comments',
+            importance: Importance.max,
+            playSound: true,
+            enableVibration: true,
+            showBadge: true,
+          ),
+        );
   } catch (e) {
     debugPrint('Error initializing notifications: $e');
   }
