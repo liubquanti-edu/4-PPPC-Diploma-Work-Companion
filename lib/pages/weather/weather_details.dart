@@ -255,11 +255,12 @@ class _WeatherDetailsScreenState extends State<WeatherDetailsScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                    Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                  const SizedBox(height: 10),
+                    Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                      borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+                      border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
                     ),
                     margin: const EdgeInsets.only(bottom: 16.0),
                     child: SizedBox(
@@ -303,10 +304,11 @@ class _WeatherDetailsScreenState extends State<WeatherDetailsScreen> {
     required IconData icon,
     double rotationAngle = 0.0,
   }) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+        borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+        border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),

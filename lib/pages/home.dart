@@ -422,37 +422,37 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
     switch (weatherMain?.toLowerCase()) {
       case 'clear':
         iconData = Icons.wb_sunny_rounded;
-        iconColor = const Color(0xFFFEF89F); // жовтий
+        iconColor = const Color(0xFFFEF89F);
         break;
       case 'rain':
         iconData = Icons.water_drop;
-        iconColor = const Color(0xFF9FE3FE); // блакитний
+        iconColor = const Color(0xFF9FE3FE);
         break;
       case 'snow':
         iconData = Icons.ac_unit;
-        iconColor = const Color(0xFFFFFFFF); // білий
+        iconColor = const Color(0xFFFFFFFF);
         break;
       case 'clouds':
         iconData = Icons.cloud_rounded;
-        iconColor = const Color(0xFFB4B4B4); // сірий
+        iconColor = const Color(0xFFB4B4B4);
         break;
       case 'thunderstorm':
         iconData = Icons.flash_on_rounded;
-        iconColor = const Color(0xFFC39FFE); // фіолетовий
+        iconColor = const Color(0xFFC39FFE);
         break;
       case 'drizzle':
         iconData = Icons.grain_rounded;
-        iconColor = const Color(0xFF9FE3FE); // блакитний
+        iconColor = const Color(0xFF9FE3FE);
         break;
       case 'mist':
       case 'fog':
       case 'haze':
         iconData = Icons.blur_on_rounded;
-        iconColor = const Color(0xFFB4B4B4); // сірий
+        iconColor = const Color(0xFFB4B4B4);
         break;
       default:
         iconData = Icons.cloud_rounded;
-        iconColor = const Color(0xFFB4B4B4); // сірий
+        iconColor = const Color(0xFFB4B4B4);
         break;
     }
 
@@ -817,7 +817,6 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                   const SizedBox(height: 10.0, width: double.infinity),
                   GestureDetector(
                     child: Ink(
-                      height: 80,
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
                         borderRadius: const BorderRadius.all(Radius.circular(10.0)),
@@ -825,21 +824,24 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                       ),
                       child: InkWell(
                         borderRadius: BorderRadius.circular(10.0),
-                        onTap: () {
+                        onTap: () async {
+                          await Future.delayed(const Duration(milliseconds: 300));
+                          if (!mounted) return;
+                          
                           if (_weather != null) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => WeatherDetailsScreen(weather: _weather!),
-                              ),
-                            );
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                            builder: (context) => WeatherDetailsScreen(weather: _weather!),
+                            ),
+                          );
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: const Text('Дані про погоду недоступні.'),
-                                backgroundColor: Theme.of(context).colorScheme.error,
-                              ),
-                            );
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                            content: const Text('Дані про погоду недоступні.'),
+                            backgroundColor: Theme.of(context).colorScheme.error,
+                            ),
+                          );
                           }
                         },
                         child: Padding(
@@ -867,7 +869,7 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                           ),
                                           const SizedBox(height: 10.0),
                                           CardLoading(
-                                            height: 20,
+                                            height: 18,
                                             width: 300,
                                             borderRadius: const BorderRadius.all(Radius.circular(10)),
                                             animationDuration: const Duration(milliseconds: 1000),
@@ -1002,7 +1004,6 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                     builder: (context, alertProvider, child) {
                       return GestureDetector(
                         child: Ink(
-                          height: 80,
                           width: double.infinity,
                           decoration: BoxDecoration(
                             color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
@@ -1035,7 +1036,7 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                     ),
                                     const SizedBox(height: 10.0),
                                     CardLoading(
-                                    height: 20,
+                                    height: 18,
                                     width: 300,
                                     borderRadius: const BorderRadius.all(Radius.circular(10)),
                                     animationDuration: const Duration(milliseconds: 1000),
