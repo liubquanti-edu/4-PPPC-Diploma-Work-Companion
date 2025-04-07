@@ -67,6 +67,12 @@ flutter:
 
     - assets/json/stations.json
 
+    - assets/svg/PoltavaRegion.svg
+    - assets/svg/PoltavaRegionCities.svg
+    - assets/svg/PoltavaRegionBorder.svg
+    - assets/svg/PoltavaRegionBordersOther.svg
+    - assets/svg/PoltavaRegionLogo.svg
+
     - assets/json/map/auberginemap.json
     - assets/json/map/darkmap.json
     - assets/json/map/nightmap.json

@@ -21,6 +21,7 @@ import '/providers/transport_provider.dart';
 import '/providers/theme_provider.dart';
 import '/models/weather.dart';
 import '/pages/weather/weather_details.dart';
+import '/pages/alert/alert.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -990,8 +991,7 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                   const SizedBox(height: 10.0, width: double.infinity),
                   Consumer<AlertProvider>(
                     builder: (context, alertProvider, child) {
-                      return GestureDetector(
-                        child: Ink(
+                      return Ink(
                           width: double.infinity,
                           decoration: BoxDecoration(
                             color: Theme.of(context).colorScheme.onSecondary,
@@ -1003,7 +1003,12 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                             onTap: () async {
                               await Future.delayed(const Duration(milliseconds: 300));
                               if (!mounted) return;
-                              _launchUrl('https://alerts.in.ua');
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const RegionAlertMapScreen(region: 'Poltava'),
+                                ),
+                              );
                             },
                             child: Padding(
                               padding: const EdgeInsets.all(10.0),
@@ -1102,7 +1107,6 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                   ),
                             ),
                           ),
-                        ),
                       );
                     },
                   ),

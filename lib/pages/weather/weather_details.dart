@@ -25,10 +25,12 @@ class _WeatherDetailsScreenState extends State<WeatherDetailsScreen> {
   GoogleMapController? _mapController;
   Set<Marker> _markers = {};
   BitmapDescriptor? _weatherMarkerIcon;
+  bool _screenOpen = true; // Track if screen is open
 
   @override
   void initState() {
     super.initState();
+    _screenOpen = true; // Ensure map is visible on init
     _initializeMapRenderer();
     _createWeatherMarkerIcon();
   }
@@ -169,127 +171,155 @@ class _WeatherDetailsScreenState extends State<WeatherDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Деталі погоди'),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              physics: const ClampingScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 16),
-                  Container(
-                    alignment: Alignment.center,
-                    child: Text(
-                      '${widget.weather.temperature?.celsius?.round()}°C',
-                      style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                  ),
-                  Container(
-                    alignment: Alignment.center,
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    child: Text(
-                      widget.weather.weatherDescription?.replaceFirst(
-                            widget.weather.weatherDescription![0],
-                            widget.weather.weatherDescription![0].toUpperCase(),
-                          ) ??
-                          '',
-                      style: Theme.of(context).textTheme.headlineSmall,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  GridView.count(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    children: [
-                      _buildWeatherBlock(
-                        context,
-                        title: 'Вологість',
-                        content: '${widget.weather.humidity?.round() ?? 0}%',
-                        icon: Icons.water_drop_rounded,
-                      ),
-                      _buildWeatherBlock(
-                        context,
-                        title: 'Вітер',
-                        content: '${widget.weather.windSpeed?.round() ?? 0} м/с',
-                        icon: Icons.navigation_rounded,
-                        rotationAngle: widget.weather.windDegree?.toDouble() ?? 0.0,
-                      ),
-                      _buildWeatherBlock(
-                        context,
-                        title: 'Відчувається як',
-                        content: '${widget.weather.tempFeelsLike?.celsius?.round()}°C',
-                        icon: Icons.thermostat_auto_rounded,
-                      ),
-                      _buildWeatherBlock(
-                        context,
-                        title: 'Тиск',
-                        content: '${widget.weather.pressure?.round() ?? 0} hPa',
-                        icon: Icons.arrow_downward_rounded,
-                      ),
-                      _buildWeatherBlock(
-                        context,
-                        title: 'Схід сонця',
-                        content: _formatTime(widget.weather.sunrise),
-                        icon: Icons.wb_sunny_rounded,
-                      ),
-                      _buildWeatherBlock(
-                        context,
-                        title: 'Захід сонця',
-                        content: _formatTime(widget.weather.sunset),
-                        icon: Icons.nights_stay_rounded,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
+    return WillPopScope(
+      onWillPop: () async {
+        // Hide map before popping
+        setState(() {
+          _screenOpen = false;
+        });
+        // Add a small delay to ensure the map is hidden before navigation
+        await Future.delayed(const Duration(milliseconds: 100));
+        return true;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Деталі погоди'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              // Hide map before popping using back button
+              setState(() {
+                _screenOpen = false;
+              });
+              Future.delayed(const Duration(milliseconds: 100), () {
+                Navigator.of(context).pop();
+              });
+            },
+          ),
+        ),
+        body: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                physics: const ClampingScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 16),
                     Container(
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.onSecondary,
-                      borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-                      border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
-                    ),
-                    margin: const EdgeInsets.only(bottom: 16.0),
-                    child: SizedBox(
-                      height: 200,
-                      child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10.0),
-                      child: GoogleMap(
-                        onMapCreated: _onMapCreated,
-                        initialCameraPosition: CameraPosition(
-                        target: LatLng(widget.weather.lat ?? 0.0, widget.weather.lon ?? 0.0),
-                        zoom: 12,
-                        ),
-                        markers: _markers,
-                        mapType: MapType.normal,
-                        zoomControlsEnabled: false,
-                        compassEnabled: false,
-                        mapToolbarEnabled: false,
-                        myLocationButtonEnabled: false,
-                        gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
-                        Factory<OneSequenceGestureRecognizer>(
-                          () => EagerGestureRecognizer(),
-                        ),
-                        },
-                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        '${widget.weather.temperature?.celsius?.round()}°C',
+                        style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
                     ),
+                    Container(
+                      alignment: Alignment.center,
+                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      child: Text(
+                        widget.weather.weatherDescription?.replaceFirst(
+                              widget.weather.weatherDescription![0],
+                              widget.weather.weatherDescription![0].toUpperCase(),
+                            ) ??
+                            '',
+                        style: Theme.of(context).textTheme.headlineSmall,
+                        textAlign: TextAlign.center,
+                      ),
                     ),
-                ],
+                    const SizedBox(height: 16),
+                    GridView.count(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 10,
+                      crossAxisSpacing: 10,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: [
+                        _buildWeatherBlock(
+                          context,
+                          title: 'Вологість',
+                          content: '${widget.weather.humidity?.round() ?? 0}%',
+                          icon: Icons.water_drop_rounded,
+                        ),
+                        _buildWeatherBlock(
+                          context,
+                          title: 'Вітер',
+                          content: '${widget.weather.windSpeed?.round() ?? 0} м/с',
+                          icon: Icons.navigation_rounded,
+                          rotationAngle: widget.weather.windDegree?.toDouble() ?? 0.0,
+                        ),
+                        _buildWeatherBlock(
+                          context,
+                          title: 'Відчувається як',
+                          content: '${widget.weather.tempFeelsLike?.celsius?.round()}°C',
+                          icon: Icons.thermostat_auto_rounded,
+                        ),
+                        _buildWeatherBlock(
+                          context,
+                          title: 'Тиск',
+                          content: '${widget.weather.pressure?.round() ?? 0} hPa',
+                          icon: Icons.arrow_downward_rounded,
+                        ),
+                        _buildWeatherBlock(
+                          context,
+                          title: 'Схід сонця',
+                          content: _formatTime(widget.weather.sunrise),
+                          icon: Icons.wb_sunny_rounded,
+                        ),
+                        _buildWeatherBlock(
+                          context,
+                          title: 'Захід сонця',
+                          content: _formatTime(widget.weather.sunset),
+                          icon: Icons.nights_stay_rounded,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.onSecondary,
+                        borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+                        border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2.0),
+                      ),
+                      margin: const EdgeInsets.only(bottom: 16.0),
+                      child: SizedBox(
+                        height: 200,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10.0),
+                          child: _screenOpen 
+                            ? GoogleMap(
+                                onMapCreated: _onMapCreated,
+                                initialCameraPosition: CameraPosition(
+                                  target: LatLng(widget.weather.lat ?? 0.0, widget.weather.lon ?? 0.0),
+                                  zoom: 12,
+                                ),
+                                markers: _markers,
+                                mapType: MapType.normal,
+                                zoomControlsEnabled: false,
+                                compassEnabled: false,
+                                mapToolbarEnabled: false,
+                                myLocationButtonEnabled: false,
+                                gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+                                  Factory<OneSequenceGestureRecognizer>(
+                                    () => EagerGestureRecognizer(),
+                                  ),
+                                },
+                              )
+                            : Container(
+                                height: 200,
+                                color: Theme.of(context).colorScheme.surface,
+                              ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

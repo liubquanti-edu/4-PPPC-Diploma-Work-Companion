@@ -37,12 +37,14 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
   Set<Polyline> _polylines = {};
   BitmapDescriptor? _busStopIcon;
   BitmapDescriptor? _trainStopIcon;
+  bool _screenOpen = true; // Флаг для видимості мапи
 
   final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
+    _screenOpen = true; // Гарантуємо видимість мапи при ініціалізації
     _initializeMapRenderer();
     _loadRouteDetails();
     _loadIcons();
@@ -364,186 +366,214 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('${widget.transportName}${widget.routeName.startsWith(RegExp(r'[0-9]')) ? ' №' : ' '}${widget.routeName}'),
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _routeDetails == null
-              ? const Center(child: Text('Немає даних про маршрут'))
-              : Column(
-                  children: [
-                    Container(
-                      height: 200,
-                      margin: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(14),
-                        child: GoogleMap(
-                          onMapCreated: _onMapCreated,
-                          initialCameraPosition: const CameraPosition(
-                            target: LatLng(49.589633, 34.551417),
-                            zoom: 11,
-                          ),
-                          markers: _markers,
-                          polylines: _polylines,
-                          zoomControlsEnabled: false,
-                          mapToolbarEnabled: false,
-                          compassEnabled: false,
+    return WillPopScope(
+      onWillPop: () async {
+        // Приховати мапу перед закриттям екрану
+        setState(() {
+          _screenOpen = false;
+        });
+        // Невелика затримка для коректного приховування мапи перед навігацією
+        await Future.delayed(const Duration(milliseconds: 100));
+        return true;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('${widget.transportName}${widget.routeName.startsWith(RegExp(r'[0-9]')) ? ' №' : ' '}${widget.routeName}'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              // Приховати мапу перед використанням кнопки назад
+              setState(() {
+                _screenOpen = false;
+              });
+              Future.delayed(const Duration(milliseconds: 100), () {
+                Navigator.of(context).pop();
+              });
+            },
+          ),
+        ),
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _routeDetails == null
+                ? const Center(child: Text('Немає даних про маршрут'))
+                : Column(
+                    children: [
+                      Container(
+                        height: 200,
+                        margin: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(14),
+                          child: _screenOpen
+                            ? GoogleMap(
+                                onMapCreated: _onMapCreated,
+                                initialCameraPosition: const CameraPosition(
+                                  target: LatLng(49.589633, 34.551417),
+                                  zoom: 11,
+                                ),
+                                markers: _markers,
+                                polylines: _polylines,
+                                zoomControlsEnabled: false,
+                                mapToolbarEnabled: false,
+                                compassEnabled: false,
+                              )
+                            : Container(
+                                height: 200,
+                                color: Theme.of(context).colorScheme.surface,
+                              ),
                         ),
                       ),
-                    ),
-                    Expanded(
-                      child: ListView.builder(
-                        controller: _scrollController,
-                        padding: const EdgeInsets.all(16),
-                        itemCount: _routeDetails!.directions.length,
-                        itemBuilder: (context, directionIndex) {
-                          final direction = _routeDetails!.directions[directionIndex];
-                          final firstStopForTransport = _findFirstStopForEachTransport(direction);
-                          
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Divider(),
-                                Center(
-                                  child: SingleChildScrollView(
-                                    scrollDirection: Axis.horizontal,
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          direction.stops.first.stopName,
-                                          style: Theme.of(context).textTheme.titleMedium,
-                                          textAlign: TextAlign.center,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        const Icon(Icons.arrow_forward_rounded),
-                                        const SizedBox(width: 8), 
-                                        Text(
-                                          direction.stops.last.stopName,
-                                          style: Theme.of(context).textTheme.titleMedium,
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ],
+                      Expanded(
+                        child: ListView.builder(
+                          controller: _scrollController,
+                          padding: const EdgeInsets.all(16),
+                          itemCount: _routeDetails!.directions.length,
+                          itemBuilder: (context, directionIndex) {
+                            final direction = _routeDetails!.directions[directionIndex];
+                            final firstStopForTransport = _findFirstStopForEachTransport(direction);
+                            
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Divider(),
+                                  Center(
+                                    child: SingleChildScrollView(
+                                      scrollDirection: Axis.horizontal,
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            direction.stops.first.stopName,
+                                            style: Theme.of(context).textTheme.titleMedium,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          const Icon(Icons.arrow_forward_rounded),
+                                          const SizedBox(width: 8), 
+                                          Text(
+                                            direction.stops.last.stopName,
+                                            style: Theme.of(context).textTheme.titleMedium,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                ),
-                                const Divider(),
-                                ...direction.stops.asMap().entries.map((entry) {
-                                  final index = entry.key;
-                                  final stop = entry.value;
-                                  final transportAtThisStop = firstStopForTransport[index];
-                                  
-                                  return Column(
-                                    children: [
-                                      if (transportAtThisStop != null)
-                                        Container(
-                                          margin: const EdgeInsets.only(bottom: 8),
-                                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                          child: Row(
-                                            children: [
-                                                if (widget.transportName == 'Тролейбус')
-                                                  SvgPicture.asset(
-                                                    'assets/svg/transport/trolleybus.svg',
-                                                    width: 24,
-                                                    color: const Color(0xFFA2C9FE),
-                                                  )
-                                                else if (widget.transportName == 'Автобус')
-                                                  SvgPicture.asset(
-                                                    'assets/svg/transport/bus.svg',
-                                                    width: 24,
-                                                    color: const Color(0xff9ed58b),
-                                                  )
-                                                else if (widget.transportName == 'Маршрутка')
-                                                  SvgPicture.asset(
-                                                    'assets/svg/transport/route.svg',
-                                                    width: 24,
-                                                    color: const Color(0xfffeb49f),
-                                                  )
-                                                else if (widget.transportName == 'Поїзд')
-                                                  SvgPicture.asset(
-                                                    'assets/svg/transport/train.svg',
-                                                    width: 24,
-                                                    color: const Color(0xFFC39FFE),
-                                                  )
-                                                else if (widget.transportName == 'Електричка')
-                                                  SvgPicture.asset(
-                                                    'assets/svg/transport/regional.svg',
-                                                    width: 24,
-                                                    color: const Color(0xFF9FE3FE),
-                                                  )
-                                                else if (widget.transportName == 'Міжміський')
-                                                  SvgPicture.asset(
-                                                    'assets/svg/transport/intercity.svg',
-                                                    width: 30,
-                                                    color: const Color(0xFFFEF89F),
-                                                  )
-                                                else
-                                                  SvgPicture.asset(
-                                                    'assets/svg/transport/bus.svg',
-                                                    width: 24,
-                                                    color: const Color(0xFFFE9F9F),
+                                  const Divider(),
+                                  ...direction.stops.asMap().entries.map((entry) {
+                                    final index = entry.key;
+                                    final stop = entry.value;
+                                    final transportAtThisStop = firstStopForTransport[index];
+                                    
+                                    return Column(
+                                      children: [
+                                        if (transportAtThisStop != null)
+                                          Container(
+                                            margin: const EdgeInsets.only(bottom: 8),
+                                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                            child: Row(
+                                              children: [
+                                                  if (widget.transportName == 'Тролейбус')
+                                                    SvgPicture.asset(
+                                                      'assets/svg/transport/trolleybus.svg',
+                                                      width: 24,
+                                                      color: const Color(0xFFA2C9FE),
+                                                    )
+                                                  else if (widget.transportName == 'Автобус')
+                                                    SvgPicture.asset(
+                                                      'assets/svg/transport/bus.svg',
+                                                      width: 24,
+                                                      color: const Color(0xff9ed58b),
+                                                    )
+                                                  else if (widget.transportName == 'Маршрутка')
+                                                    SvgPicture.asset(
+                                                      'assets/svg/transport/route.svg',
+                                                      width: 24,
+                                                      color: const Color(0xfffeb49f),
+                                                    )
+                                                  else if (widget.transportName == 'Поїзд')
+                                                    SvgPicture.asset(
+                                                      'assets/svg/transport/train.svg',
+                                                      width: 24,
+                                                      color: const Color(0xFFC39FFE),
+                                                    )
+                                                  else if (widget.transportName == 'Електричка')
+                                                    SvgPicture.asset(
+                                                      'assets/svg/transport/regional.svg',
+                                                      width: 24,
+                                                      color: const Color(0xFF9FE3FE),
+                                                    )
+                                                  else if (widget.transportName == 'Міжміський')
+                                                    SvgPicture.asset(
+                                                      'assets/svg/transport/intercity.svg',
+                                                      width: 30,
+                                                      color: const Color(0xFFFEF89F),
+                                                    )
+                                                  else
+                                                    SvgPicture.asset(
+                                                      'assets/svg/transport/bus.svg',
+                                                      width: 24,
+                                                      color: const Color(0xFFFE9F9F),
+                                                    ),
+                                                const SizedBox(width: 8),
+                                                Expanded(
+                                                  child: Text(
+                                                    '${transportAtThisStop.vehicleNumber != null 
+                                                      ? ' ${transportAtThisStop.vehicleNumber}'
+                                                      : ''}',
+                                                    style: const TextStyle(fontWeight: FontWeight.bold),
                                                   ),
-                                              const SizedBox(width: 8),
-                                              Expanded(
-                                                child: Text(
-                                                  '${transportAtThisStop.vehicleNumber != null 
-                                                    ? ' ${transportAtThisStop.vehicleNumber}'
-                                                    : ''}',
-                                                  style: const TextStyle(fontWeight: FontWeight.bold),
                                                 ),
-                                              ),
-                                            ],
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                      ListTile(
-                                        leading: Icon(
-                                          stop.times.isNotEmpty 
-                                              ? Icons.location_on
-                                              : Icons.location_on_outlined,
-                                          color: stop.times.isNotEmpty 
-                                              ? Theme.of(context).colorScheme.primary
-                                              : Colors.grey,
-                                        ),
-                                        title: Text(stop.stopName),
-                                        subtitle: stop.times.isNotEmpty
-                                            ? Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: stop.times.map((time) {
-                                                  return Text(
-                                                  'Прибуття: ${time.localTimeFormatted}'
-                                                  '${time.vehicleNumber != null ? ' (${time.vehicleNumber})' : ''}',
-                                                  style: const TextStyle(
-                                                    fontWeight: FontWeight.w500,
+                                        ListTile(
+                                          leading: Icon(
+                                            stop.times.isNotEmpty 
+                                                ? Icons.location_on
+                                                : Icons.location_on_outlined,
+                                            color: stop.times.isNotEmpty 
+                                                ? Theme.of(context).colorScheme.primary
+                                                : Colors.grey,
+                                          ),
+                                          title: Text(stop.stopName),
+                                          subtitle: stop.times.isNotEmpty
+                                              ? Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: stop.times.map((time) {
+                                                    return Text(
+                                                    'Прибуття: ${time.localTimeFormatted}'
+                                                    '${time.vehicleNumber != null ? ' (${time.vehicleNumber})' : ''}',
+                                                    style: const TextStyle(
+                                                      fontWeight: FontWeight.w500,
+                                                    ),
+                                                  );
+                                                  }).toList(),
+                                                )
+                                              : const Text(
+                                                  'Немає даних про прибуття',
+                                                  style: TextStyle(
+                                                    color: Colors.grey,
+                                                    fontStyle: FontStyle.italic,
                                                   ),
-                                                );
-                                                }).toList(),
-                                              )
-                                            : const Text(
-                                                'Немає даних про прибуття',
-                                                style: TextStyle(
-                                                  color: Colors.grey,
-                                                  fontStyle: FontStyle.italic,
                                                 ),
-                                              ),
-                                      ),
-                                    ],
-                                  );
-                                }).toList(),
-                              ],
-                            ),
-                          );
-                        },
+                                        ),
+                                      ],
+                                    );
+                                  }).toList(),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
+      ),
     );
   }
 

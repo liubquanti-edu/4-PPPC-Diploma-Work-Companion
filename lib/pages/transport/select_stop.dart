@@ -24,6 +24,7 @@ class _StopSelectorScreenState extends State<StopSelectorScreen> {
   BitmapDescriptor? _busStopIcon;
   BitmapDescriptor? _collegeIcon;
   BitmapDescriptor? _trainStopIcon;
+  bool _screenOpen = true; // Флаг для видимості мапи
 
   static const CameraPosition _initialPosition = CameraPosition(
     target: LatLng(49.58781059854736, 34.54295461180669),
@@ -33,6 +34,7 @@ class _StopSelectorScreenState extends State<StopSelectorScreen> {
   @override
   void initState() {
     super.initState();
+    _screenOpen = true; // Гарантуємо видимість мапи при ініціалізації
     _initializeMapRenderer();
     _loadResources();
   }
@@ -334,24 +336,51 @@ class _StopSelectorScreenState extends State<StopSelectorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Виберіть зупинку'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.only(bottom: 16.0, left: 16.0, right: 16.0),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20.0),
-          child: GoogleMap(
-        onMapCreated: _onMapCreated,
-        initialCameraPosition: _initialPosition,
-        markers: _markers,
-        myLocationEnabled: true,
-        myLocationButtonEnabled: true,
-        mapType: MapType.normal,
-        zoomControlsEnabled: false,
-        compassEnabled: false,
-        mapToolbarEnabled: false,
+    return WillPopScope(
+      onWillPop: () async {
+        // Приховати мапу перед закриттям екрану
+        setState(() {
+          _screenOpen = false;
+        });
+        // Невелика затримка для коректного приховування мапи перед навігацією
+        await Future.delayed(const Duration(milliseconds: 100));
+        return true;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Виберіть зупинку'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              // Приховати мапу перед використанням кнопки назад
+              setState(() {
+                _screenOpen = false;
+              });
+              Future.delayed(const Duration(milliseconds: 100), () {
+                Navigator.of(context).pop();
+              });
+            },
+          ),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.only(bottom: 16.0, left: 16.0, right: 16.0),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20.0),
+            child: _screenOpen
+              ? GoogleMap(
+                  onMapCreated: _onMapCreated,
+                  initialCameraPosition: _initialPosition,
+                  markers: _markers,
+                  myLocationEnabled: true,
+                  myLocationButtonEnabled: true,
+                  mapType: MapType.normal,
+                  zoomControlsEnabled: false,
+                  compassEnabled: false,
+                  mapToolbarEnabled: false,
+                )
+              : Container(
+                  color: Theme.of(context).colorScheme.surface,
+                ),
           ),
         ),
       ),
