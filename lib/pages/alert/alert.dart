@@ -121,7 +121,7 @@ class RegionAlertMapScreen extends StatelessWidget {
                               child: SvgPicture.asset(
                               'assets/svg/PoltavaRegionBordersOther.svg',
                               colorFilter: ColorFilter.mode(
-                                mapColor.withOpacity(0.2),
+                                mapColor.withOpacity(0.7),
                                 BlendMode.srcIn,
                               ),
                               fit: BoxFit.contain,
