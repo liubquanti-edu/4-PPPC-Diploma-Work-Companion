@@ -88,6 +88,7 @@ class RegionAlertMapScreen extends StatelessWidget {
         return Scaffold(
           appBar: AppBar(
             title: const Text('Статус тривоги'),
+            centerTitle: true,
           ),
           body: Center(
             child: SingleChildScrollView(

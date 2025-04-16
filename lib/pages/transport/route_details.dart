@@ -379,6 +379,7 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: Text('${widget.transportName}${widget.routeName.startsWith(RegExp(r'[0-9]')) ? ' №' : ' '}${widget.routeName}'),
+          centerTitle: true,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {

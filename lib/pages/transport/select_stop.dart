@@ -349,6 +349,7 @@ class _StopSelectorScreenState extends State<StopSelectorScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Виберіть зупинку'),
+          centerTitle: true,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {

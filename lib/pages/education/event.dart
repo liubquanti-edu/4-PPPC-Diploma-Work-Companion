@@ -13,7 +13,7 @@ class EventDetailsPage extends StatelessWidget {
     
     return Scaffold(
       appBar: AppBar(
-        title: Text('Деталі події'),
+        title: const Text('Деталі події'),
         centerTitle: true,
       ),
       body: SingleChildScrollView(

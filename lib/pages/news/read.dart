@@ -40,6 +40,7 @@ class NewsDetailScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Новина'),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),

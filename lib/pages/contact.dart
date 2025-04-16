@@ -41,6 +41,7 @@ class _ContactPageState extends State<ContactPage> with SingleTickerProviderStat
     return Scaffold(
       appBar: AppBar(
         title: const Text('Стіна'),
+        centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.chat),

@@ -81,6 +81,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Перекладач'),
+        centerTitle: true,
       ),
       body: Column(
         children: [

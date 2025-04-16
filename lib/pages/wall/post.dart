@@ -171,6 +171,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Допис'),
+        centerTitle: true,
       ),
       body: Stack(
         children: [

@@ -65,6 +65,7 @@ class _PrivacySettingsState extends State<PrivacySettings> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Приватність'),
+        centerTitle: true,
       ),
       body: _isLoading
         ? const Center(child: CircularProgressIndicator())

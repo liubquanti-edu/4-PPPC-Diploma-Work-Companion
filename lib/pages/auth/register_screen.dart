@@ -60,6 +60,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Створення паролю'),
+        centerTitle: true,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),

@@ -88,6 +88,7 @@ class _ChatsPageState extends State<ChatsPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Чати'),
+        centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.search),

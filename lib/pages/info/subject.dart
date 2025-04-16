@@ -102,6 +102,7 @@ class _LessonDetailsScreenState extends State<LessonDetailsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Деталі заняття'),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),

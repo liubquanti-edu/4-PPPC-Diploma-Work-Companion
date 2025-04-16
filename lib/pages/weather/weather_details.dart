@@ -184,6 +184,7 @@ class _WeatherDetailsScreenState extends State<WeatherDetailsScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Деталі погоди'),
+          centerTitle: true,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {

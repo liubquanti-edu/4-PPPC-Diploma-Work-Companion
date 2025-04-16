@@ -83,6 +83,7 @@ class _AppearanceSettingsScreenState extends State<AppearanceSettingsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Зовнішній вигляд'),
+        centerTitle: true,
       ),
       body: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {

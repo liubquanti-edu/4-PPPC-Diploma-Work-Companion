@@ -53,6 +53,7 @@ class _VibrationTestScreenState extends State<VibrationTestScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Перевірка вібрації'),
+        centerTitle: true,
       ),
       body: Center(
         child: Padding(

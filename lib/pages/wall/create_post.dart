@@ -62,6 +62,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Новий допис'),
+        centerTitle: true,
         actions: [
           if (_isPosting)
             const Center(

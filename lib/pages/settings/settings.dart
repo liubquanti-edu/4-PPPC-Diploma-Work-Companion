@@ -35,6 +35,7 @@ class _SettingsPageState extends State<SettingsPage> {
         return Scaffold(
             appBar: AppBar(
             title: const Text('Налаштування'),
+            centerTitle: true,
             ),
           body: SingleChildScrollView(
             child: Padding(

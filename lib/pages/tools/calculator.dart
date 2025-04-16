@@ -9,6 +9,7 @@ class CalculatorScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Калькулятор'),
+        centerTitle: true,
       ),
       body: SizedBox(
         width: double.infinity,

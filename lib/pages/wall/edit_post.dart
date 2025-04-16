@@ -61,6 +61,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Редагувати допис'),
+        centerTitle: true,
         actions: [
           if (_isEditing)
             const Center(
