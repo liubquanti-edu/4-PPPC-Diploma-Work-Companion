@@ -14,6 +14,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:vibration/vibration.dart';
+import 'dart:async';
 
 class ChatScreen extends StatefulWidget {
   final String recipientId;
@@ -43,6 +44,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final _auth = FirebaseAuth.instance;
   Map<String, dynamic>? _replyTo;
   bool _isUploading = false;
+  Timer? _lastSeenTimer;
 
   File? _attachedImage;
   bool _isImageAttached = false;
@@ -57,6 +59,13 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     currentOpenChatId = chatRoomId;
+    
+    _lastSeenTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (mounted) {
+        setState(() {
+        });
+      }
+    });
   }
 
   Future<void> _pickImage() async {
@@ -1002,6 +1011,7 @@ class _ChatScreenState extends State<ChatScreen> {
   currentOpenChatId = null;
   _messageController.dispose();
   _scrollController.dispose();
+  _lastSeenTimer?.cancel();
   super.dispose();
 }
 }
