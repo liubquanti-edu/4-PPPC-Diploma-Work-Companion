@@ -418,8 +418,10 @@ class _ChatScreenState extends State<ChatScreen> {
                       final difference = now.difference(lastSeenDate);
                       
                       String lastSeenText;
-                      if (difference.inMinutes < 1) {
+                      if (difference.inSeconds < 13) {
                         lastSeenText = 'Онлайн';
+                      } else if (difference.inMinutes < 1) {
+                        lastSeenText = 'Був(ла) щойно';
                       } else if (difference.inHours < 1) {
                         lastSeenText = 'Був(ла) ${difference.inMinutes} хв тому';
                       } else if (difference.inDays < 1) {
