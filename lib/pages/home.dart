@@ -464,14 +464,26 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 20.0, width: double.infinity),
-            Align(
+            GestureDetector(
+              onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                content: const Text('Відокремлений структурний підрозділ "Полтавський політехнічний фаховий коледж Національного технічного університету "Харківський політехнічний інститут"'),
+                behavior: SnackBarBehavior.floating,
+                duration: const Duration(seconds: 3),
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                ),
+              );
+              },
+              child: Align(
               alignment: Alignment.topCenter,
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 40.0),
                 child: SvgPicture.asset(
-                  'assets/svg/ППФК.svg',
-                  color: Theme.of(context).colorScheme.primary,
+                'assets/svg/ППФК.svg',
+                color: Theme.of(context).colorScheme.primary,
                 ),
+              ),
               ),
             ),
             Padding(

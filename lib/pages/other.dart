@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import './tools/vibration.dart';
 import './tools/calculator.dart';
 import './tools/translator.dart';
+import './tools/notes.dart';
 import './settings/settings.dart'; 
 import '/models/avatars.dart';
 import 'package:pppc_companion/pages/users/user.dart';
@@ -218,6 +219,19 @@ class OtherPage extends StatelessWidget {
                       );
                     },
                   ),
+                  _buildToolButton(
+                    context,
+                    icon: Icons.note_alt_rounded,
+                    label: 'Нотатки',
+                    onTap: () async {
+                      await Future.delayed(const Duration(milliseconds: 300));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const NotesScreen()),
+                      );
+                    },
+                  ),
                 ],
               ),
             ],
@@ -247,11 +261,19 @@ class OtherPage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                size: 30,
-              ),
-              const SizedBox(height: 8),  
+                Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainer,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                padding: const EdgeInsets.all(8),
+                child: Icon(
+                  icon,
+                  size: 30,
+                  color: Theme.of(context).colorScheme.primary
+                ),
+                ),
+              const SizedBox(height: 5),
               Text(
                 label,
                 textAlign: TextAlign.center,

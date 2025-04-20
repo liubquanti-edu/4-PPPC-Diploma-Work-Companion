@@ -270,7 +270,6 @@ class _EducationPageState extends State<EducationPage> {
                   width: 50,
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceContainer,
                       borderRadius: BorderRadius.circular(5),
                     ),
                     child: CardLoading(
