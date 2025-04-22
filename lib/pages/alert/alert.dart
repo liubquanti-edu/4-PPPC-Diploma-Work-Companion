@@ -169,26 +169,15 @@ class RegionAlertMapScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 20),
                         if (isAlert && alertProvider.alertInfo.startTime != null)
-                          Column(
-                            children: [
-                              Text(
-                                'Початок: ${DateFormat('HH:mm').format(alertProvider.alertInfo.startTime!.toLocal())}',
-                                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                  color: mapColor,
-                                ),
-                              ),
-                              const SizedBox(height: 5),
-                              Text(
-                                'Тривалість: ${_formatDuration(DateTime.now().difference(alertProvider.alertInfo.startTime!))}',
-                                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                  color: mapColor,
-                                ),
-                              ),
-                            ],
+                          Text(
+                            'Початок: ${DateFormat('HH:mm').format(alertProvider.alertInfo.startTime!.toLocal())} (${_formatDuration(DateTime.now().difference(alertProvider.alertInfo.startTime!))})',
+                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                              color: mapColor,
+                            ),
                           )
                         else
                           Text(
-                            'Небезпека: Відсутня',
+                            'Оповіщень не надходило.',
                             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                               color: mapColor,
                             ),

@@ -535,8 +535,8 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                                         ListTile(
                                           leading: Icon(
                                             stop.times.isNotEmpty 
-                                                ? Icons.location_on
-                                                : Icons.location_on_outlined,
+                                                ? Icons.signpost_rounded
+                                                : Icons.signpost_outlined,
                                             color: stop.times.isNotEmpty 
                                                 ? Theme.of(context).colorScheme.primary
                                                 : Colors.grey,
