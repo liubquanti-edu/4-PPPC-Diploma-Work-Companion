@@ -40,6 +40,8 @@ dependencies:
   sleek_circular_slider: ^2.0.1
   flutter_simple_calculator: ^2.3.0
   translator: ^0.1.7
+  wifi_iot: ^0.3.19+2
+  permission_handler: ^12.0.0+1
 
 dev_dependencies:
   flutter_test:

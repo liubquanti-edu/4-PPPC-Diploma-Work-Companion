@@ -8,6 +8,7 @@ import './tools/notes.dart';
 import './settings/settings.dart'; 
 import '/models/avatars.dart';
 import 'package:pppc_companion/pages/users/user.dart';
+import './wifi/wifi.dart';
 
 class OtherPage extends StatelessWidget {
   const OtherPage({super.key});
@@ -233,6 +234,75 @@ class OtherPage extends StatelessWidget {
                     },
                   ),
                 ],
+              ),
+              const SizedBox(height: 10,),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10.0),
+                child: InkWell(
+                  customBorder: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    ),
+                    onTap: () async {
+                    await Future.delayed(const Duration(milliseconds: 300));
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                      builder: (context) => const WiFiPage(),
+                      ),
+                    );
+                  },
+                  child: Ink(
+                    padding: const EdgeInsets.all(10.0),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.onSecondary,
+                      borderRadius: BorderRadius.circular(10.0),
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.primary,
+                        width: 2.0,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                      SizedBox(
+                        height: 50,
+                        width: 50,
+                        child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surfaceContainer,
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Icon(
+                          Icons.wifi_rounded,
+                          size: 30.0,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        ),
+                      ),
+                      const SizedBox(width: 10.0),
+                      Expanded(
+                        child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('WI-FI точки', 
+                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16.0),
+                          overflow: TextOverflow.ellipsis,
+                          ),
+                          Text('Інформація про точки доступу', 
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0),
+                          overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                        ),
+                      ),
+                      Icon(Icons.arrow_forward, 
+                        size: 30.0, 
+                        color: Theme.of(context).colorScheme.primary
+                      ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
