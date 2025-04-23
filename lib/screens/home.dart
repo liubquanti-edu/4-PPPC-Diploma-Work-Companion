@@ -240,7 +240,7 @@ class _HomePageState extends State<HomePage> {
         title: MoveWindow(
           child: const Align(
             alignment: AlignmentDirectional.centerStart,
-            child: Text('Адміністратор компаньйону'),
+            child: Text('Адміністратор компаньйона'),
           ),
         ),
         actions: Row(
@@ -276,7 +276,7 @@ class _HomePageState extends State<HomePage> {
                 ),
 
                 Text(
-                  'Адміністратор компаньйону',
+                  'Адміністратор компаньйона',
                   style: TextStyle(fontSize: 20),
                 ),
                 const SizedBox(height: 10),

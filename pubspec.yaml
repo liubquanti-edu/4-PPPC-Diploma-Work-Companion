@@ -32,3 +32,15 @@ flutter:
   uses-material-design: true
   assets:
     - assets/svg/ППФК.svg
+
+msix_config:
+  display_name: Адміністратор компаньйона ППФК
+  publisher_display_name: White Heart Dev
+  publisher: CN=liubquanti, O=WhiteHeartDev, C=UA
+  identity_name: com.whdev.pppccompanionadmin
+  msix_version: 1.0.0.0
+  logo_path: assets/icon/icon.ico
+  start_menu_icon_path: assets/icon/icon.ico
+  tile_icon_path: assets/icon/icon.ico
+  capabilities: internetClient
+  icons_background_color: "#ffffff"
