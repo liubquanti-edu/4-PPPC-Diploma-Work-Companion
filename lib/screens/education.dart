@@ -2914,7 +2914,7 @@ class _EducationScreenState extends State<EducationScreen> {
                   onPressed: () {
                     final numeratorData = scheduleData['numerator'] ?? {};
                     dialogSetState(() { // Use dialogSetState here
-                      for (var day in days) {
+                        for (var day in days) {
                         for (var lesson in lessons) {
                           final lessonData = numeratorData[day]?[lesson] ?? {};
                           selectedLessons[day]![lesson] = {
@@ -2928,9 +2928,7 @@ class _EducationScreenState extends State<EducationScreen> {
                   },
                 ),
               ),
-            // ... rest of the dialog content ...
-            Expanded(
-            child: SingleChildScrollView(
+            SingleChildScrollView(
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: days.map((day) {
@@ -2941,7 +2939,13 @@ class _EducationScreenState extends State<EducationScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            day,
+                            {
+                              'monday': 'Понеділок',
+                              'tuesday': 'Вівторок',
+                              'wednesday': 'Середа',
+                              'thursday': 'Четвер',
+                              'friday': 'Пʼятниця',
+                            }[day] ?? day,
                             style: FluentTheme.of(context).typography.subtitle,
                           ),
                           const SizedBox(height: 8),
@@ -3048,7 +3052,6 @@ class _EducationScreenState extends State<EducationScreen> {
                 }).toList(),
               ),
             ),
-          ),
           ],
         ),
         actions: [
