@@ -45,8 +45,10 @@ class _EducationScreenState extends State<EducationScreen> {
       // Force UI refresh
       setState(() {});
 
+      // Store context before entering async gap
+      final scaffoldContext = context;
       await displayInfoBar(
-        context,
+        scaffoldContext,
         builder: (context, close) {
           return InfoBar(
             title: const Text('Успіх'),
@@ -61,8 +63,10 @@ class _EducationScreenState extends State<EducationScreen> {
       );
     } catch (e) {
       if (!mounted) return;
+      // Store context before entering async gap
+      final scaffoldContext = context;
       await displayInfoBar(
-        context,
+        scaffoldContext,
         builder: (context, close) {
           return InfoBar(
             title: const Text('Помилка'),
@@ -1256,87 +1260,168 @@ class _EducationScreenState extends State<EducationScreen> {
   }
 
   Widget _buildCoursesView() {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('courses')
-          .orderBy('end', descending: true)
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return Center(
-            child: Text('Помилка: ${snapshot.error}'),
-          );
-        }
+  int _tabIndex = 0;
 
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: ProgressRing(),
-          );
-        }
+  return StatefulBuilder(
+    builder: (context, setState) {
+      return TabView(
+        currentIndex: _tabIndex,
+        onChanged: (index) => setState(() => _tabIndex = index),
+        tabWidthBehavior: TabWidthBehavior.sizeToContent,
+        closeButtonVisibility: CloseButtonVisibilityMode.never,
+        tabs: [
+          Tab(
+            icon: const Icon(FluentIcons.education),
+            text: const Text('Активні курси'),
+            body: _buildActiveCoursesView(),
+          ),
+          Tab(
+            icon: const Icon(FluentIcons.archive),
+            text: const Text('Архів курсів'),
+            body: _buildArchivedCoursesView(),
+          ),
+        ],
+      );
+    }
+  );
+}
 
-        final docs = snapshot.data!.docs;
-        final now = DateTime.now();
-        
-        // Розділяємо курси на активні та архівні
-        final activeCourses = docs.where((doc) {
-          final data = doc.data() as Map<String, dynamic>;
-          return (data['end'] as Timestamp).toDate().isAfter(now);
-        }).toList();
-        
-        final archivedCourses = docs.where((doc) {
-          final data = doc.data() as Map<String, dynamic>;
-          return (data['end'] as Timestamp).toDate().isBefore(now);
-        }).toList();
+Widget _buildActiveCoursesView() {
+  return StreamBuilder<QuerySnapshot>(
+    stream: FirebaseFirestore.instance
+        .collection('courses')
+        .orderBy('end', descending: true)
+        .snapshots(),
+    builder: (context, snapshot) {
+      if (snapshot.hasError) {
+        return Center(child: Text('Помилка: ${snapshot.error}'));
+      }
 
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    'Активні курси',
-                    style: FluentTheme.of(context).typography.title,
-                  ),
-                  const SizedBox(width: 16),
-                  FilledButton(
-                    child: const Text('Створити курс'),
-                    onPressed: () => _showCreateCourseDialog(context),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Wrap(
-                spacing: 16,
-                runSpacing: 16,
-                children: activeCourses.map((doc) {
-                  final data = doc.data() as Map<String, dynamic>;
-                  return _buildCourseCard(context, doc, data);
-                }).toList(),
-              ),
-              if (archivedCourses.isNotEmpty) ...[
-                const SizedBox(height: 32),
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const Center(child: ProgressRing());
+      }
+
+      final courses = snapshot.data!.docs;
+      final now = DateTime.now();
+
+      // Фільтруємо для отримання лише активних курсів
+      final activeCourses = courses.where((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        return (data['end'] as Timestamp).toDate().isAfter(now);
+      }).toList();
+
+      return Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
                 Text(
-                  'Архів курсів',
+                  'Активні курси',
                   style: FluentTheme.of(context).typography.title,
                 ),
-                const SizedBox(height: 16),
-                Wrap(
-                  spacing: 16,
-                  runSpacing: 16,
-                  children: archivedCourses.map((doc) {
-                    final data = doc.data() as Map<String, dynamic>;
-                    return _buildCourseCard(context, doc, data);
-                  }).toList(),
+                FilledButton(
+                  child: const Text('Створити курс'),
+                  onPressed: () => _showCreateCourseDialog(context),
                 ),
               ],
-            ],
-          ),
-        );
-      },
-    );
-  }
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: activeCourses.isEmpty
+                  ? Center(
+                      child: Text(
+                        'Немає активних курсів',
+                        style: FluentTheme.of(context).typography.subtitle,
+                      ),
+                    )
+                  : GridView.builder(
+                      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                        maxCrossAxisExtent: 400,
+                        mainAxisExtent: 250,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                      ),
+                      itemCount: activeCourses.length,
+                      itemBuilder: (context, index) {
+                        final doc = activeCourses[index];
+                        final data = doc.data() as Map<String, dynamic>;
+                        return _buildCourseCard(context, doc, data);
+                      },
+                    ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+Widget _buildArchivedCoursesView() {
+  return StreamBuilder<QuerySnapshot>(
+    stream: FirebaseFirestore.instance
+        .collection('courses')
+        .orderBy('end', descending: true)
+        .snapshots(),
+    builder: (context, snapshot) {
+      if (snapshot.hasError) {
+        return Center(child: Text('Помилка: ${snapshot.error}'));
+      }
+
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const Center(child: ProgressRing());
+      }
+
+      final courses = snapshot.data!.docs;
+      final now = DateTime.now();
+
+      // Фільтруємо для отримання лише архівних курсів
+      final archivedCourses = courses.where((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        return (data['end'] as Timestamp).toDate().isBefore(now);
+      }).toList();
+
+      return Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Архів курсів',
+              style: FluentTheme.of(context).typography.title,
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: archivedCourses.isEmpty
+                  ? Center(
+                      child: Text(
+                        'Немає архівних курсів',
+                        style: FluentTheme.of(context).typography.subtitle,
+                      ),
+                    )
+                  : GridView.builder(
+                      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                        maxCrossAxisExtent: 400,
+                        mainAxisExtent: 250,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                      ),
+                      itemCount: archivedCourses.length,
+                      itemBuilder: (context, index) {
+                        final doc = archivedCourses[index];
+                        final data = doc.data() as Map<String, dynamic>;
+                        return _buildCourseCard(context, doc, data);
+                      },
+                    ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
 
   Widget _buildCourseCard(BuildContext context, DocumentSnapshot doc, Map<String, dynamic> data) {
     return SizedBox(
@@ -1599,221 +1684,231 @@ class _EducationScreenState extends State<EducationScreen> {
   }
 
   Future<void> _showEditCourseDialog(BuildContext context, DocumentSnapshot doc) async {
-    final data = doc.data() as Map<String, dynamic>;
-    final nameController = TextEditingController(text: data['name']);
-    final groupsController = TextEditingController(
-      text: (data['groups'] as List<dynamic>)
-          .map((e) => e.toString())
-          .join(', ')
-    );
-    DateTime startDate = (data['start'] as Timestamp).toDate();
-    DateTime endDate = (data['end'] as Timestamp).toDate();
-    int selectedSemester = data['semester'] ?? 1;
-    List<String> specialties = [];
+  // Зберігаємо стабільний контекст на початку функції
+  final scaffoldContext = context;
+  
+  final data = doc.data() as Map<String, dynamic>;
+  final nameController = TextEditingController(text: data['name']);
+  final groupsController = TextEditingController(
+    text: (data['groups'] as List<dynamic>)
+        .map((e) => e.toString())
+        .join(', ')
+  );
+  DateTime startDate = (data['start'] as Timestamp).toDate();
+  DateTime endDate = (data['end'] as Timestamp).toDate();
+  int selectedSemester = data['semester'] ?? 1;
+  List<String> specialties = [];
 
-    try {
-      final snapshot = await FirebaseFirestore.instance
-          .collection('specialisations')
-          .orderBy('number')
-          .get();
-      specialties = snapshot.docs
-          .map((doc) => (doc.data()['name'] as String))
-          .toList();
-    } catch (e) {
-      debugPrint('Error loading specialties: $e');
-    }
+  try {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('specialisations')
+        .orderBy('number')
+        .get();
+    specialties = snapshot.docs
+        .map((doc) => (doc.data()['name'] as String))
+        .toList();
+  } catch (e) {
+    debugPrint('Error loading specialties: $e');
+  }
+  
+  // Перевіряємо, чи контекст все ще валідний
+  if (!scaffoldContext.mounted) return;
 
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (context) => ContentDialog(
-        title: const Text('Редагування курсу'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-            children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: InfoLabel(
-              label: 'Спеціальність', 
-              child: SizedBox(
-              width: 300,
-              height: 250,
-              child: StatefulBuilder(
-                builder: (context, setState) {
-                String? selectedSpecialty = nameController.text;
-                return ComboBox<String>(
-                isExpanded: true,
-                value: selectedSpecialty,
-                items: specialties.map<ComboBoxItem<String>>((name) {
-                return ComboBoxItem<String>(
-                  value: name,
-                  child: Text(
-                  name,
-                  overflow: TextOverflow.ellipsis,
-                  ),
-                );
-                }).toList(),
-                onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                  selectedSpecialty = value;
-                  nameController.text = value;
-                  });
-                }
-                },
-                placeholder: const Text('Оберіть спеціальність'),
-                );
-                }
-              ),
-              ),
-              ),
+  final result = await showDialog<bool>(
+    context: scaffoldContext, // Використовуємо збережений контекст
+    builder: (context) => ContentDialog(
+      title: const Text('Редагування курсу'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+          children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: InfoLabel(
+            label: 'Спеціальність', 
+            child: SizedBox(
+            width: 300,
+            height: 250,
+            child: StatefulBuilder(
+              builder: (context, setState) {
+              String? selectedSpecialty = nameController.text;
+              return ComboBox<String>(
+              isExpanded: true,
+              value: selectedSpecialty,
+              items: specialties.map<ComboBoxItem<String>>((name) {
+              return ComboBoxItem<String>(
+                value: name,
+                child: Text(
+                name,
+                overflow: TextOverflow.ellipsis,
+                ),
+              );
+              }).toList(),
+              onChanged: (value) {
+              if (value != null) {
+                setState(() {
+                selectedSpecialty = value;
+                nameController.text = value;
+                });
+              }
+              },
+              placeholder: const Text('Оберіть спеціальність'),
+              );
+              }
             ),
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: InfoLabel(
-              label: 'Семестр',
-              child: StatefulBuilder(
-                builder: (context, setState) {
-                  return ComboBox<int>(
-                    value: selectedSemester,
-                    items: [1, 2, 3, 4, 5, 6, 7, 8].map((semester) {
-                      return ComboBoxItem<int>(
-                        value: semester,
-                        child: Text('$semester семестр'),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          selectedSemester = value;
-                        });
-                      }
-                    },
-                  );
-                }
-              ),
-              ),
             ),
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: InfoLabel(
-              label: 'Початок',
-              child: StatefulBuilder(
-                builder: (context, setDateState) {
-                  return DatePicker(
-                    selected: startDate,
-                    onChanged: (date) {
-                      setDateState(() {
-                        startDate = date;
+            ),
+          ),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: InfoLabel(
+            label: 'Семестр',
+            child: StatefulBuilder(
+              builder: (context, setState) {
+                return ComboBox<int>(
+                  value: selectedSemester,
+                  items: [1, 2, 3, 4, 5, 6, 7, 8].map((semester) {
+                    return ComboBoxItem<int>(
+                      value: semester,
+                      child: Text('$semester семестр'),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() {
+                        selectedSemester = value;
                       });
-                    },
-                  );
-                }
-              ),
-              ),
+                    }
+                  },
+                );
+              }
             ),
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: InfoLabel(
-              label: 'Кінець',
-                child: StatefulBuilder(
-                builder: (context, setDateState) {
-                  return DatePicker(
-                  selected: endDate,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: InfoLabel(
+            label: 'Початок',
+            child: StatefulBuilder(
+              builder: (context, setDateState) {
+                return DatePicker(
+                  selected: startDate,
                   onChanged: (date) {
                     setDateState(() {
-                    endDate = date;
+                      startDate = date;
                     });
                   },
-                  );
-                }
-                ),
-              ),
+                );
+              }
             ),
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: InfoLabel(
-              label: 'Групи (через кому)',
-              child: TextBox(
-                controller: groupsController,
-                placeholder: 'Наприклад: 401, 402, 403',
-              ),
-              ),
             ),
-          ],
-        ),
-        actions: [
-          Button(
-            child: const Text('Скасувати'),
-            onPressed: () => Navigator.pop(context, false),
           ),
-          FilledButton(
-            child: const Text('Зберегти'),
-            onPressed: () => Navigator.pop(context, true),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: InfoLabel(
+            label: 'Кінець',
+              child: StatefulBuilder(
+              builder: (context, setDateState) {
+                return DatePicker(
+                selected: endDate,
+                onChanged: (date) {
+                  setDateState(() {
+                  endDate = date;
+                  });
+                },
+                );
+              }
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: InfoLabel(
+            label: 'Групи (через кому)',
+            child: TextBox(
+              controller: groupsController,
+              placeholder: 'Наприклад: 401, 402, 403',
+            ),
+            ),
           ),
         ],
       ),
-    );
+      actions: [
+        Button(
+          child: const Text('Скасувати'),
+          onPressed: () => Navigator.pop(context, false),
+        ),
+        FilledButton(
+          child: const Text('Зберегти'),
+          onPressed: () => Navigator.pop(context, true),
+        ),
+      ],
+    ),
+  );
 
-    if (result == true) {
-      try {
-        final groups = groupsController.text
-            .split(',')
-            .map((e) => e.trim())
-            .where((e) => e.isNotEmpty)
-            .map((e) => int.parse(e)) // Convert to integers
-            .toList();
+  if (result == true) {
+    try {
+      final groups = groupsController.text
+          .split(',')
+          .map((e) => e.trim())
+          .where((e) => e.isNotEmpty)
+          .map((e) => int.parse(e)) // Convert to integers
+          .toList();
 
-        await doc.reference.update({
-          'name': nameController.text,
-          'semester': selectedSemester,
-          'start': Timestamp.fromDate(startDate),
-          'end': Timestamp.fromDate(endDate),
-          'groups': groups, // Now storing as List<int>
-        });
+      await doc.reference.update({
+        'name': nameController.text,
+        'semester': selectedSemester,
+        'start': Timestamp.fromDate(startDate),
+        'end': Timestamp.fromDate(endDate),
+        'groups': groups, // Now storing as List<int>
+      });
 
-        if (!mounted) return;
-        await displayInfoBar(
-          context,
-          builder: (context, close) {
-            return InfoBar(
-              title: const Text('Успіх'),
-              content: const Text('Курс оновлено'),
-              severity: InfoBarSeverity.success,
-              action: IconButton(
-                icon: const Icon(FluentIcons.clear),
-                onPressed: close,
-              ),
-            );
-          },
-        );
-      } catch (e) {
-        if (!mounted) return;
-        await displayInfoBar(
-          context,
-          builder: (context, close) {
-            return InfoBar(
-              title: const Text('Помилка'),
-              content: Text(e is FormatException 
-                ? 'Номери груп мають бути числами' 
-                : e.toString()),
-              severity: InfoBarSeverity.error,
-              action: IconButton(
-                icon: const Icon(FluentIcons.clear),
-                onPressed: close,
-              ),
-            );
-          },
-        );
-      }
+      // Перевіряємо, чи контекст все ще валідний
+      if (!scaffoldContext.mounted) return;
+      
+      await displayInfoBar(
+        scaffoldContext, // Використовуємо збережений контекст
+        builder: (context, close) {
+          return InfoBar(
+            title: const Text('Успіх'),
+            content: const Text('Курс оновлено'),
+            severity: InfoBarSeverity.success,
+            action: IconButton(
+              icon: const Icon(FluentIcons.clear),
+              onPressed: close,
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      // Перевіряємо, чи контекст все ще валідний
+      if (!scaffoldContext.mounted) return;
+      
+      await displayInfoBar(
+        scaffoldContext, // Використовуємо збережений контекст
+        builder: (context, close) {
+          return InfoBar(
+            title: const Text('Помилка'),
+            content: Text(e is FormatException 
+              ? 'Номери груп мають бути числами' 
+              : e.toString()),
+            severity: InfoBarSeverity.error,
+            action: IconButton(
+              icon: const Icon(FluentIcons.clear),
+              onPressed: close,
+            ),
+          );
+        },
+      );
     }
-
-    nameController.dispose();
-    groupsController.dispose();
   }
+
+  nameController.dispose();
+  groupsController.dispose();
+}
 
   Future<void> _deleteCourse(BuildContext context, DocumentSnapshot doc) async {
     final result = await showDialog<bool>(
@@ -2244,6 +2339,9 @@ Widget _buildEventTypesView() {
 
     if (result == true) {
       try {
+        // Store context before entering async gap
+        final scaffoldContext = context;
+        
         await FirebaseFirestore.instance.collection('events').add({
           'name': nameController.text,
           'description': descriptionController.text,
@@ -2251,7 +2349,7 @@ Widget _buildEventTypesView() {
 
         if (!mounted) return;
         await displayInfoBar(
-          context,
+          scaffoldContext,
           builder: (context, close) {
             return InfoBar(
               title: const Text('Успіх'),
@@ -2266,8 +2364,10 @@ Widget _buildEventTypesView() {
         );
       } catch (e) {
         if (!mounted) return;
+        // Store context before entering async gap
+        final scaffoldContext = context;
         await displayInfoBar(
-          context,
+          scaffoldContext,
           builder: (context, close) {
             return InfoBar(
               title: const Text('Помилка'),
@@ -2900,6 +3000,9 @@ Widget _buildEventTypesView() {
   }
 
   Future<void> _showScheduleEditor(BuildContext context, DocumentReference courseRef, int group, bool isNumerator) async {
+  // Збережемо контекст на початку методу
+  final scaffoldContext = context;
+  
   final schedule = await courseRef
       .collection('schedule')
       .doc(group.toString())
@@ -2959,9 +3062,12 @@ Widget _buildEventTypesView() {
     }
   }
 
+  // Перевіримо, чи все ще валідний контекст, перш ніж показувати діалог
+  if (!scaffoldContext.mounted) return;
+
   final result = await showDialog<bool>(
-    context: context,
-    builder: (context) => StatefulBuilder( // Add StatefulBuilder here
+    context: scaffoldContext, // Використовуємо збережений контекст
+    builder: (context) => StatefulBuilder(
       builder: (context, dialogSetState) => ContentDialog(
         constraints: const BoxConstraints(maxWidth: 1300),
         title: Text('Розклад для групи $group (${isNumerator ? "Чисельник" : "Знаменник"})'),
@@ -2975,7 +3081,7 @@ Widget _buildEventTypesView() {
                   child: const Text('Копіювати з чисельника'),
                   onPressed: () {
                     final numeratorData = scheduleData['numerator'] ?? {};
-                    dialogSetState(() { // Use dialogSetState here
+                    dialogSetState(() {
                         for (var day in days) {
                         for (var lesson in lessons) {
                           final lessonData = numeratorData[day]?[lesson] ?? {};
@@ -3143,7 +3249,7 @@ Widget _buildEventTypesView() {
               'subjectId': lessonData['subjectId'],
               'teacherId': lessonData['teacherId'],
               'room': lessonData['room'],
-              'commissionId': subjects[lessonData['subjectId']]!['commissionId'], // Add commission ID
+              'commissionId': subjects[lessonData['subjectId']]?['commissionId'], // Додаємо перевірку на null
             };
           }
         }
@@ -3157,9 +3263,11 @@ Widget _buildEventTypesView() {
           .doc(group.toString())
           .set(existingData, SetOptions(merge: true));
 
-      if (!mounted) return;
+      // Перевіримо актуальність контексту перед показом інформаційного повідомлення
+      if (!scaffoldContext.mounted) return;
+      
       await displayInfoBar(
-        context,
+        scaffoldContext, // Використовуємо збережений контекст
         builder: (context, close) {
           return InfoBar(
             title: const Text('Успіх'),
@@ -3173,9 +3281,11 @@ Widget _buildEventTypesView() {
         },
       );
     } catch (e) {
-      if (!mounted) return;
+      // Перевіримо актуальність контексту перед показом повідомлення про помилку
+      if (!scaffoldContext.mounted) return;
+      
       await displayInfoBar(
-        context,
+        scaffoldContext, // Використовуємо збережений контекст
         builder: (context, close) {
           return InfoBar(
             title: const Text('Помилка'),
