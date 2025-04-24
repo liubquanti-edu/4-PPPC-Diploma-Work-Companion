@@ -1876,6 +1876,33 @@ class _EducationScreenState extends State<EducationScreen> {
   }
 
   Widget _buildEventsView() {
+  int _tabIndex = 0;
+
+  return StatefulBuilder(
+    builder: (context, setState) {
+      return TabView(
+        currentIndex: _tabIndex,
+        onChanged: (index) => setState(() => _tabIndex = index),
+        tabWidthBehavior: TabWidthBehavior.sizeToContent,
+        closeButtonVisibility: CloseButtonVisibilityMode.never,
+        tabs: [
+          Tab(
+            icon: const Icon(FluentIcons.calendar),
+            text: const Text('Події'),
+            body: _buildCoursesEventsView(),
+          ),
+          Tab(
+            icon: const Icon(FluentIcons.list),
+            text: const Text('Типи подій'),
+            body: _buildEventTypesView(),
+          ),
+        ],
+      );
+    }
+  );
+}
+
+Widget _buildCoursesEventsView() {
   return StreamBuilder<QuerySnapshot>(
     stream: FirebaseFirestore.instance
         .collection('courses')
@@ -1919,227 +1946,254 @@ class _EducationScreenState extends State<EducationScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Події',
-                  style: FluentTheme.of(context).typography.title,
-                ),
                 ...activeCourses.map((course) {
                   final courseData = course.data() as Map<String, dynamic>;
-                    return Expander(
-                    headerShape: (open) => const RoundedRectangleBorder(),
-                    leading: const Icon(FluentIcons.calendar),
-                    header: Text(
-                      '${courseData['name']} (${courseData['groups'].join(", ")})',
-                      style: FluentTheme.of(context).typography.subtitle,
-                    ),
-                    content: StreamBuilder<QuerySnapshot>(
-                      stream: course.reference
-                        .collection('events')
-                        .orderBy('start')
-                        .snapshots(),
-                      builder: (context, eventsSnapshot) {
-                      if (eventsSnapshot.hasError) {
-                        return Text('Помилка: ${eventsSnapshot.error}');
-                      }
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${courseData['name']} (${courseData['groups'].join(", ")})',
+                        style: FluentTheme.of(context).typography.subtitle,
+                      ),
+                      const SizedBox(height: 8),
+                      StreamBuilder<QuerySnapshot>(
+                        stream: course.reference
+                            .collection('events')
+                            .orderBy('start')
+                            .snapshots(),
+                        builder: (context, eventsSnapshot) {
+                          if (eventsSnapshot.hasError) {
+                            return Text('Помилка: ${eventsSnapshot.error}');
+                          }
 
-                      if (eventsSnapshot.connectionState == ConnectionState.waiting) {
-                        return const ProgressRing();
-                      }
+                          if (eventsSnapshot.connectionState == ConnectionState.waiting) {
+                            return const ProgressRing();
+                          }
 
-                      final events = eventsSnapshot.data!.docs;
-                      
-                      return Wrap(
-                        spacing: 16,
-                        runSpacing: 16,
-                        children: [
-                        ...events.map((event) {
-                          final eventData = event.data() as Map<String, dynamic>;
-                          final eventType = eventTypes
-                            .where((t) => t.id == eventData['type'])
-                            .firstOrNull;
-                          final typeData = eventType?.data() as Map<String, dynamic>? ?? {'name': 'Невідомий тип'};
+                          final events = eventsSnapshot.data!.docs;
                           
-                          return SizedBox(
-                          width: 300,
-                          height: 250,
-                          child: Card(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                              Text(
-                              eventData['name'] ?? '',
-                              style: FluentTheme.of(context).typography.subtitle,
+                          return Wrap(
+                            spacing: 16,
+                            runSpacing: 16,
+                            children: [
+                              ...events.map((event) {
+                                final eventData = event.data() as Map<String, dynamic>;
+                                final eventType = eventTypes
+                                    .where((t) => t.id == eventData['type'])
+                                    .firstOrNull;
+                                final typeData = eventType?.data() as Map<String, dynamic>? ?? {'name': 'Невідомий тип'};
+                                
+                                return SizedBox(
+                                  width: 300,
+                                  height: 250,
+                                  child: Card(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          eventData['name'] ?? '',
+                                          style: FluentTheme.of(context).typography.subtitle,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          typeData['name'] ?? '',
+                                          style: FluentTheme.of(context).typography.body,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          eventData['description'] ?? '',
+                                          style: FluentTheme.of(context).typography.body,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          'Початок: ${DateFormat('dd.MM.yyyy').format((eventData['start'] as Timestamp).toDate())}',
+                                        ),
+                                        Text(
+                                          'Кінець: ${DateFormat('dd.MM.yyyy').format((eventData['end'] as Timestamp).toDate())}',
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Row(
+                                          children: [
+                                            FilledButton(
+                                              child: const Text('Редагувати'),
+                                              onPressed: () => _showEditEventDialog(
+                                                context,
+                                                course.reference,
+                                                event,
+                                                eventTypes,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            FilledButton(
+                                              style: ButtonStyle(
+                                                backgroundColor: WidgetStateProperty.all(
+                                                  Colors.red.light,
+                                                ),
+                                              ),
+                                              child: const Text('Видалити'),
+                                              onPressed: () => _deleteEvent(
+                                                context,
+                                                course.reference,
+                                                event,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                              // Додаємо кнопку "+" для створення нової події
+                              GestureDetector(
+                                onTap: () => _showCreateEventDialog(
+                                  context, 
+                                  [course], // Pass only this course
+                                  eventTypes,
+                                ),
+                                child: SizedBox(
+                                  width: 300,
+                                  height: 250,
+                                  child: Card(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: const [
+                                        Icon(
+                                          FluentIcons.add,
+                                          size: 48,
+                                        ),
+                                        SizedBox(height: 8),
+                                        Text('Нова подія'),
+                                      ],
+                                    ),
+                                  ),
+                                ),
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                              typeData['name'] ?? '',
-                              style: FluentTheme.of(context).typography.body,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                              eventData['description'] ?? '',
-                              style: FluentTheme.of(context).typography.body,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                              'Початок: ${DateFormat('dd.MM.yyyy').format((eventData['start'] as Timestamp).toDate())}',
-                              ),
-                              Text(
-                              'Кінець: ${DateFormat('dd.MM.yyyy').format((eventData['end'] as Timestamp).toDate())}',
-                              ),
-                              const Spacer(),
-                              Row(
-                              children: [
+                            ],
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  );
+                }).toList(),
+              ],
+            ),
+          );
+        },
+      );
+    },
+  );
+}
+
+Widget _buildEventTypesView() {
+  return StreamBuilder<QuerySnapshot>(
+    stream: FirebaseFirestore.instance
+        .collection('events')
+        .snapshots(),
+    builder: (context, snapshot) {
+      if (snapshot.hasError) {
+        return Center(child: Text('Помилка: ${snapshot.error}'));
+      }
+
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const Center(child: ProgressRing());
+      }
+
+      final eventTypes = snapshot.data!.docs;
+
+      return SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Типи подій',
+              style: FluentTheme.of(context).typography.subtitle,
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 16,
+              runSpacing: 16,
+              children: [
+                ...eventTypes.map((type) {
+                  final data = type.data() as Map<String, dynamic>;
+                  return SizedBox(
+                    width: 300,
+                    height: 250,
+                    child: Card(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            data['name'] ?? '',
+                            style: FluentTheme.of(context).typography.subtitle,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            data['description'] ?? '',
+                            style: FluentTheme.of(context).typography.body,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const Spacer(),
+                          Row(
+                            children: [
                               FilledButton(
                                 child: const Text('Редагувати'),
-                                onPressed: () => _showEditEventDialog(
-                                context,
-                                course.reference,
-                                event,
-                                eventTypes,
+                                onPressed: () => _showEditEventTypeDialog(
+                                  context, 
+                                  type,
                                 ),
                               ),
                               const SizedBox(width: 8),
                               FilledButton(
                                 style: ButtonStyle(
-                                backgroundColor: WidgetStateProperty.all(
-                                Colors.red.light,
-                                ),
-                                ),
-                                child: const Text('Видалити'),
-                                onPressed: () => _deleteEvent(
-                                context,
-                                course.reference,
-                                event,
-                                ),
-                              ),
-                              ],
-                              ),
-                            ],
-                            ),
-                          ),
-                          );
-                        }).toList(),
-                        GestureDetector(
-                          onTap: () => _showCreateEventDialog(
-                          context, 
-                          [course],
-                          eventTypes,
-                          ),
-                          child: SizedBox(
-                          width: 300,
-                          height: 250,
-                          child: Card(
-                            child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Icon(
-                              FluentIcons.add,
-                              size: 48,
-                              ),
-                              SizedBox(height: 8),
-                              Text('Нова подія'),
-                            ],
-                            ),
-                          ),
-                          ),
-                        ),
-                        ],
-                      );
-                      },
-                    ),
-                    );
-                }).toList(),
-                const SizedBox(height: 24),
-                Text(
-                  'Типи подій',
-                  style: FluentTheme.of(context).typography.subtitle,
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 16,
-                  runSpacing: 16,
-                  children: [
-                    ...eventTypes.map((type) {
-                      final data = type.data() as Map<String, dynamic>;
-                      return SizedBox(
-                        width: 300,
-                        height: 250,
-                        child: Card(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                              Text(
-                                data['name'] ?? '',
-                                style: FluentTheme.of(context).typography.subtitle,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                data['description'] ?? '',
-                                style: FluentTheme.of(context).typography.body,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const Spacer(),
-                              Row(
-                                children: [
-                                FilledButton(
-                                  child: const Text('Редагувати'),
-                                  onPressed: () => _showEditEventTypeDialog(
-                                  context, 
-                                  type,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                FilledButton(
-                                  style: ButtonStyle(
                                   backgroundColor: WidgetStateProperty.all(
                                     Colors.red.light,
                                   ),
-                                  ),
-                                  child: const Text('Видалити'),
-                                  onPressed: () => _deleteEventType(
+                                ),
+                                child: const Text('Видалити'),
+                                onPressed: () => _deleteEventType(
                                   context, 
                                   type,
-                                  ),
                                 ),
-                                ],
                               ),
                             ],
                           ),
-                        ),
-                      );
-                    }).toList(),
-                    GestureDetector(
-                      onTap: () => _showCreateEventTypeDialog(context),
-                      child: SizedBox(
-                        width: 300,
-                        height: 250,
-                        child: Card(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Icon(
-                                FluentIcons.add,
-                                size: 48,
-                              ),
-                              SizedBox(height: 8),
-                              Text('Новий тип подій'),
-                            ],
-                          ),
-                        ),
+                        ],
                       ),
                     ),
-                  ],
+                  );
+                }).toList(),
+                GestureDetector(
+                  onTap: () => _showCreateEventTypeDialog(context),
+                  child: SizedBox(
+                    width: 300,
+                    height: 250,
+                    child: Card(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(
+                            FluentIcons.add,
+                            size: 48,
+                          ),
+                          SizedBox(height: 8),
+                          Text('Новий тип подій'),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
-          );
-        },
+          ],
+        ),
       );
     },
   );
