@@ -217,7 +217,7 @@ class _EducationScreenState extends State<EducationScreen> {
                 final data = doc.data() as Map<String, dynamic>;
                 return SizedBox(
                   width: 300,
-                  height: 350,
+                  height: 250,
                   child: Card(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -261,7 +261,7 @@ class _EducationScreenState extends State<EducationScreen> {
                 onTap: () => _showCreateSpecialisationDialog(context),
                 child: SizedBox(
                   width: 300,
-                  height: 350,
+                  height: 250,
                   child: Card(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -519,7 +519,7 @@ class _EducationScreenState extends State<EducationScreen> {
                 final data = doc.data() as Map<String, dynamic>;
                 return SizedBox(
                   width: 300,
-                  height: 200,
+                  height: 250,
                   child: Card(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -562,7 +562,7 @@ class _EducationScreenState extends State<EducationScreen> {
                 onTap: () => _showCreateCycleCommissionDialog(context),
                 child: SizedBox(
                   width: 300,
-                  height: 200,
+                  height: 250,
                   child: Card(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -818,7 +818,7 @@ class _EducationScreenState extends State<EducationScreen> {
                         final subjectData = subject.data() as Map<String, dynamic>;
                         return SizedBox(
                           width: 300,
-                          height: 200,
+                          height: 250,
                           child: Card(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -865,7 +865,7 @@ class _EducationScreenState extends State<EducationScreen> {
                         onTap: () => _showCreateSubjectDialog(context, commission.reference),
                         child: SizedBox(
                           width: 300,
-                          height: 200,
+                          height: 250,
                           child: Card(
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
@@ -1341,6 +1341,7 @@ class _EducationScreenState extends State<EducationScreen> {
   Widget _buildCourseCard(BuildContext context, DocumentSnapshot doc, Map<String, dynamic> data) {
     return SizedBox(
       width: 300,
+      height: 250,
       child: Card(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1418,6 +1419,7 @@ class _EducationScreenState extends State<EducationScreen> {
               label: 'Спеціальність', 
               child: SizedBox(
               width: 300,
+              height: 250,
               child: StatefulBuilder(
                 builder: (context, setState) {
                 String? selectedSpecialty = nameController.text;
@@ -1634,6 +1636,7 @@ class _EducationScreenState extends State<EducationScreen> {
               label: 'Спеціальність', 
               child: SizedBox(
               width: 300,
+              height: 250,
               child: StatefulBuilder(
                 builder: (context, setState) {
                 String? selectedSpecialty = nameController.text;
@@ -1922,136 +1925,133 @@ class _EducationScreenState extends State<EducationScreen> {
                 ),
                 ...activeCourses.map((course) {
                   final courseData = course.data() as Map<String, dynamic>;
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${courseData['name']} (${courseData['groups'].join(", ")})',
-                        style: FluentTheme.of(context).typography.subtitle,
-                      ),
-                      const SizedBox(height: 8),
-                      StreamBuilder<QuerySnapshot>(
-                        stream: course.reference
-                            .collection('events')
-                            .orderBy('start')
-                            .snapshots(),
-                        builder: (context, eventsSnapshot) {
-                          if (eventsSnapshot.hasError) {
-                            return Text('Помилка: ${eventsSnapshot.error}');
-                          }
+                    return Expander(
+                    headerShape: (open) => const RoundedRectangleBorder(),
+                    leading: const Icon(FluentIcons.calendar),
+                    header: Text(
+                      '${courseData['name']} (${courseData['groups'].join(", ")})',
+                      style: FluentTheme.of(context).typography.subtitle,
+                    ),
+                    content: StreamBuilder<QuerySnapshot>(
+                      stream: course.reference
+                        .collection('events')
+                        .orderBy('start')
+                        .snapshots(),
+                      builder: (context, eventsSnapshot) {
+                      if (eventsSnapshot.hasError) {
+                        return Text('Помилка: ${eventsSnapshot.error}');
+                      }
 
-                          if (eventsSnapshot.connectionState == ConnectionState.waiting) {
-                            return const ProgressRing();
-                          }
+                      if (eventsSnapshot.connectionState == ConnectionState.waiting) {
+                        return const ProgressRing();
+                      }
 
-                          final events = eventsSnapshot.data!.docs;
+                      final events = eventsSnapshot.data!.docs;
+                      
+                      return Wrap(
+                        spacing: 16,
+                        runSpacing: 16,
+                        children: [
+                        ...events.map((event) {
+                          final eventData = event.data() as Map<String, dynamic>;
+                          final eventType = eventTypes
+                            .where((t) => t.id == eventData['type'])
+                            .firstOrNull;
+                          final typeData = eventType?.data() as Map<String, dynamic>? ?? {'name': 'Невідомий тип'};
                           
-                          return Wrap(
-                            spacing: 16,
-                            runSpacing: 16,
-                            children: [
-                              ...events.map((event) {
-                                final eventData = event.data() as Map<String, dynamic>;
-                                final eventType = eventTypes
-                                    .where((t) => t.id == eventData['type'])
-                                    .firstOrNull;
-                                final typeData = eventType?.data() as Map<String, dynamic>? ?? {'name': 'Невідомий тип'};
-                                
-                                return SizedBox(
-                                  width: 300,
-                                  child: Card(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          eventData['name'] ?? '',
-                                          style: FluentTheme.of(context).typography.subtitle,
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          typeData['name'] ?? '',
-                                          style: FluentTheme.of(context).typography.body,
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Text(
-                                          eventData['description'] ?? '',
-                                          style: FluentTheme.of(context).typography.body,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Text(
-                                          'Початок: ${DateFormat('dd.MM.yyyy').format((eventData['start'] as Timestamp).toDate())}',
-                                        ),
-                                        Text(
-                                          'Кінець: ${DateFormat('dd.MM.yyyy').format((eventData['end'] as Timestamp).toDate())}',
-                                        ),
-                                        const SizedBox(height: 16),
-                                        Row(
-                                          children: [
-                                            FilledButton(
-                                              child: const Text('Редагувати'),
-                                              onPressed: () => _showEditEventDialog(
-                                                context,
-                                                course.reference,
-                                                event,
-                                                eventTypes,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            FilledButton(
-                                              style: ButtonStyle(
-                                                backgroundColor: WidgetStateProperty.all(
-                                                  Colors.red.light,
-                                                ),
-                                              ),
-                                              child: const Text('Видалити'),
-                                              onPressed: () => _deleteEvent(
-                                                context,
-                                                course.reference,
-                                                event,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              }).toList(),
-                              // Додаємо кнопку "+" для створення нової події
-                              GestureDetector(
-                                onTap: () => _showCreateEventDialog(
-                                  context, 
-                                  [course], // Pass only this course
-                                  eventTypes,
-                                ),
-                                child: SizedBox(
-                                  width: 300,
-                                  height: 300,
-                                  child: Card(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: const [
-                                        Icon(
-                                          FluentIcons.add,
-                                          size: 48,
-                                        ),
-                                        SizedBox(height: 8),
-                                        Text('Нова подія'),
-                                      ],
-                                    ),
-                                  ),
+                          return SizedBox(
+                          width: 300,
+                          height: 250,
+                          child: Card(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                              Text(
+                              eventData['name'] ?? '',
+                              style: FluentTheme.of(context).typography.subtitle,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                              typeData['name'] ?? '',
+                              style: FluentTheme.of(context).typography.body,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                              eventData['description'] ?? '',
+                              style: FluentTheme.of(context).typography.body,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                              'Початок: ${DateFormat('dd.MM.yyyy').format((eventData['start'] as Timestamp).toDate())}',
+                              ),
+                              Text(
+                              'Кінець: ${DateFormat('dd.MM.yyyy').format((eventData['end'] as Timestamp).toDate())}',
+                              ),
+                              const Spacer(),
+                              Row(
+                              children: [
+                              FilledButton(
+                                child: const Text('Редагувати'),
+                                onPressed: () => _showEditEventDialog(
+                                context,
+                                course.reference,
+                                event,
+                                eventTypes,
                                 ),
                               ),
+                              const SizedBox(width: 8),
+                              FilledButton(
+                                style: ButtonStyle(
+                                backgroundColor: WidgetStateProperty.all(
+                                Colors.red.light,
+                                ),
+                                ),
+                                child: const Text('Видалити'),
+                                onPressed: () => _deleteEvent(
+                                context,
+                                course.reference,
+                                event,
+                                ),
+                              ),
+                              ],
+                              ),
                             ],
+                            ),
+                          ),
                           );
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                    ],
-                  );
+                        }).toList(),
+                        GestureDetector(
+                          onTap: () => _showCreateEventDialog(
+                          context, 
+                          [course],
+                          eventTypes,
+                          ),
+                          child: SizedBox(
+                          width: 300,
+                          height: 250,
+                          child: Card(
+                            child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Icon(
+                              FluentIcons.add,
+                              size: 48,
+                              ),
+                              SizedBox(height: 8),
+                              Text('Нова подія'),
+                            ],
+                            ),
+                          ),
+                          ),
+                        ),
+                        ],
+                      );
+                      },
+                    ),
+                    );
                 }).toList(),
                 const SizedBox(height: 24),
                 Text(
@@ -2067,7 +2067,7 @@ class _EducationScreenState extends State<EducationScreen> {
                       final data = type.data() as Map<String, dynamic>;
                       return SizedBox(
                         width: 300,
-                        height: 150,
+                        height: 250,
                         child: Card(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -2117,7 +2117,7 @@ class _EducationScreenState extends State<EducationScreen> {
                       onTap: () => _showCreateEventTypeDialog(context),
                       child: SizedBox(
                         width: 300,
-                        height: 150,
+                        height: 250,
                         child: Card(
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
