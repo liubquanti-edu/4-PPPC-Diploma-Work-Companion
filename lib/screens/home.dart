@@ -9,6 +9,7 @@ import 'login.dart';
 import 'education.dart';
 import 'students.dart';
 import 'teachers.dart';
+import 'info.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -358,6 +359,37 @@ class _HomePageState extends State<HomePage> {
                       SizedBox(height: 8),
                       Text(
                         'Викладачі',
+                        style: TextStyle(
+                        fontSize: 16,
+                        ),
+                      ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                    Button(
+                    style: ButtonStyle(
+                      padding: WidgetStateProperty.all(const EdgeInsets.all(50)),
+                    ),
+                    onPressed: () => Navigator.push(
+                      context,
+                      FluentPageRoute(builder: (context) => const InfoScreen()),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                      Icon(
+                        FluentIcons.info,
+                        size: 24,
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Інформація',
                         style: TextStyle(
                         fontSize: 16,
                         ),
