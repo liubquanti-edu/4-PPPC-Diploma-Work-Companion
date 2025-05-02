@@ -766,136 +766,164 @@ class _EducationScreenState extends State<EducationScreen> {
   }
 
   Widget _buildDisciplinesView() {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('cyclecommission')
-          .orderBy('name')
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return Center(
-            child: Text('Помилка: ${snapshot.error}'),
-          );
-        }
+  int tabIndex = 0;
 
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: ProgressRing(),
-          );
-        }
-
-        final commissions = snapshot.data!.docs;
-
-        return ListView.builder(
-          itemCount: commissions.length,
-          itemBuilder: (context, index) {
-            final commission = commissions[index];
-            final commissionData = commission.data() as Map<String, dynamic>;
-
-            return Expander(
-              leading: const Icon(FluentIcons.education),
-              header: Text(
-                commissionData['name'] ?? '',
-                style: FluentTheme.of(context).typography.subtitle,
-              ),
-              content: StreamBuilder<QuerySnapshot>(
-                stream: commission.reference
-                    .collection('subjects')
-                    .orderBy('name')
-                    .snapshots(),
-                builder: (context, subjectsSnapshot) {
-                  if (subjectsSnapshot.hasError) {
-                    return Text('Помилка: ${subjectsSnapshot.error}');
-                  }
-
-                  if (subjectsSnapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: ProgressRing());
-                  }
-
-                  final subjects = subjectsSnapshot.data!.docs;
-
-                  return Wrap(
-                    spacing: 16,
-                    runSpacing: 16,
-                    children: [
-                      ...subjects.map((subject) {
-                        final subjectData = subject.data() as Map<String, dynamic>;
-                        return SizedBox(
-                          width: 300,
-                          height: 250,
-                          child: Card(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                                children: [
-                                Text(
-                                  subjectData['name'] ?? '',
-                                  style: FluentTheme.of(context).typography.subtitle,
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  subjectData['description'] ?? '',
-                                  style: FluentTheme.of(context).typography.body,
-                                  maxLines: 3,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const Spacer(),
-                                Row(
-                                  children: [
-                                    FilledButton(
-                                      child: const Text('Редагувати'),
-                                      onPressed: () => _showEditSubjectDialog(
-                                        context, 
-                                        commission.reference,
-                                        subject,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    FilledButton(
-                                      style: ButtonStyle(
-                                        backgroundColor: WidgetStateProperty.all(Colors.red.light),
-                                      ),
-                                      child: const Text('Видалити'),
-                                      onPressed: () => _deleteSubject(context, commission.reference, subject),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                      GestureDetector(
-                        onTap: () => _showCreateSubjectDialog(context, commission.reference),
-                        child: SizedBox(
-                          width: 300,
-                          height: 250,
-                          child: Card(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: const [
-                                Icon(
-                                  FluentIcons.add,
-                                  size: 48,
-                                ),
-                                SizedBox(height: 8),
-                                Text('Нова дисципліна'),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            );
-          },
+  return StreamBuilder<QuerySnapshot>(
+    stream: FirebaseFirestore.instance
+        .collection('cyclecommission')
+        .orderBy('name')
+        .snapshots(),
+    builder: (context, snapshot) {
+      if (snapshot.hasError) {
+        return Center(
+          child: Text('Помилка: ${snapshot.error}'),
         );
-      },
-    );
-  }
+      }
+
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const Center(
+          child: ProgressRing(),
+        );
+      }
+
+      final commissions = snapshot.data!.docs;
+      
+      if (commissions.isEmpty) {
+        return const Center(
+          child: Text('Немає циклових комісій'),
+        );
+      }
+
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return TabView(
+            currentIndex: tabIndex,
+            onChanged: (index) => setState(() => tabIndex = index),
+            tabWidthBehavior: TabWidthBehavior.sizeToContent,
+            closeButtonVisibility: CloseButtonVisibilityMode.never,
+            tabs: commissions.map((commission) {
+              final commissionData = commission.data() as Map<String, dynamic>;
+              
+              return Tab(
+                icon: const Icon(FluentIcons.education),
+                text: Text(commissionData['name'] ?? ''),
+                body: _buildSubjectsTabContent(commission),
+              );
+            }).toList(),
+          );
+        }
+      );
+    },
+  );
+}
+
+Widget _buildSubjectsTabContent(DocumentSnapshot commission) {
+  return StreamBuilder<QuerySnapshot>(
+    stream: commission.reference
+        .collection('subjects')
+        .orderBy('name')
+        .snapshots(),
+    builder: (context, subjectsSnapshot) {
+      if (subjectsSnapshot.hasError) {
+        return Text('Помилка: ${subjectsSnapshot.error}');
+      }
+
+      if (subjectsSnapshot.connectionState == ConnectionState.waiting) {
+        return const Center(child: ProgressRing());
+      }
+
+      final subjects = subjectsSnapshot.data!.docs;
+
+      return SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Дисципліни',
+              style: FluentTheme.of(context).typography.title,
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 16,
+              runSpacing: 16,
+              children: [
+                ...subjects.map((subject) {
+                  final subjectData = subject.data() as Map<String, dynamic>;
+                  return SizedBox(
+                    width: 300,
+                    height: 250,
+                    child: Card(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                          children: [
+                          Text(
+                            subjectData['name'] ?? '',
+                            style: FluentTheme.of(context).typography.subtitle,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            subjectData['description'] ?? '',
+                            style: FluentTheme.of(context).typography.body,
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const Spacer(),
+                          Row(
+                            children: [
+                              FilledButton(
+                                child: const Text('Редагувати'),
+                                onPressed: () => _showEditSubjectDialog(
+                                  context, 
+                                  commission.reference,
+                                  subject,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              FilledButton(
+                                style: ButtonStyle(
+                                  backgroundColor: WidgetStateProperty.all(Colors.red.light),
+                                ),
+                                child: const Text('Видалити'),
+                                onPressed: () => _deleteSubject(context, commission.reference, subject),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+                GestureDetector(
+                  onTap: () => _showCreateSubjectDialog(context, commission.reference),
+                  child: SizedBox(
+                    width: 300,
+                    height: 250,
+                    child: Card(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(
+                            FluentIcons.add,
+                            size: 48,
+                          ),
+                          SizedBox(height: 8),
+                          Text('Нова дисципліна'),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
 
   Future<void> _showCreateSubjectDialog(BuildContext context, DocumentReference commissionRef) async {
     final nameController = TextEditingController();
@@ -1315,25 +1343,16 @@ Widget _buildActiveCoursesView() {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Активні курси',
-                  style: FluentTheme.of(context).typography.title,
-                ),
-                FilledButton(
-                  child: const Text('Створити курс'),
-                  onPressed: () => _showCreateCourseDialog(context),
-                ),
-              ],
+            Text(
+              'Активні курси',
+              style: FluentTheme.of(context).typography.title,
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: activeCourses.isEmpty
+              child: activeCourses.isEmpty && courses.isEmpty
                   ? Center(
                       child: Text(
-                        'Немає активних курсів',
+                        'Немає курсів',
                         style: FluentTheme.of(context).typography.subtitle,
                       ),
                     )
@@ -1344,11 +1363,36 @@ Widget _buildActiveCoursesView() {
                         crossAxisSpacing: 16,
                         mainAxisSpacing: 16,
                       ),
-                      itemCount: activeCourses.length,
+                      itemCount: activeCourses.length + 1, // +1 для кнопки додавання
                       itemBuilder: (context, index) {
-                        final doc = activeCourses[index];
-                        final data = doc.data() as Map<String, dynamic>;
-                        return _buildCourseCard(context, doc, data);
+                        if (index == activeCourses.length) {
+                          // Остання плитка - кнопка додавання
+                          return GestureDetector(
+                            onTap: () => _showCreateCourseDialog(context),
+                            child: SizedBox(
+                              width: 300,
+                              height: 250,
+                              child: Card(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: const [
+                                    Icon(
+                                      FluentIcons.add,
+                                      size: 48,
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text('Новий курс'),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        } else {
+                          final doc = activeCourses[index];
+                          final data = doc.data() as Map<String, dynamic>;
+                          return _buildCourseCard(context, doc, data);
+                        }
                       },
                     ),
             ),
@@ -1504,7 +1548,6 @@ Widget _buildArchivedCoursesView() {
               label: 'Спеціальність', 
               child: SizedBox(
               width: 300,
-              height: 250,
               child: StatefulBuilder(
                 builder: (context, setState) {
                 String? selectedSpecialty = nameController.text;
@@ -1727,7 +1770,6 @@ Widget _buildArchivedCoursesView() {
             label: 'Спеціальність', 
             child: SizedBox(
             width: 300,
-            height: 250,
             child: StatefulBuilder(
               builder: (context, setState) {
               String? selectedSpecialty = nameController.text;
