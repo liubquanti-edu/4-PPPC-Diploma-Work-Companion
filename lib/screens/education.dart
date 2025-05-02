@@ -119,7 +119,9 @@ class _EducationScreenState extends State<EducationScreen> {
 
         final docs = snapshot.data!.docs;
 
-        return ListView.builder(
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: ListView.builder(
           itemCount: docs.length,
           itemBuilder: (context, index) {
             final doc = docs[index];
@@ -127,7 +129,7 @@ class _EducationScreenState extends State<EducationScreen> {
             final startTime = _parseTimeString(data['start'] ?? '0:00');
             final endTime = _parseTimeString(data['end'] ?? '0:00');
             return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 16.0),
+              padding: const EdgeInsets.only(bottom: 10.0),
               child: Card(
                 child: Row(
                     children: [
@@ -184,6 +186,7 @@ class _EducationScreenState extends State<EducationScreen> {
               ),
             );
           },
+          ),
         );
       },
     );
@@ -1339,7 +1342,7 @@ Widget _buildActiveCoursesView() {
       }).toList();
 
       return Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.only(right: 16, left: 16, bottom: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1428,7 +1431,7 @@ Widget _buildArchivedCoursesView() {
       }).toList();
 
       return Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.only(right: 16, left: 16, bottom: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1491,7 +1494,7 @@ Widget _buildArchivedCoursesView() {
             ),
             const SizedBox(height: 8),
             Text('Групи: ${(data['groups'] as List<dynamic>).join(", ")}'),
-            const SizedBox(height: 16),
+            const Spacer(),
             Row(
               children: [
                 FilledButton(
@@ -2150,7 +2153,7 @@ Widget _buildCoursesEventsView() {
                                         Text(
                                           'Кінець: ${DateFormat('dd.MM.yyyy').format((eventData['end'] as Timestamp).toDate())}',
                                         ),
-                                        const SizedBox(height: 16),
+                                        const Spacer(),
                                         Row(
                                           children: [
                                             FilledButton(
