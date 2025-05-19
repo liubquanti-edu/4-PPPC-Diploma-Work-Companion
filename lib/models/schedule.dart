@@ -1,3 +1,7 @@
+//-----------------------------------------
+//-  Copyright (c) 2025. Liubchenko Oleh  -
+//-----------------------------------------
+
 class Lesson {
   final String name;
   final String place;

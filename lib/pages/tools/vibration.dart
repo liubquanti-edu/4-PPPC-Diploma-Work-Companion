@@ -1,3 +1,7 @@
+//-----------------------------------------
+//-  Copyright (c) 2025. Liubchenko Oleh  -
+//-----------------------------------------
+
 import 'package:flutter/material.dart';
 import 'package:vibration/vibration.dart';
 import 'package:sleek_circular_slider/sleek_circular_slider.dart';

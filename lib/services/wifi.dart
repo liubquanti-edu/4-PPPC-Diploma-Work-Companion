@@ -1,3 +1,7 @@
+//-----------------------------------------
+//-  Copyright (c) 2025. Liubchenko Oleh  -
+//-----------------------------------------
+
 import 'package:wifi_iot/wifi_iot.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart';
@@ -24,12 +28,12 @@ class WiFiService {
         return false;
       }
       
-      // Check if WiFi is enabled
       if (!(await WiFiForIoTPlugin.isEnabled())) {
         await WiFiForIoTPlugin.setEnabled(true, shouldOpenSettings: true);
         return false;
       }
       
+<<<<<<< HEAD
       print("Attempting to connect to $ssid");
       bool result = false;
       
@@ -109,6 +113,13 @@ class WiFiService {
       }
       
       return result;
+=======
+      return await WiFiForIoTPlugin.connect(
+        ssid, 
+        password: password,
+        security: NetworkSecurity.WPA,
+      );
+>>>>>>> 8941e543a71c05006d22d29c04b01fcfb8be5274
     } catch (e) {
       print('Error connecting to WiFi: $e');
       return false;

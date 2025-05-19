@@ -1,3 +1,7 @@
+//-----------------------------------------
+//-  Copyright (c) 2025. Liubchenko Oleh  -
+//-----------------------------------------
+
 import 'package:flutter/material.dart';
 import '/models/schedule.dart';
 

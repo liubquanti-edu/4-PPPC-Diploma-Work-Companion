@@ -1,3 +1,7 @@
+//-----------------------------------------
+//-  Copyright (c) 2025. Liubchenko Oleh  -
+//-----------------------------------------
+
 import 'package:flutter/material.dart';
 import 'package:pppc_companion/services/user_service.dart';
 import 'package:image_picker/image_picker.dart';

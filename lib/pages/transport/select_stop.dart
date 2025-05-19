@@ -1,3 +1,7 @@
+//-----------------------------------------
+//-  Copyright (c) 2025. Liubchenko Oleh  -
+//-----------------------------------------
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -24,7 +28,7 @@ class _StopSelectorScreenState extends State<StopSelectorScreen> {
   BitmapDescriptor? _busStopIcon;
   BitmapDescriptor? _collegeIcon;
   BitmapDescriptor? _trainStopIcon;
-  bool _screenOpen = true; // Флаг для видимості мапи
+  bool _screenOpen = true;
 
   static const CameraPosition _initialPosition = CameraPosition(
     target: LatLng(49.58781059854736, 34.54295461180669),
@@ -34,7 +38,7 @@ class _StopSelectorScreenState extends State<StopSelectorScreen> {
   @override
   void initState() {
     super.initState();
-    _screenOpen = true; // Гарантуємо видимість мапи при ініціалізації
+    _screenOpen = true;
     _initializeMapRenderer();
     _loadResources();
   }
@@ -338,11 +342,9 @@ class _StopSelectorScreenState extends State<StopSelectorScreen> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        // Приховати мапу перед закриттям екрану
         setState(() {
           _screenOpen = false;
         });
-        // Невелика затримка для коректного приховування мапи перед навігацією
         await Future.delayed(const Duration(milliseconds: 100));
         return true;
       },
@@ -353,7 +355,6 @@ class _StopSelectorScreenState extends State<StopSelectorScreen> {
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
-              // Приховати мапу перед використанням кнопки назад
               setState(() {
                 _screenOpen = false;
               });

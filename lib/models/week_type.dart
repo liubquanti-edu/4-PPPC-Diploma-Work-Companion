@@ -1,3 +1,7 @@
+//-----------------------------------------
+//-  Copyright (c) 2025. Liubchenko Oleh  -
+//-----------------------------------------
+
 class WeekType {
   static String getCurrentType({DateTime? date}) {
     final now = date ?? DateTime.now();
