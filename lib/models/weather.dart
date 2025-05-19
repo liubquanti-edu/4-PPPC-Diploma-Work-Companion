@@ -1,3 +1,7 @@
+//-----------------------------------------
+//-  Copyright (c) 2025. Liubchenko Oleh  -
+//-----------------------------------------
+
 class Weather {
   final Temperature? temperature;
   final Temperature? tempFeelsLike;

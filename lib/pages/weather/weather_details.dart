@@ -1,3 +1,7 @@
+//-----------------------------------------
+//-  Copyright (c) 2025. Liubchenko Oleh  -
+//-----------------------------------------
+
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/foundation.dart';
@@ -25,12 +29,12 @@ class _WeatherDetailsScreenState extends State<WeatherDetailsScreen> {
   GoogleMapController? _mapController;
   Set<Marker> _markers = {};
   BitmapDescriptor? _weatherMarkerIcon;
-  bool _screenOpen = true; // Track if screen is open
+  bool _screenOpen = true;
 
   @override
   void initState() {
     super.initState();
-    _screenOpen = true; // Ensure map is visible on init
+    _screenOpen = true;
     _initializeMapRenderer();
     _createWeatherMarkerIcon();
   }
@@ -173,11 +177,9 @@ class _WeatherDetailsScreenState extends State<WeatherDetailsScreen> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        // Hide map before popping
         setState(() {
           _screenOpen = false;
         });
-        // Add a small delay to ensure the map is hidden before navigation
         await Future.delayed(const Duration(milliseconds: 100));
         return true;
       },
@@ -188,7 +190,6 @@ class _WeatherDetailsScreenState extends State<WeatherDetailsScreen> {
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
-              // Hide map before popping using back button
               setState(() {
                 _screenOpen = false;
               });

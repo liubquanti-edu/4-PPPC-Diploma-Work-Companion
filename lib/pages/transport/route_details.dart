@@ -1,3 +1,7 @@
+//-----------------------------------------
+//-  Copyright (c) 2025. Liubchenko Oleh  -
+//-----------------------------------------
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -37,14 +41,14 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
   Set<Polyline> _polylines = {};
   BitmapDescriptor? _busStopIcon;
   BitmapDescriptor? _trainStopIcon;
-  bool _screenOpen = true; // Флаг для видимості мапи
+  bool _screenOpen = true;
 
   final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    _screenOpen = true; // Гарантуємо видимість мапи при ініціалізації
+    _screenOpen = true;
     _initializeMapRenderer();
     _loadRouteDetails();
     _loadIcons();
@@ -368,11 +372,9 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        // Приховати мапу перед закриттям екрану
         setState(() {
           _screenOpen = false;
         });
-        // Невелика затримка для коректного приховування мапи перед навігацією
         await Future.delayed(const Duration(milliseconds: 100));
         return true;
       },
@@ -383,7 +385,6 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
-              // Приховати мапу перед використанням кнопки назад
               setState(() {
                 _screenOpen = false;
               });

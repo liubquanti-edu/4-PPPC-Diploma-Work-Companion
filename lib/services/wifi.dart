@@ -1,3 +1,7 @@
+//-----------------------------------------
+//-  Copyright (c) 2025. Liubchenko Oleh  -
+//-----------------------------------------
+
 import 'package:wifi_iot/wifi_iot.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -15,12 +19,10 @@ class WiFiService {
         return false;
       }
       
-      // Check if WiFi is enabled
       if (!(await WiFiForIoTPlugin.isEnabled())) {
         await WiFiForIoTPlugin.setEnabled(true);
       }
       
-      // Connect to WiFi
       return await WiFiForIoTPlugin.connect(
         ssid, 
         password: password,
