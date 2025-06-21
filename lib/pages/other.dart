@@ -185,19 +185,19 @@ class OtherPage extends StatelessWidget {
                 mainAxisSpacing: 10,
                 crossAxisSpacing: 10,
                 children: [
-                  _buildToolButton(
-                    context,
-                    icon: Icons.vibration_rounded,
-                    label: 'Перевірка вібрації',
-                    onTap: () async {
-                      await Future.delayed(const Duration(milliseconds: 300));
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const VibrationTestScreen()),
-                      );
-                    },
-                  ),
+                  //_buildToolButton(
+                  //  context,
+                  //  icon: Icons.vibration_rounded,
+                  //  label: 'Перевірка вібрації',
+                  //  onTap: () async {
+                  //    await Future.delayed(const Duration(milliseconds: 300));
+                  //    Navigator.push(
+                  //      context,
+                  //      MaterialPageRoute(
+                  //          builder: (context) => const VibrationTestScreen()),
+                  //    );
+                  //  },
+                  //),
                   _buildToolButton(
                     context,
                     icon: Icons.calculate_rounded,

@@ -41,7 +41,7 @@ class AboutPage extends StatelessWidget {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
-                  const Text('Створено силами білого серця для безсердечних.', textAlign: TextAlign.center),
+                  const Text('Створено силами білого серця.', textAlign: TextAlign.center),
                   const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,

@@ -197,53 +197,6 @@ class _EducationPageState extends State<EducationPage> {
                 : _events.isEmpty
                     ? _buildEmptyEventsList()
                     : _buildEventsList(),
-              const SizedBox(height: 20.0, width: double.infinity),
-              SizedBox(
-                width: double.infinity,
-                child: Text(
-                  'Додаткові курси 🔎',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 20.0),
-                  textAlign: TextAlign.left,
-                ),
-              ),
-              const SizedBox(height: 10.0, width: double.infinity),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10.0),
-                child: Container(
-                  padding: const EdgeInsets.all(10.0),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.onSecondary,
-                    borderRadius: BorderRadius.circular(10.0),
-                    border: Border.all(
-                        color: Theme.of(context).colorScheme.primary, width: 2.0),
-                  ),
-                  child: Row(
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Іноземна мова', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 18.0)),
-                          Row(
-                            children: [
-                              Icon(Icons.access_time_outlined, size: 16.0, color: Theme.of(context).colorScheme.primary),
-                              const SizedBox(width: 5.0),
-                              Text('01/09/2024 - 01/01/2025', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),
-                              const SizedBox(width: 5.0),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 10.0),
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: Icon(Icons.arrow_forward, size: 30.0, color: Theme.of(context).colorScheme.primary),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
             ],
           ),
         ),
