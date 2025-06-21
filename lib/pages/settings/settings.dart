@@ -171,63 +171,6 @@ class _SettingsPageState extends State<SettingsPage> {
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 10.0),
-                    child: InkWell(
-                      customBorder: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                        onTap: () async {
-                        await Future.delayed(const Duration(milliseconds: 300));
-                      
-                      },
-                      child: Ink(
-                        padding: const EdgeInsets.all(10.0),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.onSecondary,
-                          borderRadius: BorderRadius.circular(10.0),
-                          border: Border.all(
-                            color: Theme.of(context).colorScheme.primary,
-                            width: 2.0,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              height: 50,
-                              width: 50,
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.surfaceContainer,
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                                child: Icon(
-                                  Icons.notifications_rounded,
-                                  size: 30.0,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 10.0),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Сповіщення', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16.0)),
-                                Text('Звуки та фільтри', style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0)),
-                              ],
-                            ),
-                            const SizedBox(width: 10.0),
-                            Expanded(
-                              child: Align(
-                                alignment: Alignment.centerRight,
-                                child: Icon(Icons.arrow_forward, size: 30.0, color: Theme.of(context).colorScheme.primary),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
                     Padding(
                     padding: const EdgeInsets.only(bottom: 10.0),
                     child: InkWell(
