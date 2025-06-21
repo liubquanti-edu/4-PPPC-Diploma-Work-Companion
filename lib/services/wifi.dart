@@ -10,14 +10,12 @@ class WiFiService {
   Future<bool> requestPermissions() async {
     List<Permission> permissions = [Permission.location];
     
-    // Для Android 13+ додаємо дозвіл на NEARBY_WIFI_DEVICES
     if (await _isAndroid13OrAbove()) {
       permissions.add(Permission.nearbyWifiDevices);
     }
     
     Map<Permission, PermissionStatus> statuses = await permissions.request();
     
-    // Перевіряємо, чи всі дозволи надані
     return statuses.values.every((status) => status.isGranted);
   }
 
@@ -33,15 +31,11 @@ class WiFiService {
         return false;
       }
       
-<<<<<<< HEAD
       print("Attempting to connect to $ssid");
       bool result = false;
       
-      // Стратегія для різних версій Android
       if (await _isAndroid13OrAbove()) {
-        // Для Android 13+
         print("Connecting on Android 13+");
-        // Спочатку спробуємо зареєструвати мережу в системі
         try {
           result = await WiFiForIoTPlugin.registerWifiNetwork(
             ssid,
@@ -50,7 +44,6 @@ class WiFiService {
           );
           print("Register network result: $result");
           
-          // Якщо реєстрація успішна, намагаємось підключитись
           if (result) {
             await Future.delayed(const Duration(seconds: 1));
             result = await WiFiForIoTPlugin.connect(
@@ -61,7 +54,6 @@ class WiFiService {
             );
             print("Connect after register result: $result");
           } else {
-            // Якщо реєстрація не вдалась, пробуємо звичайне підключення
             result = await WiFiForIoTPlugin.connect(
               ssid, 
               password: password,
@@ -72,13 +64,11 @@ class WiFiService {
             print("Direct connect result: $result");
           }
           
-          // Не використовуємо forceWifiUsage на Android 13+, оскільки це викликає проблеми
         } catch (e) {
           print("Error during connect on Android 13+: $e");
           return false;
         }
       } else if (await _isAndroid10OrAbove()) {
-        // Для Android 10-12
         print("Connecting on Android 10-12");
         try {
           result = await WiFiForIoTPlugin.connect(
@@ -95,7 +85,6 @@ class WiFiService {
               print("Force WiFi usage successful on Android 10-12");
             } catch (e) {
               print("Warning: forceWifiUsage failed on Android 10-12: $e");
-              // Продовжуємо роботу, навіть якщо forceWifiUsage не спрацював
             }
           }
         } catch (e) {
@@ -103,7 +92,6 @@ class WiFiService {
           return false;
         }
       } else {
-        // Для Android 9 і нижче
         print("Connecting on Android 9 or below");
         result = await WiFiForIoTPlugin.connect(
           ssid, 
@@ -113,13 +101,6 @@ class WiFiService {
       }
       
       return result;
-=======
-      return await WiFiForIoTPlugin.connect(
-        ssid, 
-        password: password,
-        security: NetworkSecurity.WPA,
-      );
->>>>>>> 8941e543a71c05006d22d29c04b01fcfb8be5274
     } catch (e) {
       print('Error connecting to WiFi: $e');
       return false;
@@ -128,12 +109,10 @@ class WiFiService {
 
   Future<bool> disconnectFromWiFi() async {
     try {
-      // Для Android 10+ потрібно використати removeWifiNetwork для мереж,
-      // які були додані з withInternet: true
       if (await _isAndroid10OrAbove()) {
         String? currentSSID = await getCurrentWiFiSSID();
         if (currentSSID != null) {
-          await WiFiForIoTPlugin.forceWifiUsage(false); // Вимикаємо маршрутизацію через WiFi
+          await WiFiForIoTPlugin.forceWifiUsage(false);
           return await WiFiForIoTPlugin.removeWifiNetwork(currentSSID);
         }
       }
@@ -156,14 +135,12 @@ class WiFiService {
     }
   }
 
-  // Функція для реєстрації мережі в системі (постійне збереження)
   Future<bool> registerPermanentNetwork(String ssid, String password) async {
     try {
       if (!(await requestPermissions())) {
         return false;
       }
 
-      // На Android 10+ використовуємо registerWifiNetwork для постійного збереження
       if (await _isAndroid10OrAbove()) {
         return await WiFiForIoTPlugin.registerWifiNetwork(
           ssid,
@@ -171,7 +148,6 @@ class WiFiService {
           security: NetworkSecurity.WPA,
         );
       } else {
-        // На старих версіях просто підключаємось, мережа зазвичай зберігається
         return await WiFiForIoTPlugin.connect(
           ssid,
           password: password,
@@ -184,25 +160,23 @@ class WiFiService {
     }
   }
 
-  // Перевірка версії Android
   Future<bool> _isAndroid10OrAbove() async {
     try {
       final deviceInfo = DeviceInfoPlugin();
       final androidInfo = await deviceInfo.androidInfo;
       print('Android SDK version: ${androidInfo.version.sdkInt}');
-      return androidInfo.version.sdkInt >= 29; // Android 10 = API 29
+      return androidInfo.version.sdkInt >= 29;
     } catch (e) {
       print('Error checking Android version: $e');
       return false;
     }
   }
 
-  // Перевірка версії Android 13+
   Future<bool> _isAndroid13OrAbove() async {
     try {
       final deviceInfo = DeviceInfoPlugin();
       final androidInfo = await deviceInfo.androidInfo;
-      return androidInfo.version.sdkInt >= 33; // Android 13 = API 33
+      return androidInfo.version.sdkInt >= 33;
     } catch (e) {
       print('Error checking Android version: $e');
       return false;

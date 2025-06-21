@@ -109,13 +109,10 @@ class UserProfilePage extends StatelessWidget {
                                 '@${userData?['nickname'] ?? ''}',
                                 style: const TextStyle(fontSize: 14),
                               ),
+                              const SizedBox(height: 5.0),
                               Text(
-                                'Студент • ${userData?['group'] ?? ''}-та група',
+                                '${userData?['group'] ?? ''}-та група',
                                 style: const TextStyle(fontSize: 12),
-                              ),
-                              const Text(
-                                'Інженерія програмного забезпечення',
-                                style: TextStyle(fontSize: 12),
                               ),
                             ],
                           );
