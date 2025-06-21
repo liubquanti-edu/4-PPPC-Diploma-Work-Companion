@@ -5,7 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import './tools/vibration.dart';
+import 'tools/contacts.dart';
 import './tools/calculator.dart';
 import './tools/translator.dart';
 import './tools/notes.dart';
@@ -185,19 +185,19 @@ class OtherPage extends StatelessWidget {
                 mainAxisSpacing: 10,
                 crossAxisSpacing: 10,
                 children: [
-                  //_buildToolButton(
-                  //  context,
-                  //  icon: Icons.vibration_rounded,
-                  //  label: 'Перевірка вібрації',
-                  //  onTap: () async {
-                  //    await Future.delayed(const Duration(milliseconds: 300));
-                  //    Navigator.push(
-                  //      context,
-                  //      MaterialPageRoute(
-                  //          builder: (context) => const VibrationTestScreen()),
-                  //    );
-                  //  },
-                  //),
+                  _buildToolButton(
+                    context,
+                    icon: Icons.contacts_rounded,
+                    label: 'Викладачі',
+                    onTap: () async {
+                      await Future.delayed(const Duration(milliseconds: 300));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const TeacherContactsScreen()),
+                      );
+                    },
+                  ),
                   _buildToolButton(
                     context,
                     icon: Icons.calculate_rounded,
