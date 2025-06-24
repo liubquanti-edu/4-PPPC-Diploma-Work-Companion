@@ -1,6 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import '../widgets/window_buttons.dart';
 
 class StudentsScreen extends StatefulWidget {
@@ -13,13 +14,18 @@ class StudentsScreen extends StatefulWidget {
 class _StudentsScreenState extends State<StudentsScreen> {
   int _selectedIndex = 0;
   final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _registeredSearchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
+  final FocusNode _registeredSearchFocusNode = FocusNode();
   String _searchQuery = '';
+  String _registeredSearchQuery = '';
 
   @override
   void dispose() {
     _searchController.dispose();
     _searchFocusNode.dispose();
+    _registeredSearchController.dispose();
+    _registeredSearchFocusNode.dispose();
     super.dispose();
   }
 
@@ -45,11 +51,18 @@ class _StudentsScreenState extends State<StudentsScreen> {
             title: const Text('Люди'),
             body: _buildPeopleTab(),
           ),
+          PaneItem(
+            icon: const Icon(FluentIcons.account_management),
+            title: const Text('Студенти'),
+            body: _buildRegisteredStudentsTab(),
+          ),
           // Тут можна додати інші вкладки за необхідністю
         ],
       ),
     );
   }
+
+  // Залишаємо існуючий метод _buildPeopleTab без змін
 
   Widget _buildPeopleTab() {
     return ScaffoldPage(
@@ -534,5 +547,407 @@ class _StudentsScreenState extends State<StudentsScreen> {
         );
       }
     }
+  }
+
+  // Новий метод для вкладки зареєстрованих студентів
+  Widget _buildRegisteredStudentsTab() {
+    return ScaffoldPage(
+      header: const PageHeader(
+        title: Text('Зареєстровані студенти'),
+      ),
+      content: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: TextBox(
+              controller: _registeredSearchController,
+              focusNode: _registeredSearchFocusNode,
+              placeholder: 'Пошук за іменем, прізвищем, нікнеймом або групою',
+              prefix: const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Icon(FluentIcons.search),
+              ),
+              suffix: _registeredSearchQuery.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(FluentIcons.clear),
+                      onPressed: () {
+                        _registeredSearchController.clear();
+                        setState(() {
+                          _registeredSearchQuery = '';
+                        });
+                        _registeredSearchFocusNode.requestFocus();
+                      },
+                    )
+                  : null,
+              onChanged: (value) {
+                setState(() {
+                  _registeredSearchQuery = value;
+                });
+              },
+            ),
+          ),
+          Expanded(
+            child: _buildRegisteredStudentsList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRegisteredStudentsList() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('students')
+          .orderBy('surname')
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(child: Text('Помилка: ${snapshot.error}'));
+        }
+
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: ProgressRing());
+        }
+
+        final allStudents = snapshot.data!.docs;
+        
+        // Фільтруємо дані на основі пошукового запиту
+        final students = _registeredSearchQuery.isEmpty 
+            ? allStudents 
+            : allStudents.where((doc) {
+                final data = doc.data() as Map<String, dynamic>;
+                final name = (data['name'] ?? '').toString().toLowerCase();
+                final surname = (data['surname'] ?? '').toString().toLowerCase();
+                final nickname = (data['nickname'] ?? '').toString().toLowerCase();
+                final email = (data['email'] ?? '').toString().toLowerCase();
+                final group = data['group'] != null ? data['group'].toString().toLowerCase() : '';
+                
+                final query = _registeredSearchQuery.toLowerCase();
+                
+                return name.contains(query) || 
+                      surname.contains(query) || 
+                      nickname.contains(query) ||
+                      email.contains(query) ||
+                      group.contains(query) ||
+                      '$surname $name'.contains(query);
+              }).toList();
+
+        return students.isEmpty
+            ? Center(
+                child: Text(
+                  allStudents.isEmpty
+                      ? 'Немає зареєстрованих студентів'
+                      : 'Нічого не знайдено за запитом "$_registeredSearchQuery"',
+                  style: FluentTheme.of(context).typography.subtitle,
+                ),
+              )
+            : Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: ListView.builder(
+                  itemCount: students.length,
+                  itemBuilder: (context, index) {
+                    final student = students[index];
+                    final data = student.data() as Map<String, dynamic>;
+                    
+                    // Форматуємо дату останнього входу
+                    String lastSeenText = 'Немає даних';
+                    if (data['lastSeen'] != null) {
+                      final lastSeen = (data['lastSeen'] as Timestamp).toDate();
+                      lastSeenText = DateFormat('dd.MM.yyyy HH:mm').format(lastSeen);
+                    }
+                    
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 12.0),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          children: [
+                            // Аватар студента (якщо є)
+                            if (data['avatar'] != null && (data['avatar'] as String).isNotEmpty)
+                              Container(
+                                width: 50,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  image: DecorationImage(
+                                    image: NetworkImage(data['avatar']),
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              )
+                            else
+                              const Icon(
+                                FluentIcons.contact,
+                                size: 50,
+                                color: Color(0xFF0078D4),
+                              ),
+                            const SizedBox(width: 16.0),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '${data['surname'] ?? ''} ${data['name'] ?? ''}',
+                                    style: FluentTheme.of(context).typography.subtitle,
+                                  ),
+                                  if ((data['nickname'] ?? '').isNotEmpty)
+                                    Text(
+                                      '@${data['nickname']}',
+                                      style: FluentTheme.of(context).typography.bodyStrong,
+                                    ),
+                                  const SizedBox(height: 4.0),
+                                  Text(
+                                    'Email: ${data['email'] ?? 'Не вказано'}',
+                                    style: FluentTheme.of(context).typography.body,
+                                  ),
+                                  const SizedBox(height: 4.0),
+                                  Text(
+                                    'Група: ${data['group'] ?? 'Не вказано'}',
+                                    style: FluentTheme.of(context).typography.body,
+                                  ),
+                                  const SizedBox(height: 4.0),
+                                  Text(
+                                    'Останній вхід: $lastSeenText',
+                                    style: FluentTheme.of(context).typography.caption,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Button(
+                              child: const Text('Деталі'),
+                              onPressed: () => _showStudentDetailsDialog(context, student.id, data),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              );
+      },
+    );
+  }
+
+  Future<void> _showStudentDetailsDialog(BuildContext context, String studentId, Map<String, dynamic> data) async {
+    // Форматуємо дату створення профілю
+    String createdAtText = 'Немає даних';
+    if (data['createdAt'] != null) {
+      final createdAt = (data['createdAt'] as Timestamp).toDate();
+      createdAtText = DateFormat('dd.MM.yyyy HH:mm').format(createdAt);
+    }
+    
+    // Форматуємо дату останнього входу
+    String lastSeenText = 'Немає даних';
+    if (data['lastSeen'] != null) {
+      final lastSeen = (data['lastSeen'] as Timestamp).toDate();
+      lastSeenText = DateFormat('dd.MM.yyyy HH:mm').format(lastSeen);
+    }
+
+    // Зберігаємо стабільний контекст
+    final scaffoldContext = context;
+    
+    // Створюємо контролери для редагованих полів
+    final nameController = TextEditingController(text: data['name'] ?? '');
+    final surnameController = TextEditingController(text: data['surname'] ?? '');
+    final nicknameController = TextEditingController(text: data['nickname'] ?? '');
+    final emailController = TextEditingController(text: data['email'] ?? '');
+    final groupController = TextEditingController(
+      text: data['group'] != null ? data['group'].toString() : '',
+    );
+
+    await showDialog(
+      context: context,
+      builder: (context) => ContentDialog(
+        title: Text('Інформація про студента: ${data['surname'] ?? ''} ${data['name'] ?? ''}'),
+        content: SizedBox(
+          width: 600,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Аватар студента
+                Center(
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 20),
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.grey.withOpacity(0.2),
+                      image: data['avatar'] != null && (data['avatar'] as String).isNotEmpty
+                          ? DecorationImage(
+                              image: NetworkImage(data['avatar']),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
+                    ),
+                    child: data['avatar'] == null || (data['avatar'] as String).isEmpty
+                        ? const Center(child: Icon(FluentIcons.contact, size: 60, color: Color(0xFF0078D4)))
+                        : null,
+                  ),
+                ),
+                
+                // Поля, які можна редагувати
+                InfoLabel(
+                  label: "Ім'я",
+                  child: TextBox(
+                    controller: nameController,
+                    placeholder: "Введіть ім'я",
+                  ),
+                ),
+                const SizedBox(height: 8.0),
+                InfoLabel(
+                  label: 'Прізвище',
+                  child: TextBox(
+                    controller: surnameController,
+                    placeholder: 'Введіть прізвище',
+                  ),
+                ),
+                const SizedBox(height: 8.0),
+                InfoLabel(
+                  label: 'Нікнейм',
+                  child: TextBox(
+                    controller: nicknameController,
+                    placeholder: 'Введіть нікнейм',
+                  ),
+                ),
+                const SizedBox(height: 8.0),
+                InfoLabel(
+                  label: 'Email',
+                  child: TextBox(
+                    controller: emailController,
+                    placeholder: 'Введіть email',
+                  ),
+                ),
+                const SizedBox(height: 8.0),
+                InfoLabel(
+                  label: 'Група',
+                  child: TextBox(
+                    controller: groupController,
+                    placeholder: 'Введіть номер групи',
+                  ),
+                ),
+
+                // Поля, які не можна змінити
+                const SizedBox(height: 20.0),
+                const Text(
+                  'Інформація, яку не можна змінити:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10.0),
+                
+                InfoLabel(
+                  label: 'Контактний email',
+                  child: TextBox(
+                    placeholder: 'Не вказано',
+                    enabled: false,
+                    controller: TextEditingController(text: data['contactemail'] ?? ''),
+                  ),
+                ),
+                const SizedBox(height: 8.0),
+                
+                InfoLabel(
+                  label: 'Контактний номер',
+                  child: TextBox(
+                    placeholder: 'Не вказано',
+                    enabled: false,
+                    controller: TextEditingController(text: data['contactnumber'] ?? ''),
+                  ),
+                ),
+                const SizedBox(height: 8.0),
+                
+                InfoLabel(
+                  label: 'Дата реєстрації',
+                  child: TextBox(
+                    placeholder: 'Немає даних',
+                    enabled: false,
+                    controller: TextEditingController(text: createdAtText),
+                  ),
+                ),
+                const SizedBox(height: 8.0),
+                
+                InfoLabel(
+                  label: 'Останній вхід',
+                  child: TextBox(
+                    placeholder: 'Немає даних',
+                    enabled: false,
+                    controller: TextEditingController(text: lastSeenText),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          Button(
+            child: const Text('Скасувати'),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          FilledButton(
+            child: const Text('Зберегти зміни'),
+            onPressed: () async {
+              Navigator.of(context).pop();
+              try {
+                // Оновлюємо дані студента у Firebase
+                await FirebaseFirestore.instance.collection('students').doc(studentId).update({
+                  'name': nameController.text,
+                  'surname': surnameController.text,
+                  'nickname': nicknameController.text,
+                  'email': emailController.text,
+                  'group': groupController.text.isNotEmpty 
+                    ? int.parse(groupController.text) 
+                    : null,
+                });
+                
+                // Перевіряємо, чи контекст все ще валідний
+                if (!scaffoldContext.mounted) return;
+                
+                // Показуємо повідомлення про успіх
+                await displayInfoBar(
+                  scaffoldContext,
+                  builder: (context, close) {
+                    return InfoBar(
+                      title: const Text('Успіх'),
+                      content: Text('Дані студента ${surnameController.text} ${nameController.text} оновлено'),
+                      severity: InfoBarSeverity.success,
+                      action: IconButton(
+                        icon: const Icon(FluentIcons.clear),
+                        onPressed: close,
+                      ),
+                    );
+                  },
+                );
+              } catch (e) {
+                // Перевіряємо, чи контекст все ще валідний
+                if (!scaffoldContext.mounted) return;
+                
+                // Показуємо повідомлення про помилку
+                await displayInfoBar(
+                  scaffoldContext,
+                  builder: (context, close) {
+                    return InfoBar(
+                      title: const Text('Помилка'),
+                      content: Text('Не вдалося оновити дані: ${e.toString()}'),
+                      severity: InfoBarSeverity.error,
+                      action: IconButton(
+                        icon: const Icon(FluentIcons.clear),
+                        onPressed: close,
+                      ),
+                    );
+                  },
+                );
+              }
+            },
+          ),
+        ],
+      ),
+    );
+
+    // Видаляємо контролери
+    nameController.dispose();
+    surnameController.dispose();
+    nicknameController.dispose();
+    emailController.dispose();
+    groupController.dispose();
   }
 }
