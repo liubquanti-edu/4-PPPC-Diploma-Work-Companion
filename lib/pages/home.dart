@@ -257,10 +257,25 @@ class _MyHomePageState extends State<MyHomePage> {
         }
       }
 
+      String? teacherSurname;
+      if (_cachedTeachers.containsKey(teacherId)) {
+        teacherSurname = _cachedTeachers[teacherId]['surname'];
+      } else {
+        final teacherDoc = await FirebaseFirestore.instance
+            .collection('teachers')
+            .doc(teacherId)
+            .get();
+            
+        if (teacherDoc.exists) {
+          _cachedTeachers[teacherId] = teacherDoc.data() ?? {};
+          teacherSurname = teacherDoc.data()?['surname'];
+        }
+      }
+
       lessons.add(Lesson(
         name: subjectName,
         place: lessonData['room'] ?? '',
-        prof: teacherName ?? '',
+        prof: ('${teacherSurname ?? ''} ${teacherName ?? ''}'),
       ));
     }
 
@@ -635,7 +650,7 @@ Future<Map<String, String>> _fetchBellSchedule(int lessonNumber) async {
                                                           const SizedBox(width: 5.0),
                                                           Expanded(
                                                             child: Text(
-                                                              '${lesson.prof} ${lesson.place}',
+                                                              '${lesson.prof} • ${lesson.place}',
                                                               style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 12.0),
                                                               overflow: TextOverflow.ellipsis,
                                                               maxLines: 1,
