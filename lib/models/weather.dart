@@ -33,8 +33,8 @@ class Weather {
 
   factory Weather.fromFirestore(Map<String, dynamic> data) {
     return Weather(
-      temperature: Temperature(data['main']['temp']),
-      tempFeelsLike: Temperature(data['main']['feels_like']),
+      temperature: Temperature((data['main']['temp'] as num?)?.toDouble()),
+      tempFeelsLike: Temperature((data['main']['feels_like'] as num?)?.toDouble()),
       weatherDescription: data['weather'][0]['description'],
       weatherMain: data['weather'][0]['main'],
       humidity: data['main']['humidity'],
