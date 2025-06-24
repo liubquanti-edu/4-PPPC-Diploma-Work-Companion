@@ -12,6 +12,16 @@ class StudentsScreen extends StatefulWidget {
 
 class _StudentsScreenState extends State<StudentsScreen> {
   int _selectedIndex = 0;
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +52,60 @@ class _StudentsScreenState extends State<StudentsScreen> {
   }
 
   Widget _buildPeopleTab() {
+    return ScaffoldPage(
+      header: PageHeader(
+        title: const Text('Користувачі'),
+        commandBar: CommandBar(
+          mainAxisAlignment: MainAxisAlignment.end,
+          primaryItems: [
+            CommandBarButton(
+              icon: const Icon(FluentIcons.add),
+              label: const Text('Додати користувача'),
+              onPressed: () => _showAddUserDialog(context),
+            ),
+          ],
+        ),
+      ),
+      content: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: TextBox(
+              controller: _searchController,
+              focusNode: _searchFocusNode,
+              placeholder: 'Пошук за іменем, прізвищем, email або групою',
+              prefix: const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Icon(FluentIcons.search),
+              ),
+              suffix: _searchQuery.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(FluentIcons.clear),
+                      onPressed: () {
+                        _searchController.clear();
+                        setState(() {
+                          _searchQuery = '';
+                        });
+                        _searchFocusNode.requestFocus();
+                      },
+                    )
+                  : null,
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value;
+                });
+              },
+            ),
+          ),
+          Expanded(
+            child: _buildPeopleList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPeopleList() {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('people')
@@ -56,95 +120,101 @@ class _StudentsScreenState extends State<StudentsScreen> {
           return const Center(child: ProgressRing());
         }
 
-        final people = snapshot.data!.docs;
+        final allPeople = snapshot.data!.docs;
+        
+        // Фільтруємо дані на основі пошукового запиту
+        final people = _searchQuery.isEmpty 
+            ? allPeople 
+            : allPeople.where((doc) {
+                final data = doc.data() as Map<String, dynamic>;
+                final name = (data['name'] ?? '').toString().toLowerCase();
+                final surname = (data['surname'] ?? '').toString().toLowerCase();
+                final email = (data['email'] ?? '').toString().toLowerCase();
+                final group = data['group'] != null ? data['group'].toString().toLowerCase() : '';
+                
+                final query = _searchQuery.toLowerCase();
+                
+                return name.contains(query) || 
+                      surname.contains(query) || 
+                      email.contains(query) ||
+                      group.contains(query) ||
+                      '$surname $name'.contains(query);
+              }).toList();
 
-        return ScaffoldPage(
-          header: PageHeader(
-            title: const Text('Користувачі'),
-            commandBar: CommandBar(
-              mainAxisAlignment: MainAxisAlignment.end,
-              primaryItems: [
-                CommandBarButton(
-                  icon: const Icon(FluentIcons.add),
-                  label: const Text('Додати користувача'),
-                  onPressed: () => _showAddUserDialog(context),
+        return people.isEmpty
+            ? Center(
+                child: Text(
+                  allPeople.isEmpty
+                      ? 'Немає зареєстрованих користувачів'
+                      : 'Нічого не знайдено за запитом "$_searchQuery"',
+                  style: FluentTheme.of(context).typography.subtitle,
                 ),
-              ],
-            ),
-          ),
-          content: people.isEmpty
-              ? Center(
-                  child: Text(
-                    'Немає зареєстрованих користувачів',
-                    style: FluentTheme.of(context).typography.subtitle,
-                  ),
-                )
-              : Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: ListView.builder(
-                    itemCount: people.length,
-                    itemBuilder: (context, index) {
-                      final user = people[index];
-                      final data = user.data() as Map<String, dynamic>;
-                      
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 12.0),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                FluentIcons.contact,
-                                size: 36,
-                                color: Color(0xFF0078D4),
-                              ),
-                              const SizedBox(width: 16.0),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      '${data['surname'] ?? ''} ${data['name'] ?? ''}',
-                                      style: FluentTheme.of(context).typography.subtitle,
-                                    ),
-                                    const SizedBox(height: 4.0),
-                                    Text(
-                                      'Email: ${data['email'] ?? 'Не вказано'}',
-                                      style: FluentTheme.of(context).typography.body,
-                                    ),
-                                    const SizedBox(height: 4.0),
-                                    Text(
-                                      'Група: ${data['group'] ?? 'Не вказано'}',
-                                      style: FluentTheme.of(context).typography.body,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
+              )
+            : Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: ListView.builder(
+                  itemCount: people.length,
+                  itemBuilder: (context, index) {
+                    final user = people[index];
+                    final data = user.data() as Map<String, dynamic>;
+                    
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 12.0),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              FluentIcons.contact,
+                              size: 36,
+                              color: Color(0xFF0078D4),
+                            ),
+                            const SizedBox(width: 16.0),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Button(
-                                    child: const Text('Редагувати'),
-                                    onPressed: () => _showEditUserDialog(context, user),
+                                  Text(
+                                    '${data['surname'] ?? ''} ${data['name'] ?? ''}',
+                                    style: FluentTheme.of(context).typography.subtitle,
                                   ),
-                                  const SizedBox(width: 8.0),
-                                  FilledButton(
-                                    style: ButtonStyle(
-                                      backgroundColor: ButtonState.all(Colors.red),
-                                    ),
-                                    child: const Text('Видалити'),
-                                    onPressed: () => _showDeleteUserDialog(context, user),
+                                  const SizedBox(height: 4.0),
+                                  Text(
+                                    'Email: ${data['email'] ?? 'Не вказано'}',
+                                    style: FluentTheme.of(context).typography.body,
+                                  ),
+                                  const SizedBox(height: 4.0),
+                                  Text(
+                                    'Група: ${data['group'] ?? 'Не вказано'}',
+                                    style: FluentTheme.of(context).typography.body,
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
+                            ),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Button(
+                                  child: const Text('Редагувати'),
+                                  onPressed: () => _showEditUserDialog(context, user),
+                                ),
+                                const SizedBox(width: 8.0),
+                                FilledButton(
+                                  style: ButtonStyle(
+                                    backgroundColor: ButtonState.all(Colors.red),
+                                  ),
+                                  child: const Text('Видалити'),
+                                  onPressed: () => _showDeleteUserDialog(context, user),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    );
+                  },
                 ),
-        );
+              );
       },
     );
   }
