@@ -713,9 +713,22 @@ class _StudentsScreenState extends State<StudentsScreen> {
                                 ],
                               ),
                             ),
-                            Button(
-                              child: const Text('Деталі'),
-                              onPressed: () => _showStudentDetailsDialog(context, student.id, data),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Button(
+                                  child: const Text('Деталі'),
+                                  onPressed: () => _showStudentDetailsDialog(context, student.id, data),
+                                ),
+                                const SizedBox(width: 8.0),
+                                FilledButton(
+                                  style: ButtonStyle(
+                                    backgroundColor: ButtonState.all(Colors.red),
+                                  ),
+                                  child: const Text('Видалити'),
+                                  onPressed: () => _showDeleteStudentDialog(context, student.id, data),
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -949,5 +962,126 @@ class _StudentsScreenState extends State<StudentsScreen> {
     nicknameController.dispose();
     emailController.dispose();
     groupController.dispose();
+  }
+
+  // Додаємо новий метод для діалогу видалення студента
+  Future<void> _showDeleteStudentDialog(BuildContext context, String studentId, Map<String, dynamic> data) async {
+    final scaffoldContext = context;
+    final studentName = '${data['surname']} ${data['name']}';
+    final studentEmail = data['email'];
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => ContentDialog(
+        title: const Text('Видалити студента'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Ви дійсно хочете видалити студента "$studentName"?'),
+            const SizedBox(height: 12),
+            const Text(
+              'Увага: Цей студент також буде видалений із загального списку людей, якщо там є запис з такою ж електронною поштою.',
+              style: TextStyle(color: Color(0xFFE81123)),
+            ),
+          ],
+        ),
+        actions: [
+          Button(
+            child: const Text('Скасувати'),
+            onPressed: () => Navigator.of(context).pop(false),
+          ),
+          FilledButton(
+            style: ButtonStyle(
+              backgroundColor: ButtonState.all(Colors.red),
+            ),
+            child: const Text('Видалити'),
+            onPressed: () => Navigator.of(context).pop(true),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      try {
+        // Показуємо індикатор завантаження
+        showDialog(
+          context: scaffoldContext,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return const ContentDialog(
+              title: Text('Обробка'),
+              content: SizedBox(
+                height: 100,
+                child: Center(child: ProgressRing()),
+              ),
+            );
+          },
+        );
+        
+        // 1. Видаляємо студента з колекції 'students'
+        await FirebaseFirestore.instance.collection('students').doc(studentId).delete();
+        
+        // 2. Шукаємо і видаляємо відповідний запис у колекції 'people' з такою ж поштою
+        if (studentEmail != null && studentEmail.isNotEmpty) {
+          final peopleQuery = await FirebaseFirestore.instance
+              .collection('people')
+              .where('email', isEqualTo: studentEmail)
+              .get();
+          
+          for (final personDoc in peopleQuery.docs) {
+            await personDoc.reference.delete();
+          }
+        }
+        
+        // Закриваємо діалог завантаження
+        if (scaffoldContext.mounted) {
+          Navigator.of(scaffoldContext).pop();
+        }
+        
+        // Перевіряємо, чи контекст все ще валідний
+        if (!scaffoldContext.mounted) return;
+        
+        // Показуємо повідомлення про успіх
+        await displayInfoBar(
+          scaffoldContext,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Успіх'),
+              content: Text('Студента $studentName видалено'),
+              severity: InfoBarSeverity.success,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      } catch (e) {
+        // Закриваємо діалог завантаження, якщо виникла помилка
+        if (scaffoldContext.mounted) {
+          Navigator.of(scaffoldContext).pop();
+        }
+        
+        // Перевіряємо, чи контекст все ще валідний
+        if (!scaffoldContext.mounted) return;
+        
+        // Показуємо повідомлення про помилку
+        await displayInfoBar(
+          scaffoldContext,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Помилка'),
+              content: Text('Не вдалося видалити студента: ${e.toString()}'),
+              severity: InfoBarSeverity.error,
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+            );
+          },
+        );
+      }
+    }
   }
 }
